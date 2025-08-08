@@ -1,59 +1,31 @@
-// src/services/auth.ts
-import strapiService from './server/strapiService';
+import apiService from './server/apiService';
 
+// A more generic User data interface. We can expand this later.
 export interface UserData {
-  id: number;
+  id: number | string;
   username: string;
   email: string;
-  role?: { id: number; name: string };
+  roles?: string[]; // Assuming roles are an array of strings
+  // isVerified might be a property, let's keep it
   isVerified?: boolean;
-  confirmed?: boolean;
-  provider?: string;
 }
 
+// The response from login or register will likely include user and a token.
 export interface AuthResponse {
   user: UserData;
-  jwt: string;
+  accessToken: string; // NestJS commonly uses 'accessToken'
 }
 
-export async function signIn({
-  email,
-  password,
-}: {
+interface LoginCredentials {
   email: string;
   password: string;
-}): Promise<AuthResponse> {
-  // 1) Autenticación local
-  const authResponse = await strapiService.request<AuthResponse>(
-    'auth/local',
-    {
-      method: 'POST',
-      data: {
-        identifier: email,
-        password,
-      },
-    }
-  );
-  const { jwt, user } = authResponse;
-  if (!jwt) throw new Error('No JWT received');
+}
 
-  // Aquí Strapi nos devuelve el campo 'confirmed'
-  if (user && user.confirmed === false) {
-    // Lanzamos un error específico que podamos identificar en el frontend
-    const error = new Error('Email not confirmed') as Error & { code?: string; userEmail?: string; };
-    error.code = 'USER_NOT_CONFIRMED';
-    error.userEmail = user.email; // Adjuntamos el email para poder reenviar el correo
-    throw error;
-  }
-
-  // 2) Obtener user con el rol poblado
-  const userWithRole = await strapiService.authenticatedRequest<UserData>(
-    'users/me',
-    { method: 'GET', params: { populate: 'role' } },
-    jwt
-  );
-
-  return { user: userWithRole, jwt };
+export async function login(credentials: LoginCredentials): Promise<AuthResponse> {
+  const response = await apiService.post('/auth/login', credentials);
+  // We expect the response data to match AuthResponse.
+  // The actual property names (e.g., accessToken vs. jwt) might need adjustment.
+  return response.data;
 }
 
 interface RegisterData {
@@ -62,62 +34,35 @@ interface RegisterData {
   password?: string;
 }
 
-export async function register(
-  userData: RegisterData
-): Promise<AuthResponse> {
-  const response = await strapiService.request<AuthResponse>(
-    'auth/local/register',
-    {
-      method: 'POST',
-      data: userData,
-    }
-  );
-  return response;
-}
-
-export async function providerAuth(
-  provider: string,
-  accessToken: string
-): Promise<AuthResponse> {
-  const response = await strapiService.request<AuthResponse>(
-    `auth/${provider}/callback`,
-    {
-      method: 'GET',
-      params: { access_token: accessToken },
-    }
-  );
-  return response;
-}
-
-export async function getMe(token: string): Promise<UserData> {
-  return strapiService.authenticatedRequest<UserData>(
-    'users/me',
-    { method: 'GET', params: { populate: 'role' } },
-    token
-  );
+// This function now calls the NestJS backend.
+export async function register(userData: RegisterData): Promise<AuthResponse> {
+  const response = await apiService.post('/auth/register', userData);
+  return response.data;
 }
 
 export async function forgotPassword(email: string): Promise<void> {
-  await strapiService.request('auth/forgot-password', {
-    method: 'POST',
-    data: { email },
-  });
+  await apiService.post('/auth/forgot-password', { email });
 }
 
-export async function resetPassword(
-  code: string,
-  password: string,
-  passwordConfirmation: string
-): Promise<AuthResponse> {
-  return strapiService.request<AuthResponse>('auth/reset-password', {
-    method: 'POST',
-    data: { code, password, passwordConfirmation },
-  });
+interface ResetPasswordData {
+  code: string;
+  password: string;
+  passwordConfirmation: string;
+}
+
+export async function resetPassword(data: ResetPasswordData): Promise<AuthResponse> {
+  const response = await apiService.post('/auth/reset-password', data);
+  return response.data;
 }
 
 export async function sendEmailConfirmation(email: string): Promise<void> {
-  await strapiService.request('auth/send-email-confirmation', {
-    method: 'POST',
-    data: { email },
-  });
+  // Endpoint guessed based on common practices.
+  await apiService.post('/auth/resend-confirmation', { email });
+}
+
+// Optional: A function to get the current user profile if needed for session management.
+// This assumes the token is handled by an interceptor in apiService.
+export async function getProfile(): Promise<UserData> {
+    const response = await apiService.get('/auth/profile');
+    return response.data;
 }
