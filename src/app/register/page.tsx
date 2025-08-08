@@ -25,22 +25,22 @@ export default function RegisterPage() {
         router.push('/login');
       }, 3000);
     } catch (error) {
-      // Definimos un tipo para el objeto de error que esperamos de Strapi/Axios
+      // Definimos un tipo para el objeto de error que esperamos de NestJS/Axios
       type ApiError = {
         response?: {
           data?: {
-            error?: {
-              message?: string;
-            };
+            message?: string | string[]; // NestJS puede devolver un string o un array de strings
           };
         };
       };
 
       const apiError = error as ApiError;
-      const errorMsg = apiError.response?.data?.error?.message || 'Hubo un error en el registro.';
+      // Extraemos el mensaje, si es un array, tomamos el primer elemento.
+      const rawMessage = apiError.response?.data?.message;
+      const errorMsg = Array.isArray(rawMessage) ? rawMessage[0] : rawMessage || 'Hubo un error en el registro.';
 
-      if (errorMsg.includes('Email or Username are already taken')) {
-        toast.error('El email o nombre de usuario ya están en uso.');
+      if (errorMsg.includes('already exists')) {
+        toast.error('Un usuario con este email o nombre de usuario ya existe.');
       } else {
         toast.error(errorMsg);
       }
