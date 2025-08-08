@@ -3,13 +3,12 @@
 import { useMutation } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
-import { signIn } from 'next-auth/react';
 import {
   register as registerService,
   requestPasswordReset as requestPasswordResetService,
   confirmPasswordReset as confirmPasswordResetService,
 } from '@/services/auth';
-import type { AuthResponse, RegisterData, ConfirmResetPasswordData } from '@/services/auth';
+import type { AuthResponse, ConfirmResetPasswordData } from '@/services/auth';
 
 // Define a type for the API error response
 type ApiError = {
@@ -26,24 +25,12 @@ export function useRegister() {
 
   return useMutation({
     mutationFn: registerService,
-    onSuccess: async (data, variables: RegisterData) => {
-      toast.success(data.message || '¡Registro exitoso!');
-
-      // After successful registration, automatically sign the user in
-      const signInResponse = await signIn('credentials', {
-        email: variables.email,
-        password: variables.password,
-        redirect: false, // We handle the redirect manually
-      });
-
-      if (signInResponse?.ok) {
-        toast.success('¡Sesión iniciada! Redirigiendo...');
-        router.push('/dashboard');
-        router.refresh(); // Refresh the page to ensure session is updated
-      } else {
-        toast.error('No se pudo iniciar sesión después del registro. Por favor, inicia sesión manualmente.');
+    onSuccess: (data) => {
+      // The backend now requires email confirmation, so we guide the user to do that.
+      toast.success(data.message || '¡Registro exitoso! Revisa tu email para confirmar tu cuenta.');
+      setTimeout(() => {
         router.push('/login');
-      }
+      }, 3000);
     },
     onError: (error: ApiError) => {
       const rawMessage = error.response?.data?.message;
