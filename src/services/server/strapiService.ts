@@ -1,6 +1,6 @@
 // src/services/server/strapiService.ts
 
-import axios, { AxiosRequestConfig } from 'axios';
+import axios, { AxiosRequestConfig, isAxiosError } from 'axios';
 
 const API_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 if (!API_URL) {
@@ -13,13 +13,13 @@ const api = axios.create({
   headers: { 'Content-Type': 'application/json' },
 });
 
-export default {
+const strapiService = {
   /**
    * Hace una petición genérica a Strapi.
    * @param path Ruta relativa dentro de /api (p.ej. 'auth/local' o 'users/me').
    * @param config Configuración de Axios (method, params, data, headers).
    */
-  async request<T = any>(
+  async request<T = unknown>(
     path: string,
     config: AxiosRequestConfig = {}
   ): Promise<T> {
@@ -32,9 +32,13 @@ export default {
         headers: { ...config.headers },
       });
       return res.data;
-    } catch (err: any) {
-      // Mostramos el body JSON de Strapi o el mensaje de error
-      console.error('⛔ Strapi error response:', err.response?.data ?? err.message);
+    } catch (err) {
+      if (isAxiosError(err)) {
+        // Mostramos el body JSON de Strapi o el mensaje de error
+        console.error('⛔ Strapi error response:', err.response?.data ?? err.message);
+      } else {
+        console.error('⛔ Generic error:', err);
+      }
       throw err;
     }
   },
@@ -42,7 +46,7 @@ export default {
   /**
    * Igual que request, pero añade el Authorization header con el JWT de Strapi.
    */
-  async authenticatedRequest<T = any>(
+  async authenticatedRequest<T = unknown>(
     path: string,
     config: AxiosRequestConfig = {},
     jwt: string
@@ -56,3 +60,5 @@ export default {
     });
   },
 };
+
+export default strapiService;

@@ -66,6 +66,7 @@ export default function LoginPage() {
       await sendEmailConfirmation(email);
       toast.success('Correo de confirmación enviado.');
     } catch (error) {
+      console.error('Resend confirmation error:', error);
       toast.error('No se pudo enviar el correo.');
     } finally {
       setIsResending(false);

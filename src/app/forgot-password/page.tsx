@@ -18,6 +18,7 @@ export default function ForgotPasswordPage() {
       toast.success('Se ha enviado un correo para restablecer tu contraseña');
       setEmail('');
     } catch (error) {
+      console.error('Forgot password error:', error);
       toast.error('No se pudo enviar el correo. ¿El email es correcto?');
     } finally {
       setIsSubmitting(false);

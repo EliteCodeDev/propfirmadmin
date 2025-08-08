@@ -44,6 +44,7 @@ export default function ResetPasswordPage() {
       toast.success('Contraseña actualizada con éxito');
       setTimeout(() => router.push('/login'), 2000);
     } catch (error) {
+      console.error('Reset password error:', error);
       toast.error('No se pudo actualizar la contraseña. El código podría ser inválido o haber expirado.');
     } finally {
       setIsSubmitting(false);

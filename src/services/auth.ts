@@ -7,7 +7,8 @@ export interface UserData {
   email: string;
   role?: { id: number; name: string };
   isVerified?: boolean;
-  [key: string]: any;
+  confirmed?: boolean;
+  provider?: string;
 }
 
 export interface AuthResponse {
@@ -39,7 +40,7 @@ export async function signIn({
   // Aquí Strapi nos devuelve el campo 'confirmed'
   if (user && user.confirmed === false) {
     // Lanzamos un error específico que podamos identificar en el frontend
-    const error: any = new Error('Email not confirmed');
+    const error = new Error('Email not confirmed') as Error & { code?: string; userEmail?: string; };
     error.code = 'USER_NOT_CONFIRMED';
     error.userEmail = user.email; // Adjuntamos el email para poder reenviar el correo
     throw error;
@@ -55,8 +56,14 @@ export async function signIn({
   return { user: userWithRole, jwt };
 }
 
+interface RegisterData {
+  username: string;
+  email: string;
+  password?: string;
+}
+
 export async function register(
-  userData: Record<string, any>
+  userData: RegisterData
 ): Promise<AuthResponse> {
   const response = await strapiService.request<AuthResponse>(
     'auth/local/register',
