@@ -1,19 +1,26 @@
 import apiService from './server/apiService';
 
-// A more generic User data interface. We can expand this later.
+// The normalized User data interface used throughout the frontend.
 export interface UserData {
   id: number | string;
   username: string;
   email: string;
-  roles?: string[]; // Assuming roles are an array of strings
-  // isVerified might be a property, let's keep it
+  roles?: string[];
   isVerified?: boolean;
 }
 
-// The response from login or register will likely include user and a token.
+// The actual shape of the response from the backend (login and register)
+interface BackendAuthResponse {
+  message?: string;
+  user: UserData;
+  access_token: string;
+  refresh_token: string;
+}
+
+// The normalized auth response used by the frontend application (e.g., in next-auth)
 export interface AuthResponse {
   user: UserData;
-  accessToken: string; // NestJS commonly uses 'accessToken'
+  accessToken: string;
 }
 
 interface LoginCredentials {
@@ -21,23 +28,25 @@ interface LoginCredentials {
   password: string;
 }
 
+// Login function fetches data and maps it to the normalized AuthResponse
 export async function login(credentials: LoginCredentials): Promise<AuthResponse> {
-  const response = await apiService.post('/auth/login', credentials);
-  // We expect the response data to match AuthResponse.
-  // The actual property names (e.g., accessToken vs. jwt) might need adjustment.
-  return response.data;
+  const { data } = await apiService.post<BackendAuthResponse>('/auth/login', credentials);
+  return {
+    user: data.user,
+    accessToken: data.access_token,
+  };
 }
 
-interface RegisterData {
+export interface RegisterData {
   username: string;
   email: string;
-  password?: string;
+  password: string;
 }
 
-// This function now calls the NestJS backend.
-export async function register(userData: RegisterData): Promise<AuthResponse> {
-  const response = await apiService.post('/auth/register', userData);
-  return response.data;
+// The register function now has a more specific return type.
+export async function register(userData: RegisterData): Promise<BackendAuthResponse> {
+  const { data } = await apiService.post<BackendAuthResponse>('/auth/register', userData);
+  return data;
 }
 
 export async function forgotPassword(email: string): Promise<void> {
@@ -50,19 +59,20 @@ interface ResetPasswordData {
   passwordConfirmation: string;
 }
 
+// Assuming reset password also returns a new set of tokens
 export async function resetPassword(data: ResetPasswordData): Promise<AuthResponse> {
-  const response = await apiService.post('/auth/reset-password', data);
-  return response.data;
+  const { data: backendData } = await apiService.post<BackendAuthResponse>('/auth/reset-password', data);
+  return {
+    user: backendData.user,
+    accessToken: backendData.access_token,
+  };
 }
 
 export async function sendEmailConfirmation(email: string): Promise<void> {
-  // Endpoint guessed based on common practices.
   await apiService.post('/auth/resend-confirmation', { email });
 }
 
-// Optional: A function to get the current user profile if needed for session management.
-// This assumes the token is handled by an interceptor in apiService.
 export async function getProfile(): Promise<UserData> {
-    const response = await apiService.get('/auth/profile');
-    return response.data;
+  const { data } = await apiService.get('/auth/profile');
+  return data;
 }
