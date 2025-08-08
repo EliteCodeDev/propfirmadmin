@@ -49,27 +49,25 @@ export async function register(userData: RegisterData): Promise<BackendAuthRespo
   return data;
 }
 
-export async function forgotPassword(email: string): Promise<void> {
-  await apiService.post('/auth/forgot-password', { email });
+// Renamed and updated to match the backend controller
+export async function requestPasswordReset(email: string): Promise<void> {
+  await apiService.post('/auth/reset-password', { email });
 }
 
-interface ResetPasswordData {
+// Renamed for clarity
+export interface ConfirmResetPasswordData {
   code: string;
   password: string;
   passwordConfirmation: string;
 }
 
-// Assuming reset password also returns a new set of tokens
-export async function resetPassword(data: ResetPasswordData): Promise<AuthResponse> {
-  const { data: backendData } = await apiService.post<BackendAuthResponse>('/auth/reset-password', data);
+// Renamed and updated to match the backend controller
+export async function confirmPasswordReset(data: ConfirmResetPasswordData): Promise<AuthResponse> {
+  const { data: backendData } = await apiService.post<BackendAuthResponse>('/auth/reset-password/confirm', data);
   return {
     user: backendData.user,
     accessToken: backendData.access_token,
   };
-}
-
-export async function sendEmailConfirmation(email: string): Promise<void> {
-  await apiService.post('/auth/resend-confirmation', { email });
 }
 
 export async function getProfile(): Promise<UserData> {

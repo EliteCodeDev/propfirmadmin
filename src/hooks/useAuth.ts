@@ -6,10 +6,10 @@ import { toast } from 'sonner';
 import { signIn } from 'next-auth/react';
 import {
   register as registerService,
-  forgotPassword as forgotPasswordService,
-  resetPassword as resetPasswordService,
+  requestPasswordReset as requestPasswordResetService,
+  confirmPasswordReset as confirmPasswordResetService,
 } from '@/services/auth';
-import type { AuthResponse, RegisterData } from '@/services/auth';
+import type { AuthResponse, RegisterData, ConfirmResetPasswordData } from '@/services/auth';
 
 // Define a type for the API error response
 type ApiError = {
@@ -58,25 +58,26 @@ export function useRegister() {
   });
 }
 
-// Hook for handling forgot password
-export function useForgotPassword() {
+// Hook for requesting a password reset
+export function useRequestPasswordReset() {
   return useMutation({
-    mutationFn: forgotPasswordService,
+    mutationFn: requestPasswordResetService,
     onSuccess: () => {
-      toast.success('Se ha enviado un correo para restablecer tu contraseña.');
+      toast.success('Si el email existe, se ha enviado un correo para restablecer tu contraseña.');
     },
     onError: () => {
-      toast.error('No se pudo enviar el correo. ¿El email es correcto?');
+      // For security, don't reveal if the email was correct or not.
+      toast.error('No se pudo procesar la solicitud.');
     },
   });
 }
 
-// Hook for resetting password
-export function useResetPassword() {
+// Hook for confirming the password reset
+export function useConfirmPasswordReset() {
   const router = useRouter();
 
-  return useMutation<AuthResponse, Error, Parameters<typeof resetPasswordService>[0]>({
-    mutationFn: resetPasswordService,
+  return useMutation<AuthResponse, Error, ConfirmResetPasswordData>({
+    mutationFn: confirmPasswordResetService,
     onSuccess: () => {
       toast.success('Contraseña actualizada con éxito. Serás redirigido a la página de login.');
       setTimeout(() => {

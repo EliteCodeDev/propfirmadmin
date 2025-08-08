@@ -1,17 +1,17 @@
 'use client';
 
 import { useState } from 'react';
-import { useForgotPassword } from '@/hooks/useAuth';
+import { useRequestPasswordReset } from '@/hooks/useAuth';
 import { Toaster } from 'sonner';
 import Link from 'next/link';
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
-  const { mutate: forgotPassword, isPending } = useForgotPassword();
+  const { mutate: requestPasswordReset, isPending } = useRequestPasswordReset();
 
   const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    forgotPassword(email, {
+    requestPasswordReset(email, {
       onSuccess: () => {
         setEmail('');
       },

@@ -6,14 +6,14 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { toast, Toaster } from 'sonner';
 import Link from 'next/link';
 import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
-import { sendEmailConfirmation } from '@/services/auth';
+// import { sendEmailConfirmation } from '@/services/auth';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isResending, setIsResending] = useState(false);
+  // const [isResending, setIsResending] = useState(false);
   const router = useRouter();
   const params = useSearchParams();
   const errorMsg = params?.get('error') || '';
@@ -56,22 +56,22 @@ export default function LoginPage() {
     }
   };
 
-  const handleResendConfirmation = async () => {
-    if (!email) {
-      toast.error('Por favor, introduce tu email primero.');
-      return;
-    }
-    setIsResending(true);
-    try {
-      await sendEmailConfirmation(email);
-      toast.success('Correo de confirmación enviado.');
-    } catch (error) {
-      console.error('Resend confirmation error:', error);
-      toast.error('No se pudo enviar el correo.');
-    } finally {
-      setIsResending(false);
-    }
-  };
+  // const handleResendConfirmation = async () => {
+  //   if (!email) {
+  //     toast.error('Por favor, introduce tu email primero.');
+  //     return;
+  //   }
+  //   setIsResending(true);
+  //   try {
+  //     await sendEmailConfirmation(email);
+  //     toast.success('Correo de confirmación enviado.');
+  //   } catch (error) {
+  //     console.error('Resend confirmation error:', error);
+  //     toast.error('No se pudo enviar el correo.');
+  //   } finally {
+  //     setIsResending(false);
+  //   }
+  // };
 
 
   return (
@@ -143,14 +143,15 @@ export default function LoginPage() {
         {errorMsg === 'Email not confirmed' && (
           <div className="mt-4 p-4 bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700">
             <p className="font-bold">Email no confirmado</p>
-            <p>Debes confirmar tu email antes de poder iniciar sesión.</p>
-            <button
+            <p>Debes confirmar tu email antes de poder iniciar sesión. Revisa tu bandeja de entrada.</p>
+            {/* El botón para reenviar el correo ha sido deshabilitado temporalmente */}
+            {/* <button
               onClick={handleResendConfirmation}
               disabled={isResending}
               className="mt-2 text-sm text-blue-600 hover:underline disabled:opacity-50"
             >
               {isResending ? 'Reenviando…' : 'Reenviar correo de confirmación'}
-            </button>
+            </button> */}
           </div>
         )}
 

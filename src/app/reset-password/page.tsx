@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { useResetPassword } from '@/hooks/useAuth';
+import { useConfirmPasswordReset } from '@/hooks/useAuth';
 import { toast, Toaster } from 'sonner';
 import Link from 'next/link';
 
@@ -12,7 +12,7 @@ export default function ResetPasswordPage() {
   const [code, setCode] = useState<string | null>(null);
   const searchParams = useSearchParams();
 
-  const { mutate: resetPassword, isPending } = useResetPassword();
+  const { mutate: confirmPasswordReset, isPending } = useConfirmPasswordReset();
 
   useEffect(() => {
     const resetCode = searchParams.get('code');
@@ -35,7 +35,7 @@ export default function ResetPasswordPage() {
       return;
     }
 
-    resetPassword({ code, password, passwordConfirmation });
+    confirmPasswordReset({ code, password, passwordConfirmation });
   };
 
   return (

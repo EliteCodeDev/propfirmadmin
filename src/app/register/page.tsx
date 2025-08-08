@@ -65,9 +65,14 @@ export default function RegisterPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              minLength={6}
+              minLength={8}
+              pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$"
+              title="La contraseña debe tener al menos 8 caracteres, incluyendo una mayúscula, una minúscula y un número."
               className="w-full p-2 border rounded"
             />
+            <p className="text-xs text-gray-500 mt-1">
+              Debe tener al menos 8 caracteres, una mayúscula, una minúscula y un número.
+            </p>
           </div>
 
           <button
