@@ -22,12 +22,12 @@ export default function RegisterPage() {
     <>
       <Toaster position="top-right" richColors />
 
-      <main className="max-w-md mx-auto p-6">
-        <h1 className="text-2xl font-bold mb-4">Crear cuenta</h1>
+      <main className="max-w-md mx-auto p-6 bg-white dark:bg-gray-800 shadow-md rounded-lg mt-10">
+        <h1 className="text-2xl font-bold mb-4 text-center text-gray-800 dark:text-white">Crear cuenta</h1>
 
         <form onSubmit={onSubmit} className="space-y-4">
           <div>
-            <label htmlFor="username" className="block text-sm font-medium">
+            <label htmlFor="username" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
               Nombre de usuario
             </label>
             <input
@@ -37,11 +37,11 @@ export default function RegisterPage() {
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               required
-              className="w-full p-2 border rounded"
+              className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white"
             />
           </div>
           <div>
-            <label htmlFor="email" className="block text-sm font-medium">
+            <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
               Email
             </label>
             <input
@@ -51,11 +51,11 @@ export default function RegisterPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="w-full p-2 border rounded"
+              className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white"
             />
           </div>
           <div>
-            <label htmlFor="password" className="block text-sm font-medium">
+            <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
               Contraseña
             </label>
             <input
@@ -68,9 +68,9 @@ export default function RegisterPage() {
               minLength={8}
               pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$"
               title="La contraseña debe tener al menos 8 caracteres, incluyendo una mayúscula, una minúscula y un número."
-              className="w-full p-2 border rounded"
+              className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white"
             />
-            <p className="text-xs text-gray-500 mt-1">
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
               Debe tener al menos 8 caracteres, una mayúscula, una minúscula y un número.
             </p>
           </div>
@@ -78,7 +78,7 @@ export default function RegisterPage() {
           <button
             type="submit"
             disabled={isPending}
-            className="w-full py-2 bg-blue-600 text-white rounded disabled:opacity-50"
+            className="w-full py-2 bg-blue-600 text-white rounded disabled:opacity-50 hover:bg-blue-700 dark:hover:bg-blue-500"
           >
             {isPending ? 'Registrando…' : 'Registrarse'}
           </button>

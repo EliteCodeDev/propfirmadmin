@@ -78,12 +78,12 @@ export default function LoginPage() {
     <>
       <Toaster position="top-right" richColors />
 
-      <main className="max-w-md mx-auto p-6">
-        <h1 className="text-2xl font-bold mb-4">Iniciar sesión</h1>
+      <main className="max-w-md mx-auto p-6 bg-white dark:bg-gray-800 shadow-md rounded-lg mt-10">
+        <h1 className="text-2xl font-bold mb-4 text-center text-gray-800 dark:text-white">Iniciar sesión</h1>
 
         <form onSubmit={onSubmit} className="space-y-4">
           <div>
-            <label htmlFor="email" className="block text-sm font-medium">
+            <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
               Email
             </label>
             <input
@@ -93,12 +93,12 @@ export default function LoginPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="w-full p-2 border rounded"
+              className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white"
             />
           </div>
 
           <div>
-            <label htmlFor="password" className="block text-sm font-medium">
+            <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
               Contraseña
             </label>
             <div className="relative mt-1">
@@ -109,11 +109,11 @@ export default function LoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="w-full p-2 border rounded"
+                className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white"
               />
               <button
                 type="button"
-                className="absolute inset-y-0 right-2 flex items-center"
+                className="absolute inset-y-0 right-2 flex items-center text-gray-500 dark:text-gray-400"
                 onClick={() => setShowPassword((v) => !v)}
                 tabIndex={-1}
               >

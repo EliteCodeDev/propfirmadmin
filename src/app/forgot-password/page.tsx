@@ -22,15 +22,15 @@ export default function ForgotPasswordPage() {
     <>
       <Toaster position="top-right" richColors />
 
-      <main className="max-w-md mx-auto p-6">
-        <h1 className="text-2xl font-bold mb-4">Restablecer contraseña</h1>
-        <p className="mb-4 text-sm text-gray-600">
+      <main className="max-w-md mx-auto p-8 bg-white dark:bg-gray-800 shadow-md rounded-lg mt-10">
+        <h1 className="text-2xl font-bold mb-4 text-center text-gray-800 dark:text-white">Restablecer contraseña</h1>
+        <p className="mb-4 text-sm text-center text-gray-600 dark:text-gray-300">
           Ingresa tu email y te enviaremos un enlace para restablecer tu contraseña.
         </p>
 
         <form onSubmit={onSubmit} className="space-y-4">
           <div>
-            <label htmlFor="email" className="block text-sm font-medium">
+            <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
               Email
             </label>
             <input
@@ -40,14 +40,14 @@ export default function ForgotPasswordPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="w-full p-2 border rounded"
+              className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white"
             />
           </div>
 
           <button
             type="submit"
             disabled={isPending}
-            className="w-full py-2 bg-blue-600 text-white rounded disabled:opacity-50"
+            className="w-full py-2 bg-blue-600 text-white rounded disabled:opacity-50 hover:bg-blue-700 dark:hover:bg-blue-500"
           >
             {isPending ? 'Enviando…' : 'Enviar enlace'}
           </button>
