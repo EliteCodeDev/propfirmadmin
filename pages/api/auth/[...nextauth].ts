@@ -42,9 +42,12 @@ export const authOptions: NextAuthOptions = {
             email: user.email,
             jwt,
           };
-        } catch (err: any) {
+        } catch (err) {
+          // Definimos un tipo para el error esperado
+          const signInError = err as { code?: string };
+
           // Si el error es por email no confirmado, lo propagamos a la UI
-          if (err.code === 'USER_NOT_CONFIRMED') {
+          if (signInError.code === 'USER_NOT_CONFIRMED') {
             // Next-auth pasará este mensaje a la página de login en la URL
             // ?error=Email not confirmed
             throw new Error('Email not confirmed');
@@ -61,8 +64,8 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        token.accessToken = (user as any).jwt;
-        token.id          = (user as any).id;
+        token.accessToken = user.jwt;
+        token.id = user.id;
       }
       return token;
     },
