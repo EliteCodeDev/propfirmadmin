@@ -1,51 +1,21 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { register } from '@/services/auth';
-import { toast, Toaster } from 'sonner';
+import { useRegister } from '@/hooks/useAuth';
+import { Toaster } from 'sonner';
 import Link from 'next/link';
 
 export default function RegisterPage() {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const router = useRouter();
 
-  const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  // Use the custom hook for registration
+  const { mutate: register, isPending } = useRegister();
+
+  const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setIsSubmitting(true);
-
-    try {
-      await register({ username, email, password });
-      toast.success('¡Registro exitoso! Revisa tu email para confirmar tu cuenta.');
-      // Redirect to login page after a short delay
-      setTimeout(() => {
-        router.push('/login');
-      }, 3000);
-    } catch (error) {
-      // Definimos un tipo para el objeto de error que esperamos de NestJS/Axios
-      type ApiError = {
-        response?: {
-          data?: {
-            message?: string | string[]; // NestJS puede devolver un string o un array de strings
-          };
-        };
-      };
-
-      const apiError = error as ApiError;
-      // Extraemos el mensaje, si es un array, tomamos el primer elemento.
-      const rawMessage = apiError.response?.data?.message;
-      const errorMsg = Array.isArray(rawMessage) ? rawMessage[0] : rawMessage || 'Hubo un error en el registro.';
-
-      if (errorMsg.includes('already exists')) {
-        toast.error('Un usuario con este email o nombre de usuario ya existe.');
-      } else {
-        toast.error(errorMsg);
-      }
-      setIsSubmitting(false);
-    }
+    register({ username, email, password });
   };
 
   return (
@@ -102,10 +72,10 @@ export default function RegisterPage() {
 
           <button
             type="submit"
-            disabled={isSubmitting}
+            disabled={isPending}
             className="w-full py-2 bg-blue-600 text-white rounded disabled:opacity-50"
           >
-            {isSubmitting ? 'Registrando…' : 'Registrarse'}
+            {isPending ? 'Registrando…' : 'Registrarse'}
           </button>
         </form>
 

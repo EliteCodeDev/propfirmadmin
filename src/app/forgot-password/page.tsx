@@ -1,28 +1,21 @@
 'use client';
 
 import { useState } from 'react';
-import { forgotPassword } from '@/services/auth';
-import { toast, Toaster } from 'sonner';
+import { useForgotPassword } from '@/hooks/useAuth';
+import { Toaster } from 'sonner';
 import Link from 'next/link';
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { mutate: forgotPassword, isPending } = useForgotPassword();
 
-  const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setIsSubmitting(true);
-
-    try {
-      await forgotPassword(email);
-      toast.success('Se ha enviado un correo para restablecer tu contraseña');
-      setEmail('');
-    } catch (error) {
-      console.error('Forgot password error:', error);
-      toast.error('No se pudo enviar el correo. ¿El email es correcto?');
-    } finally {
-      setIsSubmitting(false);
-    }
+    forgotPassword(email, {
+      onSuccess: () => {
+        setEmail('');
+      },
+    });
   };
 
   return (
@@ -53,10 +46,10 @@ export default function ForgotPasswordPage() {
 
           <button
             type="submit"
-            disabled={isSubmitting}
+            disabled={isPending}
             className="w-full py-2 bg-blue-600 text-white rounded disabled:opacity-50"
           >
-            {isSubmitting ? 'Enviando…' : 'Enviar enlace'}
+            {isPending ? 'Enviando…' : 'Enviar enlace'}
           </button>
         </form>
 
