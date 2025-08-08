@@ -42,8 +42,16 @@ export const authOptions: NextAuthOptions = {
             email: user.email,
             jwt,
           };
-        } catch (err) {
+        } catch (err: any) {
+          // Si el error es por email no confirmado, lo propagamos a la UI
+          if (err.code === 'USER_NOT_CONFIRMED') {
+            // Next-auth pasará este mensaje a la página de login en la URL
+            // ?error=Email not confirmed
+            throw new Error('Email not confirmed');
+          }
+
           console.error('Authorize error:', err);
+          // Para cualquier otro error, devolvemos null y se mostrará un error genérico
           return null;
         }
       },
