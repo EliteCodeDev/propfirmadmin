@@ -46,13 +46,10 @@ export default function LoginPage() {
       toast.success('Credenciales correctas');
       router.push('/dashboard');
     } else {
-      // El error se obtiene de `params` y se muestra en el JSX
-      // Aquí solo actualizamos el estado de carga
+      // The signIn function returns the error message from the authorize callback
+      // We use this to show a specific error toast.
+      toast.error(res?.error || 'Credenciales incorrectas');
       setIsSubmitting(false);
-      // Actualizar el toast de error genérico si no es un error de confirmación
-      if (errorMsg !== 'Email not confirmed') {
-        toast.error('Credenciales incorrectas');
-      }
     }
   };
 
