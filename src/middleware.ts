@@ -9,6 +9,8 @@ const PUBLIC_PATHS = [
   "/register",
   "/forgot-password",
   "/reset-password",
+  "/prueba",  // Agregamos la ruta de prueba
+  "/user"
 ];
 
 export async function middleware(req: NextRequest) {

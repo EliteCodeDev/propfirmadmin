@@ -14,6 +14,8 @@ import {
   LockClosedIcon
 } from "@heroicons/react/24/outline";
 import { sendEmailConfirmation } from "@/api/auth";
+import TableComponent from "@/components/common/tableComponent";
+
 
 function LoginContent() {
   const [email, setEmail] = useState("");
@@ -99,6 +101,7 @@ function LoginContent() {
   };
 
   return (
+
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 transition-colors duration-300">
       <Toaster 
         position="top-right" 
@@ -120,6 +123,8 @@ function LoginContent() {
           )}
         </button>
       </div>
+
+      <TableComponent />
 
       <div className="flex items-center justify-center min-h-screen p-4">
         <div className="w-full max-w-md">
