@@ -1,6 +1,6 @@
 import apiService from './server/apiService';
 
-// The normalized User data interface used throughout the frontend.
+// Normalized user for the frontend
 export interface UserData {
   id: number | string;
   username: string;
@@ -9,15 +9,17 @@ export interface UserData {
   isVerified?: boolean;
 }
 
-// The actual shape of the response from the backend (login and register)
+// Backend response (aceptamos ambos formatos para tokens)
 interface BackendAuthResponse {
   message?: string;
-  user: UserData;
-  access_token: string;
-  refresh_token: string;
+  user: UserData | any; // puede venir con userID, userRoles, etc.
+  accessToken?: string;      // camelCase (nuevo)
+  refreshToken?: string;     // camelCase (nuevo)
+  access_token?: string;     // snake_case (legacy)
+  refresh_token?: string;    // snake_case (legacy)
 }
 
-// The normalized auth response used by the frontend application (e.g., in next-auth)
+// Normalized auth response
 export interface AuthResponse {
   user: UserData;
   accessToken: string;
@@ -28,14 +30,26 @@ interface LoginCredentials {
   password: string;
 }
 
-// Login function fetches data and maps it to the normalized AuthResponse
+function pickAccessToken(res: BackendAuthResponse): string {
+  return res.accessToken ?? res.access_token ?? '';
+}
+
+// Login
 export async function login(credentials: LoginCredentials): Promise<AuthResponse> {
-  const { data } = await apiService.post<BackendAuthResponse>('/auth/login', credentials);
+  const { data } = await apiService.post<{
+    success: boolean;
+    message: string;
+    data: BackendAuthResponse;
+  }>('/auth/login', credentials);
+
+  const backendData = data.data; 
+
   return {
-    user: data.user,
-    accessToken: data.access_token,
+    user: backendData.user,
+    accessToken: pickAccessToken(backendData),
   };
 }
+
 
 export interface RegisterData {
   username: string;
@@ -43,30 +57,30 @@ export interface RegisterData {
   password: string;
 }
 
-// The register function now has a more specific return type.
+// Register
 export async function register(userData: RegisterData): Promise<BackendAuthResponse> {
   const { data } = await apiService.post<BackendAuthResponse>('/auth/register', userData);
   return data;
 }
 
-// Renamed and updated to match the backend controller
+// Reset password (request)
 export async function requestPasswordReset(email: string): Promise<void> {
   await apiService.post('/auth/reset-password', { email });
 }
 
-// Renamed for clarity
 export interface ConfirmResetPasswordData {
   code: string;
   password: string;
   passwordConfirmation: string;
 }
 
-// Renamed and updated to match the backend controller
+// Reset password (confirm)
 export async function confirmPasswordReset(data: ConfirmResetPasswordData): Promise<AuthResponse> {
   const { data: backendData } = await apiService.post<BackendAuthResponse>('/auth/reset-password/confirm', data);
+
   return {
     user: backendData.user,
-    accessToken: backendData.access_token,
+    accessToken: pickAccessToken(backendData),
   };
 }
 

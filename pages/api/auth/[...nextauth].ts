@@ -60,12 +60,11 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     // This callback is called whenever a JWT is created or updated.
     async jwt({ token, user }) {
-      // The `user` object is only passed on the initial sign-in.
       if (user) {
         token.accessToken = user.accessToken;
-        token.id = user.id;
-        token.roles = user.roles;
-        token.isVerified = user.isVerified;
+        token.id = user.id; 
+        token.roles = user.roles || [];
+        token.isVerified = user.isVerified ?? false;
       }
       return token;
     },
