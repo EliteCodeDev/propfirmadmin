@@ -257,8 +257,6 @@ export default function Page() {
         </div>
 
       </div>
-
-      <CardComponent />
     </div>
   );
 }
