@@ -19,6 +19,7 @@ export default function cardComponent({
     { label: "Name", value: "Arslan Ahmed" },
     { label: "Address", value: "None of your business" }
   ]
+  
 }: ContactCardProps) {
   return (
     <Card className="w-full max-w-md">
