@@ -8,12 +8,14 @@ import {
   ChartBarIcon,
   CogIcon,
   ArrowRightOnRectangleIcon,
+  LockClosedIcon,
 } from "@heroicons/react/24/outline";
 import { signOut } from "next-auth/react";
 
 const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: HomeIcon },
   { name: "User Challenges", href: "/user-challenges", icon: UserGroupIcon },
+  { name: "Password History", href: "/password-history", icon: LockClosedIcon },
 ];
 
 function classNames(...classes: string[]) {

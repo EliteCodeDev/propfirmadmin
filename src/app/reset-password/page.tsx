@@ -2,9 +2,20 @@
 
 import { useState, useEffect, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { resetPassword } from "@/api/auth";
-import { toast, Toaster } from "sonner";
 import Link from "next/link";
+import { toast, Toaster } from "sonner";
+import { resetPassword } from "@/api/auth";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 function ResetPasswordContent() {
   const [password, setPassword] = useState("");
@@ -19,21 +30,21 @@ function ResetPasswordContent() {
     if (resetCode) {
       setCode(resetCode);
     } else {
-      toast.error("Código de reseteo no encontrado.");
-      // Opcional: redirigir si no hay código
-      // router.push('/login');
+      toast.error("Código de reseteo no encontrado en la URL.");
     }
-  }, [searchParams, router]);
+  }, [searchParams]);
 
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     if (password !== passwordConfirmation) {
-      toast.error("Las contraseñas no coinciden");
+      toast.error("Las contraseñas no coinciden.");
       return;
     }
     if (!code) {
-      toast.error("Falta el código de reseteo.");
+      toast.error(
+        "Falta el código de reseteo. Por favor, usa el enlace que te enviamos."
+      );
       return;
     }
 
@@ -41,7 +52,7 @@ function ResetPasswordContent() {
 
     try {
       await resetPassword({ code, password, passwordConfirmation });
-      toast.success("Contraseña actualizada con éxito");
+      toast.success("¡Contraseña actualizada con éxito!");
       setTimeout(() => router.push("/login"), 2000);
     } catch (error) {
       console.error("Reset password error:", error);
@@ -56,57 +67,66 @@ function ResetPasswordContent() {
   return (
     <>
       <Toaster position="top-right" richColors />
-
-      <main className="max-w-md mx-auto p-6">
-        <h1 className="text-2xl font-bold mb-4">Nueva contraseña</h1>
-
-        <form onSubmit={onSubmit} className="space-y-4">
-          <div>
-            <label htmlFor="password" className="block text-sm font-medium">
-              Nueva contraseña
-            </label>
-            <input
-              id="password"
-              name="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              className="w-full p-2 border rounded"
-            />
-          </div>
-          <div>
-            <label
-              htmlFor="passwordConfirmation"
-              className="block text-sm font-medium"
-            >
-              Confirmar contraseña
-            </label>
-            <input
-              id="passwordConfirmation"
-              name="passwordConfirmation"
-              type="password"
-              value={passwordConfirmation}
-              onChange={(e) => setPasswordConfirmation(e.target.value)}
-              required
-              className="w-full p-2 border rounded"
-            />
-          </div>
-
-          <button
-            type="submit"
-            disabled={isSubmitting || !code}
-            className="w-full py-2 bg-blue-600 text-white rounded disabled:opacity-50"
-          >
-            {isSubmitting ? "Actualizando…" : "Actualizar contraseña"}
-          </button>
-        </form>
-
-        <p className="mt-6 text-sm text-center">
-          <Link href="/login" className="text-blue-600 hover:underline">
-            Volver a inicio de sesión
-          </Link>
-        </p>
+      <main className="flex min-h-screen flex-col items-center justify-center p-6 bg-gray-50">
+        <Card className="w-full max-w-md">
+          <CardHeader className="text-center">
+            <CardTitle className="text-2xl font-bold">
+              Crea tu nueva contraseña
+            </CardTitle>
+            <CardDescription>
+              Asegúrate de que sea segura y fácil de recordar.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={onSubmit} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="password">Nueva contraseña</Label>
+                <Input
+                  id="password"
+                  name="password"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  placeholder="••••••••"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="passwordConfirmation">
+                  Confirmar nueva contraseña
+                </Label>
+                <Input
+                  id="passwordConfirmation"
+                  name="passwordConfirmation"
+                  type="password"
+                  value={passwordConfirmation}
+                  onChange={(e) => setPasswordConfirmation(e.target.value)}
+                  required
+                  placeholder="••••••••"
+                />
+              </div>
+              <Button
+                type="submit"
+                disabled={isSubmitting || !code}
+                className="w-full"
+              >
+                {isSubmitting
+                  ? "Actualizando…"
+                  : "Actualizar contraseña"}
+              </Button>
+            </form>
+          </CardContent>
+          <CardFooter className="text-sm text-center block">
+            <p>
+              <Link
+                href="/login"
+                className="text-blue-600 hover:underline"
+              >
+                Volver a inicio de sesión
+              </Link>
+            </p>
+          </CardFooter>
+        </Card>
       </main>
     </>
   );
@@ -114,7 +134,7 @@ function ResetPasswordContent() {
 
 export default function ResetPasswordPage() {
   return (
-    <Suspense fallback={<div className="p-6">Cargando…</div>}>
+    <Suspense fallback={<div className="flex min-h-screen items-center justify-center">Cargando…</div>}>
       <ResetPasswordContent />
     </Suspense>
   );

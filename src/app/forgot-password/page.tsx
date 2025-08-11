@@ -1,9 +1,20 @@
 "use client";
 
 import { useState } from "react";
-import { forgotPassword } from "@/api/auth";
-import { toast, Toaster } from "sonner";
 import Link from "next/link";
+import { toast, Toaster } from "sonner";
+import { forgotPassword } from "@/api/auth";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
@@ -28,45 +39,45 @@ export default function ForgotPasswordPage() {
   return (
     <>
       <Toaster position="top-right" richColors />
-
-      <main className="max-w-md mx-auto p-6">
-        <h1 className="text-2xl font-bold mb-4">Restablecer contraseña</h1>
-        <p className="mb-4 text-sm text-gray-600">
-          Ingresa tu email y te enviaremos un enlace para restablecer tu
-          contraseña.
-        </p>
-
-        <form onSubmit={onSubmit} className="space-y-4">
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium">
-              Email
-            </label>
-            <input
-              id="email"
-              name="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              className="w-full p-2 border rounded"
-            />
-          </div>
-
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="w-full py-2 bg-blue-600 text-white rounded disabled:opacity-50"
-          >
-            {isSubmitting ? "Enviando…" : "Enviar enlace"}
-          </button>
-        </form>
-
-        <p className="mt-6 text-sm text-center">
-          ¿Ya te acordaste?{" "}
-          <Link href="/login" className="text-blue-600 hover:underline">
-            Iniciar sesión
-          </Link>
-        </p>
+      <main className="flex min-h-screen flex-col items-center justify-center p-6 bg-gray-50">
+        <Card className="w-full max-w-md">
+          <CardHeader className="text-center">
+            <CardTitle className="text-2xl font-bold">
+              Restablecer contraseña
+            </CardTitle>
+            <CardDescription>
+              Ingresa tu email y te enviaremos un enlace para que puedas
+              recuperar tu cuenta.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={onSubmit} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  name="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  placeholder="tu@email.com"
+                />
+              </div>
+              <Button type="submit" disabled={isSubmitting} className="w-full">
+                {isSubmitting ? "Enviando enlace…" : "Enviar enlace"}
+              </Button>
+            </form>
+          </CardContent>
+          <CardFooter className="text-sm text-center block">
+            <p>
+              ¿Recordaste tu contraseña?{" "}
+              <Link href="/login" className="text-blue-600 hover:underline">
+                Inicia sesión
+              </Link>
+            </p>
+          </CardFooter>
+        </Card>
       </main>
     </>
   );
