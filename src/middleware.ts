@@ -3,33 +3,38 @@ import type { NextRequest } from "next/server";
 import { getToken } from "next-auth/jwt";
 import { NEXTAUTH_SECRET } from "@/config";
 
-// Rutas públicas
-const PUBLIC_PATHS = [
-  "/login",
-  "/register",
-  "/forgot-password",
-  "/reset-password",
-  "/prueba",  // Agregamos la ruta de prueba
-  "/user"
-];
+const AUTH_PATHS = ["/login", "/register", "/forgot-password", "/reset-password"];
+const PROTECTED_ROOT = "/dashboard";
 
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
-  if (PUBLIC_PATHS.some((p) => pathname.startsWith(p))) {
-    return NextResponse.next();
+  const token = await getToken({ req, secret: NEXTAUTH_SECRET });
+  const isAuthenticated = !!token;
+
+  if (isAuthenticated) {
+    // Si está autenticado y va a una ruta de autenticación, redirigir al dashboard
+    if (AUTH_PATHS.some((p) => pathname.startsWith(p))) {
+      return NextResponse.redirect(new URL(PROTECTED_ROOT, req.url));
+    }
+    // Si está autenticado y va a la raíz, redirigir al dashboard
+    if (pathname === "/") {
+      return NextResponse.redirect(new URL(PROTECTED_ROOT, req.url));
+    }
+  } else {
+    // Si no está autenticado y va a una ruta protegida, redirigir al login
+    // La raíz se considera protegida en este caso.
+    const isPublic = AUTH_PATHS.some((p) => pathname.startsWith(p));
+    if (!isPublic) {
+      const url = req.nextUrl.clone();
+      url.pathname = "/login";
+      if (pathname !== "/") {
+        url.searchParams.set("callbackUrl", pathname);
+      }
+      return NextResponse.redirect(url);
+    }
   }
 
-  const token = (await getToken({
-    req,
-    secret: NEXTAUTH_SECRET,
-  })) as (Record<string, unknown> & { accessToken?: string }) | null;
-  if (!token || !token.accessToken) {
-    const url = req.nextUrl.clone();
-    url.pathname = "/login";
-    url.searchParams.set("callbackUrl", pathname);
-    return NextResponse.redirect(url);
-  }
   return NextResponse.next();
 }
 
