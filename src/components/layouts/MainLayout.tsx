@@ -1,4 +1,4 @@
-import Sidebar from "@/components/common/sidebar"; // Asegúrate de crear este componente
+import Sidebar from "@/components/common/sidebar";
 
 export default function MainLayout({
   children,

@@ -2,16 +2,15 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from ".
 
 interface ColumnConfig {
   key: string;
-  label: string;
+  label:string;
   type?: 'normal' | 'link' | 'badge';  
-  linkUrl?: string | ((value: any, row: any) => string);  // Puede ser string fijo o función que genere URL por fila
-  render?: (value: any, row: any) => React.ReactNode;
+  linkUrl?: string | ((value: unknown, row: Record<string, unknown>) => string);
+  render?: (value: unknown, row: Record<string, unknown>) => React.ReactNode;
 }
 
 interface DataTableProps {
   columns?: ColumnConfig[] | string[];
-  data?: any[];
-  color?: string;
+  data?: Record<string, unknown>[];
 }
 
 // Configuración de columnas más clara y comprensible
@@ -102,15 +101,15 @@ const defaultData = [
   }
 ];
 
-export default function tableComponent({ columns = defaultColumns, data = defaultData, color = 'blue' }: DataTableProps) {
+export default function tableComponent({ columns = defaultColumns, data = defaultData }: DataTableProps) {
   // Normalizar columnas (si vienen como string[], convertir a ColumnConfig[])
   const normalizedColumns = Array.isArray(columns) && typeof columns[0] === 'string' 
     ? (columns as string[]).map(col => ({ key: col.toLowerCase().replace(' ', ''), label: col, type: 'normal' as const }))
     : columns as ColumnConfig[];
 
   // Función más clara para renderizar cada celda según su tipo
-  const renderCell = (column: ColumnConfig, row: any) => {
-    const value = row[column.key];
+  const renderCell = (column: ColumnConfig, row: Record<string, unknown>) => {
+    const value = row[column.key] as string;
     
     // Si tiene render personalizado, usarlo
     if (column.render) {

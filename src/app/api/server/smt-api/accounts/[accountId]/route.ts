@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import type { AxiosError } from "axios";
-import { ensureSession } from "@/../utils/api.utils";
+import { ensureSession } from "@/utils/api.utils";
 import { smtApiServer } from "@/api/smt-api";
 
 export const dynamic = "force-dynamic";

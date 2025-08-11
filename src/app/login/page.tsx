@@ -2,7 +2,7 @@
 
 import { useState, useEffect, Suspense } from "react";
 import { signIn } from "next-auth/react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { toast, Toaster } from "sonner";
 import Link from "next/link";
 import { 
@@ -14,7 +14,6 @@ import {
   LockClosedIcon
 } from "@heroicons/react/24/outline";
 import { sendEmailConfirmation } from "@/api/auth";
-import TableComponent from "@/components/common/tableComponent";
 
 
 function LoginContent() {
@@ -24,9 +23,8 @@ function LoginContent() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isResending, setIsResending] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
+  const [showConfirmationError, setShowConfirmationError] = useState(false);
   const router = useRouter();
-  const params = useSearchParams();
-  const errorMsg = params?.get("error") || "";
 
   // Cargar preferencia de tema
   useEffect(() => {
@@ -46,15 +44,6 @@ function LoginContent() {
     }
   }, [isDarkMode]);
 
-  // Rellenar el email si viene de un error de confirmación
-  useEffect(() => {
-    const emailFromStorage = localStorage.getItem("emailForConfirmation");
-    if (errorMsg === "Email not confirmed" && emailFromStorage) {
-      setEmail(emailFromStorage);
-    }
-    localStorage.removeItem("emailForConfirmation");
-  }, [errorMsg]);
-
   const toggleTheme = () => {
     setIsDarkMode(!isDarkMode);
   };
@@ -62,9 +51,7 @@ function LoginContent() {
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsSubmitting(true);
-    console.log("Logging in user:", { email, password });
-
-    localStorage.setItem("emailForConfirmation", email);
+    setShowConfirmationError(false); // Reset on new submission
 
     const res = await signIn("credentials", {
       redirect: false,
@@ -72,13 +59,16 @@ function LoginContent() {
       password,
     });
 
+    setIsSubmitting(false);
+
     if (res?.ok) {
       toast.success("¡Bienvenido de vuelta!");
       router.push("/dashboard");
     } else {
-      setIsSubmitting(false);
-      if (errorMsg !== "Email not confirmed") {
-        toast.error("Credenciales incorrectas");
+      if (res?.error === "Email not confirmed") {
+        setShowConfirmationError(true);
+      } else {
+        toast.error(res?.error || "Credenciales incorrectas");
       }
     }
   };
@@ -231,7 +221,7 @@ function LoginContent() {
             </form>
 
             {/* Mensaje de error de confirmación */}
-            {errorMsg === "Email not confirmed" && (
+            {showConfirmationError && (
               <div className="mt-6 p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
                 <div className="flex items-start space-x-3">
                   <div className="flex-shrink-0">
@@ -253,15 +243,6 @@ function LoginContent() {
                     </button>
                   </div>
                 </div>
-              </div>
-            )}
-
-            {/* Otros mensajes de error */}
-            {errorMsg && errorMsg !== "Email not confirmed" && (
-              <div className="mt-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
-                <p className="text-sm text-red-700 dark:text-red-300 text-center">
-                  {errorMsg}
-                </p>
               </div>
             )}
 
