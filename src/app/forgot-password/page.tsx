@@ -1,12 +1,12 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { forgotPassword } from '@/services/auth';
-import { toast, Toaster } from 'sonner';
-import Link from 'next/link';
+import { useState } from "react";
+import { forgotPassword } from "@/api/auth";
+import { toast, Toaster } from "sonner";
+import Link from "next/link";
 
 export default function ForgotPasswordPage() {
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -15,11 +15,11 @@ export default function ForgotPasswordPage() {
 
     try {
       await forgotPassword(email);
-      toast.success('Se ha enviado un correo para restablecer tu contraseña');
-      setEmail('');
+      toast.success("Se ha enviado un correo para restablecer tu contraseña");
+      setEmail("");
     } catch (error) {
-      console.error('Forgot password error:', error);
-      toast.error('No se pudo enviar el correo. ¿El email es correcto?');
+      console.error("Forgot password error:", error);
+      toast.error("No se pudo enviar el correo. ¿El email es correcto?");
     } finally {
       setIsSubmitting(false);
     }
@@ -32,7 +32,8 @@ export default function ForgotPasswordPage() {
       <main className="max-w-md mx-auto p-6">
         <h1 className="text-2xl font-bold mb-4">Restablecer contraseña</h1>
         <p className="mb-4 text-sm text-gray-600">
-          Ingresa tu email y te enviaremos un enlace para restablecer tu contraseña.
+          Ingresa tu email y te enviaremos un enlace para restablecer tu
+          contraseña.
         </p>
 
         <form onSubmit={onSubmit} className="space-y-4">
@@ -56,12 +57,12 @@ export default function ForgotPasswordPage() {
             disabled={isSubmitting}
             className="w-full py-2 bg-blue-600 text-white rounded disabled:opacity-50"
           >
-            {isSubmitting ? 'Enviando…' : 'Enviar enlace'}
+            {isSubmitting ? "Enviando…" : "Enviar enlace"}
           </button>
         </form>
 
         <p className="mt-6 text-sm text-center">
-          ¿Ya te acordaste?{' '}
+          ¿Ya te acordaste?{" "}
           <Link href="/login" className="text-blue-600 hover:underline">
             Iniciar sesión
           </Link>

@@ -1,15 +1,15 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { register } from '@/services/auth';
-import { toast, Toaster } from 'sonner';
-import Link from 'next/link';
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { register } from "@/api/auth";
+import { toast, Toaster } from "sonner";
+import Link from "next/link";
 
 export default function RegisterPage() {
-  const [username, setUsername] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
 
@@ -19,10 +19,12 @@ export default function RegisterPage() {
 
     try {
       await register({ username, email, password });
-      toast.success('¡Registro exitoso! Revisa tu email para confirmar tu cuenta.');
+      toast.success(
+        "¡Registro exitoso! Revisa tu email para confirmar tu cuenta."
+      );
       // Redirect to login page after a short delay
       setTimeout(() => {
-        router.push('/login');
+        router.push("/login");
       }, 3000);
     } catch (error) {
       // Definimos un tipo para el objeto de error que esperamos de Strapi/Axios
@@ -37,10 +39,12 @@ export default function RegisterPage() {
       };
 
       const apiError = error as ApiError;
-      const errorMsg = apiError.response?.data?.error?.message || 'Hubo un error en el registro.';
+      const errorMsg =
+        apiError.response?.data?.error?.message ||
+        "Hubo un error en el registro.";
 
-      if (errorMsg.includes('Email or Username are already taken')) {
-        toast.error('El email o nombre de usuario ya están en uso.');
+      if (errorMsg.includes("Email or Username are already taken")) {
+        toast.error("El email o nombre de usuario ya están en uso.");
       } else {
         toast.error(errorMsg);
       }
@@ -105,12 +109,12 @@ export default function RegisterPage() {
             disabled={isSubmitting}
             className="w-full py-2 bg-blue-600 text-white rounded disabled:opacity-50"
           >
-            {isSubmitting ? 'Registrando…' : 'Registrarse'}
+            {isSubmitting ? "Registrando…" : "Registrarse"}
           </button>
         </form>
 
         <p className="mt-6 text-sm text-center">
-          ¿Ya tienes cuenta?{' '}
+          ¿Ya tienes cuenta?{" "}
           <Link href="/login" className="text-blue-600 hover:underline">
             Inicia sesión
           </Link>

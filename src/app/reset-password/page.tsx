@@ -1,25 +1,25 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { useSearchParams, useRouter } from 'next/navigation';
-import { resetPassword } from '@/services/auth';
-import { toast, Toaster } from 'sonner';
-import Link from 'next/link';
+import { useState, useEffect, Suspense } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
+import { resetPassword } from "@/api/auth";
+import { toast, Toaster } from "sonner";
+import Link from "next/link";
 
-export default function ResetPasswordPage() {
-  const [password, setPassword] = useState('');
-  const [passwordConfirmation, setPasswordConfirmation] = useState('');
+function ResetPasswordContent() {
+  const [password, setPassword] = useState("");
+  const [passwordConfirmation, setPasswordConfirmation] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [code, setCode] = useState<string | null>(null);
   const searchParams = useSearchParams();
   const router = useRouter();
 
   useEffect(() => {
-    const resetCode = searchParams?.get('code');
+    const resetCode = searchParams?.get("code");
     if (resetCode) {
       setCode(resetCode);
     } else {
-      toast.error('Código de reseteo no encontrado.');
+      toast.error("Código de reseteo no encontrado.");
       // Opcional: redirigir si no hay código
       // router.push('/login');
     }
@@ -29,23 +29,25 @@ export default function ResetPasswordPage() {
     e.preventDefault();
 
     if (password !== passwordConfirmation) {
-      toast.error('Las contraseñas no coinciden');
+      toast.error("Las contraseñas no coinciden");
       return;
     }
     if (!code) {
-      toast.error('Falta el código de reseteo.');
+      toast.error("Falta el código de reseteo.");
       return;
     }
 
     setIsSubmitting(true);
 
     try {
-      await resetPassword(code, password, passwordConfirmation);
-      toast.success('Contraseña actualizada con éxito');
-      setTimeout(() => router.push('/login'), 2000);
+      await resetPassword({ code, password, passwordConfirmation });
+      toast.success("Contraseña actualizada con éxito");
+      setTimeout(() => router.push("/login"), 2000);
     } catch (error) {
-      console.error('Reset password error:', error);
-      toast.error('No se pudo actualizar la contraseña. El código podría ser inválido o haber expirado.');
+      console.error("Reset password error:", error);
+      toast.error(
+        "No se pudo actualizar la contraseña. El código podría ser inválido o haber expirado."
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -74,7 +76,10 @@ export default function ResetPasswordPage() {
             />
           </div>
           <div>
-            <label htmlFor="passwordConfirmation" className="block text-sm font-medium">
+            <label
+              htmlFor="passwordConfirmation"
+              className="block text-sm font-medium"
+            >
               Confirmar contraseña
             </label>
             <input
@@ -93,7 +98,7 @@ export default function ResetPasswordPage() {
             disabled={isSubmitting || !code}
             className="w-full py-2 bg-blue-600 text-white rounded disabled:opacity-50"
           >
-            {isSubmitting ? 'Actualizando…' : 'Actualizar contraseña'}
+            {isSubmitting ? "Actualizando…" : "Actualizar contraseña"}
           </button>
         </form>
 
@@ -104,5 +109,13 @@ export default function ResetPasswordPage() {
         </p>
       </main>
     </>
+  );
+}
+
+export default function ResetPasswordPage() {
+  return (
+    <Suspense fallback={<div className="p-6">Cargando…</div>}>
+      <ResetPasswordContent />
+    </Suspense>
   );
 }

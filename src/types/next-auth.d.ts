@@ -1,15 +1,16 @@
-import { DefaultSession, DefaultUser } from 'next-auth';
-import { JWT as DefaultJWT } from 'next-auth/jwt';
+import { DefaultSession, DefaultUser } from "next-auth";
+import { JWT as DefaultJWT } from "next-auth/jwt";
 
 // Extend the built-in types of NextAuth
-declare module 'next-auth' {
+declare module "next-auth" {
   /**
    * The shape of the user object returned in the session.
    * Extends the default session to include our custom properties.
    */
   interface Session extends DefaultSession {
-    accessToken?: string;
-    user: DefaultSession['user'] & {
+    accessToken?: string; // access_token Nest
+    refreshToken?: string; // refresh_token Nest
+    user: DefaultSession["user"] & {
       id: string | number;
       roles?: string[];
       isVerified?: boolean;
@@ -25,10 +26,11 @@ declare module 'next-auth' {
     roles?: string[];
     isVerified?: boolean;
     accessToken?: string;
+    refreshToken?: string;
   }
 }
 
-declare module 'next-auth/jwt' {
+declare module "next-auth/jwt" {
   /**
    * The shape of the token that is stored in the JWT.
    * Extends the default JWT to include our custom properties.
@@ -36,6 +38,7 @@ declare module 'next-auth/jwt' {
   interface JWT extends DefaultJWT {
     id: string | number;
     accessToken?: string;
+    refreshToken?: string;
     roles?: string[];
     isVerified?: boolean;
   }
