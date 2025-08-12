@@ -11,6 +11,11 @@ const REFRESH_THRESHOLD = 60; // 1 minuto
 interface ExtendedJWT extends JWT {
   // 'id' es requerido en JWT extendido para evitar incompatibilidad, usar union con existente
   id: string | number; // NextAuth core espera id declarado en augmentations
+  email?: string;
+  name?: string;
+  username?: string;
+  firstName?: string;
+  lastName?: string;
   accessToken?: string;
   refreshToken?: string;
   accessTokenExpires?: number; // epoch seconds
@@ -36,17 +41,40 @@ export const authOptions: NextAuthOptions = {
           throw new Error("Please provide email and password");
         }
         try {
-          const { user, access_token, refresh_token } = await login({
+          const loginResponse = await login({
             email: credentials.email,
             password: credentials.password,
           });
+          console.log("Login response completa:", loginResponse);
+
+          const { user, access_token, refresh_token } = loginResponse;
+          console.log("Datos extraídos:", {
+            user,
+            access_token,
+            refresh_token,
+          });
+
           if (user && access_token) {
-            return {
-              ...user,
+            const userToReturn = {
+              id: user.userID, // Mapear userID del backend a id que espera NextAuth
+              name: user.username || `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email,
+              email: user.email,
+              image: null, // No hay imagen en el backend
+              // Campos personalizados
+              username: user.username,
+              firstName: user.firstName,
+              lastName: user.lastName,
+              isVerified: user.isVerified,
+              roles: user.userRoles || [],
               accessToken: access_token,
               refreshToken: refresh_token,
             } as User;
+            console.log("Usuario que se retorna:", userToReturn);
+            return userToReturn;
           }
+          console.log(
+            "No se pudo crear el usuario - falta user o access_token"
+          );
           return null;
         } catch (err) {
           if (isAxiosError(err)) {
@@ -70,22 +98,36 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async jwt({ token, user }) {
       const jwtToken = token as ExtendedJWT;
+      console.log("token", jwtToken);
+      console.log("user callback", user);
 
-      // Primer login
+      // Primer login - cuando user está presente
       if (user) {
+        console.log("Usuario en primer login:", user);
         const u = user as User & {
           accessToken?: string;
           refreshToken?: string;
           id: string | number;
+          username?: string;
+          firstName?: string;
+          lastName?: string;
           roles?: string[];
           isVerified?: boolean;
         };
+        
+        // Guardar todos los datos del usuario en el token
         jwtToken.accessToken = u.accessToken;
         jwtToken.refreshToken = u.refreshToken;
         jwtToken.id = u.id;
+        jwtToken.email = u.email;
+        jwtToken.name = u.name;
+        jwtToken.username = u.username;
+        jwtToken.firstName = u.firstName;
+        jwtToken.lastName = u.lastName;
         if (u.roles) jwtToken.roles = u.roles;
         if (typeof u.isVerified !== "undefined")
           jwtToken.isVerified = u.isVerified;
+
         // Decodificar expiración del access token (JWT estándar) para programar refresh
         if (u.accessToken) {
           try {
@@ -98,6 +140,7 @@ export const authOptions: NextAuthOptions = {
         return jwtToken;
       }
 
+      // Requests subsecuentes - user es undefined, pero el token persiste los datos
       // Refresh automático si está cerca de expirar
       if (jwtToken.accessToken && jwtToken.accessTokenExpires) {
         const now = Math.floor(Date.now() / 1000);
@@ -132,6 +175,11 @@ export const authOptions: NextAuthOptions = {
       session.accessToken = t.accessToken;
       session.refreshToken = t.refreshToken;
       if (t.id !== undefined) session.user.id = t.id as string | number;
+      if (t.email) session.user.email = t.email;
+      if (t.name) session.user.name = t.name;
+      if (t.username) session.user.username = t.username;
+      if (t.firstName) session.user.firstName = t.firstName;
+      if (t.lastName) session.user.lastName = t.lastName;
       if (t.roles) session.user.roles = t.roles;
       if (typeof t.isVerified !== "undefined")
         session.user.isVerified = t.isVerified;

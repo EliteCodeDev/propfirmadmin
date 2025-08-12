@@ -3,7 +3,7 @@ import {
   ensureSession,
   backendUrl,
   pickAllowedHeaders,
-} from "../../../../utils/api.utils";
+} from "@/utils/api.utils";
 
 // Lista blanca de prefijos permitidos (rutas de la API backend a las que se puede acceder vía BFF)
 const ALLOWED_PREFIXES = [
@@ -12,6 +12,7 @@ const ALLOWED_PREFIXES = [
   "/challenges",
   "/challenge-templates",
   "/smt-api",
+  "plans",
 ];
 
 export const dynamic = "force-dynamic";
@@ -39,7 +40,7 @@ async function proxy(req: NextRequest) {
     return NextResponse.json({ message: "Not allowed" }, { status: 403 });
   }
 
-  const target = backendUrl(`/api${subPath}`);
+  const target = backendUrl(`${subPath}`);
   const method = req.method.toUpperCase();
   const headers = pickAllowedHeaders(req);
   headers["Authorization"] = `Bearer ${auth.session.accessToken}`;

@@ -1,31 +1,41 @@
 import client from "@/api/client";
 
-// Tipos base aproximados (deberían refinarse según DTOs reales si se exponen al front)
+// Tipos basados en las entidades del backend
 export interface ChallengeCategory {
-  id: string;
+  categoryID: string;
   name: string;
-  description?: string;
 }
+
 export interface ChallengePlan {
-  id: string;
+  planID: string;
   name: string;
-  description?: string;
+  isActive: boolean;
+  wooID?: number;
 }
+
 export interface ChallengeBalance {
-  id: string;
-  amount: number;
-  description?: string;
+  balanceID: string;
+  name: string;
+  isActive: boolean;
+  hasDiscount: boolean;
+  discount?: string;
+  balance?: number;
 }
+
 export interface ChallengeRelation {
-  id: string;
-  name: string;
-  description?: string;
+  relationID: string;
+  categoryID: string;
+  planID: string;
+  balanceID?: string;
+  category?: ChallengeCategory;
+  plan?: ChallengePlan;
+  balance?: ChallengeBalance;
+  stages?: RelationStage[];
 }
+
 export interface ChallengeStage {
-  id: string;
+  stageID: string;
   name: string;
-  order?: number;
-  description?: string;
 }
 export interface StageRule {
   id: string;
@@ -38,24 +48,48 @@ export interface StageParameter {
   value: string | number;
 }
 export interface RelationStage {
-  id: string;
-  relationId?: string;
-  stageId?: string;
+  relationStageID: string;
+  stageID: string;
+  relationID: string;
+  numPhase?: number;
+  stage?: ChallengeStage;
+  relation?: ChallengeRelation;
 }
 
 // Payloads genéricos
 
-//omit es para no incluir el campo "id"
-//partial es para hacer todos los campos opcionales
-export type CreateCategoryPayload = Omit<ChallengeCategory, "id">;
+// Tipos para crear y actualizar basados en los DTOs del backend
+export interface CreateCategoryPayload {
+  name: string;
+}
 export type UpdateCategoryPayload = Partial<CreateCategoryPayload>;
-export type CreatePlanPayload = Omit<ChallengePlan, "id">;
+
+export interface CreatePlanPayload {
+  name: string;
+  isActive?: boolean;
+  wooID?: number;
+}
 export type UpdatePlanPayload = Partial<CreatePlanPayload>;
-export type CreateBalancePayload = Omit<ChallengeBalance, "id">;
+
+export interface CreateBalancePayload {
+  name: string;
+  isActive?: boolean;
+  hasDiscount?: boolean;
+  discount?: string;
+  balance?: number;
+}
 export type UpdateBalancePayload = Partial<CreateBalancePayload>;
-export type CreateRelationPayload = Omit<ChallengeRelation, "id">;
+
+export interface CreateRelationPayload {
+  categoryID: string;
+  planID: string;
+  balanceID?: string;
+}
 export type UpdateRelationPayload = Partial<CreateRelationPayload>;
-export type CreateStagePayload = Omit<ChallengeStage, "id">;
+
+export interface CreateStagePayload {
+  name: string;
+}
 export type UpdateStagePayload = Partial<CreateStagePayload>;
 export type CreateRulePayload = Omit<StageRule, "id">;
 export type UpdateRulePayload = Partial<CreateRulePayload>;
@@ -63,7 +97,11 @@ export type CreateParameterPayload = Omit<StageParameter, "value"> & {
   value: string | number;
 };
 export type UpdateParameterPayload = Partial<CreateParameterPayload>;
-export type CreateRelationStagePayload = Omit<RelationStage, "id">;
+export interface CreateRelationStagePayload {
+  stageID: string;
+  relationID: string;
+  numPhase?: number;
+}
 export type UpdateRelationStagePayload = Partial<CreateRelationStagePayload>;
 
 export const challengeTemplatesApi = {
@@ -79,7 +117,7 @@ export const challengeTemplatesApi = {
   },
   listCategories: async (): Promise<ChallengeCategory[]> => {
     const { data } = await client.get("/challenge-templates/categories");
-    return data;
+    return data.data;
   },
   getCategory: async (id: string): Promise<ChallengeCategory> => {
     const { data } = await client.get(`/challenge-templates/categories/${id}`);
@@ -109,7 +147,7 @@ export const challengeTemplatesApi = {
   },
   listPlans: async (): Promise<ChallengePlan[]> => {
     const { data } = await client.get("/challenge-templates/plans");
-    return data;
+    return data.data;
   },
   getPlan: async (id: string): Promise<ChallengePlan> => {
     const { data } = await client.get(`/challenge-templates/plans/${id}`);
@@ -142,7 +180,7 @@ export const challengeTemplatesApi = {
   },
   listBalances: async (): Promise<ChallengeBalance[]> => {
     const { data } = await client.get("/challenge-templates/balances");
-    return data;
+    return data.data;
   },
   getBalance: async (id: string): Promise<ChallengeBalance> => {
     const { data } = await client.get(`/challenge-templates/balances/${id}`);
@@ -175,7 +213,7 @@ export const challengeTemplatesApi = {
   },
   listRelations: async (): Promise<ChallengeRelation[]> => {
     const { data } = await client.get("/challenge-templates/relations");
-    return data;
+    return data.data;
   },
   getRelation: async (id: string): Promise<ChallengeRelation> => {
     const { data } = await client.get(`/challenge-templates/relations/${id}`);
@@ -205,7 +243,7 @@ export const challengeTemplatesApi = {
   },
   listStages: async (): Promise<ChallengeStage[]> => {
     const { data } = await client.get("/challenge-templates/stages");
-    return data;
+    return data.data;
   },
   getStage: async (id: string): Promise<ChallengeStage> => {
     const { data } = await client.get(`/challenge-templates/stages/${id}`);
@@ -233,7 +271,7 @@ export const challengeTemplatesApi = {
   },
   listRules: async (): Promise<StageRule[]> => {
     const { data } = await client.get("/challenge-templates/rules");
-    return data;
+    return data.data;
   },
   getRule: async (id: string): Promise<StageRule> => {
     const { data } = await client.get(`/challenge-templates/rules/${id}`);
@@ -266,7 +304,7 @@ export const challengeTemplatesApi = {
   },
   listParameters: async (): Promise<StageParameter[]> => {
     const { data } = await client.get("/challenge-templates/parameters");
-    return data;
+    return data.data;
   },
   getParameter: async (
     ruleId: string,
@@ -310,7 +348,7 @@ export const challengeTemplatesApi = {
   },
   listRelationStages: async (): Promise<RelationStage[]> => {
     const { data } = await client.get("/challenge-templates/relation-stages");
-    return data;
+    return data.data;
   },
   getRelationStage: async (id: string): Promise<RelationStage> => {
     const { data } = await client.get(

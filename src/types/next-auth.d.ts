@@ -12,6 +12,9 @@ declare module "next-auth" {
     refreshToken?: string; // refresh_token Nest
     user: DefaultSession["user"] & {
       id: string | number;
+      username?: string;
+      firstName?: string;
+      lastName?: string;
       roles?: string[];
       isVerified?: boolean;
     };
@@ -23,6 +26,9 @@ declare module "next-auth" {
    */
   interface User extends DefaultUser {
     id: string | number;
+    username?: string;
+    firstName?: string;
+    lastName?: string;
     roles?: string[];
     isVerified?: boolean;
     accessToken?: string;
