@@ -1,16 +1,19 @@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/table";
 
-interface ColumnConfig {
+export interface ColumnConfig {
   key: string;
   label:string;
   type?: 'normal' | 'link' | 'badge';  
+  // Widened function parameter types to avoid contravariance issues when callers specify narrower types
   linkUrl?: string | ((value: unknown, row: Record<string, unknown>) => string);
   render?: (value: unknown, row: Record<string, unknown>) => React.ReactNode;
 }
 
-interface DataTableProps {
+export interface DataTableProps {
   columns?: ColumnConfig[] | string[];
   data?: Record<string, unknown>[];
+  // Optional color prop (currently unused visually) to align with call sites
+  color?: string;
 }
 
 // Configuración de columnas más clara y comprensible
@@ -109,7 +112,8 @@ export default function tableComponent({ columns = defaultColumns, data = defaul
 
   // Función más clara para renderizar cada celda según su tipo
   const renderCell = (column: ColumnConfig, row: Record<string, unknown>) => {
-    const value = row[column.key] as string;
+    const raw = row[column.key];
+    const value = typeof raw === 'string' ? raw : String(raw ?? "");
     
     // Si tiene render personalizado, usarlo
     if (column.render) {

@@ -12,7 +12,8 @@ const ALLOWED_PREFIXES = [
   "/challenges",
   "/challenge-templates",
   "/smt-api",
-  "plans",
+  "/plans",
+  "/withdrawals",
 ];
 
 export const dynamic = "force-dynamic";
