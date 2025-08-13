@@ -178,7 +178,6 @@ export default function UserPage() {
               <TableComponent
                 columns={propAccountsColumns}
                 data={propAccountsData}
-                color="blue"
               />
             </div>
           </div>
