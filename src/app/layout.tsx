@@ -1,14 +1,26 @@
-// app/layout.tsx
+import type { Metadata } from 'next';
+import { Inter } from 'next/font/google';
+import { ThemeProvider } from '../hooks/useTheme';
 import './globals.css';
-import { AuthProvider } from './providers';
 
-export const metadata = { title: 'PropAdmin' };
+const inter = Inter({ subsets: ['latin'] });
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export const metadata: Metadata = {
+  title: 'PropFirm Dashboard',
+  description: 'Sistema de gestión de trading y retiros',
+};
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <html lang="es" suppressHydrationWarning>
-      <body>
-        <AuthProvider>{children}</AuthProvider>
+      <body className={inter.className} suppressHydrationWarning>
+        <ThemeProvider>
+          {children}
+        </ThemeProvider>
       </body>
     </html>
   );
