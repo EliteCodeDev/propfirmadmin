@@ -47,7 +47,21 @@ export const authOptions: NextAuthOptions = {
           });
           console.log("Login response completa:", loginResponse);
 
-          const { user, access_token, refresh_token } = loginResponse;
+          const { user, access_token, refresh_token } = loginResponse as {
+            user: {
+              userID?: string | number;
+              id?: string | number;
+              email?: string;
+              username?: string;
+              firstName?: string;
+              lastName?: string;
+              isVerified?: boolean;
+              role?: { name?: string } | null;
+              userRoles?: string[];
+            } | null;
+            access_token?: string;
+            refresh_token?: string;
+          };
           console.log("Datos extraídos:", {
             user,
             access_token,
@@ -56,7 +70,7 @@ export const authOptions: NextAuthOptions = {
 
           if (user && access_token) {
             // Normalizamos el usuario del backend (puede venir con userID, role, etc.)
-            const rawUser: any = user as any;
+            const rawUser = user;
             // Extraer el rol principal desde el backend
             const roleName: string | undefined = rawUser?.role?.name;
             // Bloquear acceso a usuarios sin rol o con rol 'user'

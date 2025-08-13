@@ -3,7 +3,7 @@
 import TableComponent, { type ColumnConfig } from "@/components/common/tableComponent";
 import { MagnifyingGlassIcon, TableCellsIcon, ArrowDownTrayIcon } from "@heroicons/react/24/outline";
 import { useState } from "react";
-import CardComponent from "@/components/user/cardComponent";
+// import CardComponent from "@/components/user/cardComponent";
 
 
 export default function Page() {

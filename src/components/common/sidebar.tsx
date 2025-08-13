@@ -7,8 +7,6 @@ import {
   HomeIcon,
   UserGroupIcon,
   BanknotesIcon,
-  ChartBarIcon,
-  CogIcon,
   TrophyIcon,
   ArrowRightOnRectangleIcon,
   ChevronRightIcon,
@@ -86,8 +84,8 @@ export default function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
   const displayName = [firstName, lastName].filter(Boolean).join(" ") || username || email || "Usuario";
   const initials = (firstName?.[0] || username?.[0] || email?.[0] || "U").toUpperCase();
   const roleLabel = (() => {
-    const roles = (user as any)?.roles as string[] | undefined;
-    const singleRole = (user as any)?.role?.name as string | undefined;
+    const roles = user?.roles as string[] | undefined;
+    const singleRole = (user as unknown as { role?: { name?: string } })?.role?.name as string | undefined;
     const candidate = roles?.[0] || singleRole;
     if (!candidate) return "Usuario";
     const normalized = candidate.replace(/[-_]/g, " ");
