@@ -1,23 +1,14 @@
-// Este archivo sigue siendo un Server Component
+// app/layout.tsx
 import './globals.css';
 import { AuthProvider } from './providers';
 
-export const metadata = {
-  title: 'PropAdmin',
-};
+export const metadata = { title: 'PropAdmin' };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="es">
+    <html lang="es" suppressHydrationWarning>
       <body>
-        {/* Aquí envolvemos TODO en nuestro AuthProvider (Client) */}
-        <AuthProvider>
-          {children}
-        </AuthProvider>
+        <AuthProvider>{children}</AuthProvider>
       </body>
     </html>
   );
