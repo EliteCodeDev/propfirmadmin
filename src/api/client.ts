@@ -39,7 +39,11 @@ client.interceptors.response.use(
           }
         } catch {}
       }
-      console.error("API Error Response:", error.response.data);
+      const payload = error.response.data;
+      const info = typeof payload === "object" && payload !== null && Object.keys(payload).length === 0
+        ? `(status ${status})`
+        : payload;
+      console.error("API Error Response:", info);
     } else if (error.request) {
       console.error("API Error Request:", error.request);
     } else {

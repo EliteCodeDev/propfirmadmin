@@ -9,6 +9,7 @@ import {
   BanknotesIcon,
   ChartBarIcon,
   CogIcon,
+  TrophyIcon,
   ArrowRightOnRectangleIcon,
   ChevronRightIcon,
   Bars3Icon,
@@ -32,8 +33,14 @@ const navigation = [
   { 
     name: "User Challenges", 
     href: "/user-challenges", 
-    icon: UserGroupIcon,
+  icon: TrophyIcon,
     description: "Desafíos de usuarios"
+  },
+  { 
+    name: "Usuarios", 
+    href: "/users", 
+    icon: UserGroupIcon,
+    description: "Lista de usuarios"
   },
   { 
     name: "Retiros", 
@@ -144,11 +151,11 @@ export default function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
         {/* Navigation */}
         <div className="flex-1 overflow-y-auto py-4">
           <nav className={classNames("space-y-1", isCollapsed ? "px-2" : "px-3")}>
-            {navigation.map((item) => {
+    {navigation.map((item) => {
               const isActive = pathname === item.href;
               return (
                 <Link
-                  key={item.name}
+      key={item.href}
                   href={item.href}
                   className={classNames(
                     "group flex items-center text-sm font-medium rounded-xl transition-all duration-200 relative",

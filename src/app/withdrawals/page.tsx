@@ -30,7 +30,8 @@ interface PageResponse<T> {
   totalPages: number;
 }
 
-const API_BASE = (process.env.NEXT_PUBLIC_BACKEND_URL || "").replace(/\/$/, "");
+// Usamos el BFF interno para adjuntar automáticamente el Authorization
+const BFF_BASE = "/api/server";
 
 function Badge({ status }: { status: WithdrawalStatus }) {
   const cls = {
@@ -53,7 +54,7 @@ const money = new Intl.NumberFormat("en-US", {
 
 function WithdrawalsInner() {
   const router = useRouter();
-  const { data: session, status: authStatus } = useSession();
+  const { status: authStatus } = useSession();
 
   // Hooks de estado SIEMPRE antes de cualquier retorno
   const [page, setPage] = useState<number>(1);
@@ -68,39 +69,35 @@ function WithdrawalsInner() {
     return q.toString();
   }, [page, limit, status]);
 
-  // Token del backend expuesto por NextAuth en la sesión
-  const accessToken = (session as any)?.accessToken as string | undefined;
-
-  // Construye URL de tu backend Nest (Swagger: /api/withdrawals/my-withdrawals)
-  const url = `${API_BASE}/api/withdrawals/my-withdrawals?${query}`;
+  // Construye URL vía BFF (Next API Route) -> /api/server/withdrawals/my-withdrawals
+  const url = `${BFF_BASE}/withdrawals/my-withdrawals?${query}`;
 
   // Fetcher con Bearer; SWR se desactiva si no hay token (key = null)
   const fetcher = async (u: string) => {
     const res = await fetch(u, {
-      headers: { Authorization: `Bearer ${accessToken}` },
+      // El BFF añade el Authorization automáticamente desde la sesión del servidor
       credentials: "include",
     });
     if (!res.ok) {
       const text = await res.text();
+      // Mensajes amigables para 401/403
+      if (res.status === 401) throw new Error("No autenticado (401)");
+      if (res.status === 403) throw new Error("Sin permisos para ver retiros (403)");
       throw new Error(text || `Error ${res.status}`);
     }
     return res.json();
   };
 
   const { data, error, isLoading, mutate } = useSWR<PageResponse<Withdrawal>>(
-    accessToken ? url : null,
+    authStatus === "authenticated" ? url : null,
     fetcher
   );
 
   // Redirección en efecto (no cambia el orden de hooks)
-  useEffect(() => {
-    if (authStatus === "unauthenticated" || (!accessToken && authStatus !== "loading")) {
-      router.replace("/login");
-    }
-  }, [authStatus, accessToken, router]);
+  // No hacemos redirect aquí para evitar bucles con el middleware.
 
   // UI mientras valida sesión / redirige
-  if (authStatus === "loading" || (!accessToken && authStatus !== "unauthenticated")) {
+  if (authStatus === "loading") {
     return (
       <MainLayout>
         <div className="p-6">Verificando sesión…</div>
@@ -108,26 +105,16 @@ function WithdrawalsInner() {
     );
   }
 
-  // Si está sin sesión, ya se disparó router.replace; muestra placeholder
-  if (!accessToken) {
-    return (
-      <MainLayout>
-        <div className="p-6">Redirigiendo al login…</div>
-      </MainLayout>
-    );
-  }
+  // Si está sin sesión, mostramos mensaje (el middleware protegerá rutas en navegación directa)
 
   // Normalización robusta: garantizamos que 'withdrawals' sea SIEMPRE un array
-  const withdrawals = Array.isArray(data?.data)
-    ? data!.data
-    : Array.isArray((data as any))
-    ? (data as any)
-    : Array.isArray((data as any)?.items)
-    ? (data as any).items
+  const payload: any = data as any;
+  const withdrawals: Withdrawal[] = Array.isArray(payload?.data)
+    ? (payload.data as Withdrawal[])
+    : Array.isArray(payload)
+    ? (payload as Withdrawal[])
     : [];
-
-  const totalPages =
-    (data && typeof (data as any).totalPages === "number" ? (data as any).totalPages : 1) || 1;
+  const totalPages = typeof payload?.totalPages === "number" ? payload.totalPages : 1;
 
   return (
     <MainLayout>

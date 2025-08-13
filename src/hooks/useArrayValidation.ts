@@ -38,7 +38,7 @@ export function useArrayValidation<T>(data: T[] | null | undefined) {
  * Hook para validar objetos y sus propiedades
  * Proporciona acceso seguro a propiedades anidadas
  */
-export function useObjectValidation<T extends Record<string, any>>(
+export function useObjectValidation<T extends Record<string, unknown>>(
   obj: T | null | undefined
 ) {
   return useMemo(() => {
@@ -69,7 +69,7 @@ export function useObjectValidation<T extends Record<string, any>>(
  * Hook combinado para validar arrays de objetos
  * Útil para datos de API que pueden ser arrays de objetos
  */
-export function useArrayObjectValidation<T extends Record<string, any>>(
+export function useArrayObjectValidation<T extends Record<string, unknown>>(
   data: T[] | null | undefined
 ) {
   const arrayValidation = useArrayValidation(data);
@@ -80,7 +80,7 @@ export function useArrayObjectValidation<T extends Record<string, any>>(
     safeMapWithObjectValidation: <U>(
       callback: (item: T, index: number, validation: ReturnType<typeof useObjectValidation<T>>) => U
     ) => {
-      return arrayValidation.safeMap((item, index) => {
+  return arrayValidation.safeMap((item, index) => {
         const objectValidation = {
           data: item || {} as T,
           isValid: item !== null && item !== undefined && typeof item === 'object',

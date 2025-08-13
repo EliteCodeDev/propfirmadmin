@@ -1,6 +1,6 @@
 "use client";
 
-import TableComponent from "@/components/common/tableComponent";
+import TableComponent, { type ColumnConfig } from "@/components/common/tableComponent";
 import { MagnifyingGlassIcon, TableCellsIcon, ArrowDownTrayIcon } from "@heroicons/react/24/outline";
 import { useState } from "react";
 import CardComponent from "@/components/user/cardComponent";
@@ -118,7 +118,7 @@ export default function Page() {
   // Data final filtrada
   const filteredData = getFilteredData();
 
-  const columns = [
+  const columns: ColumnConfig[] = [
     { key: 'orderId', label: 'Order ID', type: 'normal' as const },
     { key: 'method', label: 'Method', type: 'normal' as const },
     { key: 'amount', label: 'Amount', type: 'normal' as const },
@@ -128,7 +128,7 @@ export default function Page() {
       key: 'email', 
       label: 'Email', 
       type: 'link' as const,
-      linkUrl: (email: string, row: any) => `/usuario/${row.orderId}`
+  linkUrl: (value: unknown, row: Record<string, unknown>) => `/usuario/${String(row.orderId ?? "")}`
     },
     { key: 'particulars', label: 'Particulars', type: 'normal' as const },
     { key: 'status', label: 'Processed', type: 'badge' as const },
