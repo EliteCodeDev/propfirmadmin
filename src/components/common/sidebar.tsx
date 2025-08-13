@@ -22,7 +22,16 @@ import {
 import { signOut } from "next-auth/react";
 import { useTheme } from "../../hooks/useTheme";
 
-const navigation = [
+// ✅ Interfaz corregida con badge opcional
+interface NavigationItem {
+  name: string;
+  href: string;
+  icon: React.ComponentType<{ className?: string }>;
+  description: string;
+  badge?: string;
+}
+
+const navigation: NavigationItem[] = [
   { 
     name: "Dashboard", 
     href: "/dashboard", 
@@ -40,19 +49,6 @@ const navigation = [
     href: "/withdrawals", 
     icon: BanknotesIcon,
     description: "Gestión de retiros",
-    badge: "3"
-  },
-  { 
-    name: "Reportes", 
-    href: "/reports", 
-    icon: ChartBarIcon,
-    description: "Análisis y reportes"
-  },
-  { 
-    name: "Configuración", 
-    href: "/settings", 
-    icon: CogIcon,
-    description: "Ajustes del sistema"
   },
 ];
 
@@ -91,7 +87,6 @@ export default function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
     };
   }, []);
 
-  // Cerrar menú al colapsar sidebar
   useEffect(() => {
     if (isCollapsed) {
       setUserMenuOpen(false);
@@ -180,6 +175,7 @@ export default function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
                       <div className="flex-1">
                         <div className="flex items-center justify-between">
                           <span className="truncate">{item.name}</span>
+                          {/* ✅ Verificación corregida del badge */}
                           {item.badge && (
                             <span className={classNames(
                               "ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium",
@@ -191,16 +187,14 @@ export default function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
                             </span>
                           )}
                         </div>
-                        {item.description && (
-                          <p className={classNames(
-                            "text-xs mt-0.5 truncate",
-                            isActive 
-                              ? "text-indigo-100"
-                              : "text-gray-500 dark:text-gray-400"
-                          )}>
-                            {item.description}
-                          </p>
-                        )}
+                        <p className={classNames(
+                          "text-xs mt-0.5 truncate",
+                          isActive 
+                            ? "text-indigo-100"
+                            : "text-gray-500 dark:text-gray-400"
+                        )}>
+                          {item.description}
+                        </p>
                       </div>
                       
                       {isActive && (
@@ -220,34 +214,9 @@ export default function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
               );
             })}
           </nav>
-
-          {/* Quick Stats - Solo cuando no está colapsado */}
-          {!isCollapsed && (
-            <div className="mt-6 px-3">
-              <div className="bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-gray-800 dark:to-gray-800 rounded-xl p-4 border border-indigo-100 dark:border-gray-700">
-                <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-2">
-                  Resumen Rápido
-                </h3>
-                <div className="space-y-2">
-                  <div className="flex justify-between items-center">
-                    <span className="text-xs text-gray-600 dark:text-gray-400">Retiros Pendientes</span>
-                    <span className="text-xs font-medium text-orange-600 dark:text-orange-400">3</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-xs text-gray-600 dark:text-gray-400">Usuarios Activos</span>
-                    <span className="text-xs font-medium text-green-600 dark:text-green-400">147</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-xs text-gray-600 dark:text-gray-400">Balance Total</span>
-                    <span className="text-xs font-medium text-indigo-600 dark:text-indigo-400">$45,230</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
         </div>
 
-        {/* User Menu Section - MEJORADA */}
+        {/* User Menu Section */}
         <div className={classNames(
           "border-t border-gray-200 dark:border-gray-700 relative",
           isCollapsed ? "p-2" : "p-4"
@@ -255,7 +224,6 @@ export default function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
           {/* Dropdown Menu */}
           {userMenuOpen && !isCollapsed && (
             <div className="absolute bottom-full left-4 right-4 mb-2 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 py-2 z-50">
-              {/* Theme Toggle */}
               <button
                 onClick={toggleTheme}
                 className="w-full flex items-center px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200"
@@ -268,19 +236,15 @@ export default function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
                 {theme === 'light' ? 'Modo Oscuro' : 'Modo Claro'}
               </button>
 
-              {/* Divider */}
               <div className="h-px bg-gray-200 dark:bg-gray-600 my-1" />
 
-              {/* Profile */}
               <button className="w-full flex items-center px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200">
                 <UserIcon className="h-4 w-4 mr-3" />
                 Mi Perfil
               </button>
 
-              {/* Divider */}
               <div className="h-px bg-gray-200 dark:bg-gray-600 my-1" />
 
-              {/* Logout */}
               <button
                 onClick={() => signOut({ callbackUrl: '/login' })}
                 className="w-full flex items-center px-4 py-2.5 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors duration-200"
@@ -303,7 +267,6 @@ export default function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
             )}
             title={isCollapsed ? "Menú de usuario" : ""}
           >
-            {/* Avatar y info del usuario */}
             <div className="relative flex items-center">
               <div className="relative">
                 <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center">
@@ -335,7 +298,6 @@ export default function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
               )}
             </div>
 
-            {/* Tooltip for collapsed state */}
             {isCollapsed && (
               <div className="absolute left-full top-1/2 transform -translate-y-1/2 ml-2 px-2 py-1 bg-gray-900 text-white text-xs rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
                 Menú de usuario
@@ -344,7 +306,7 @@ export default function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
             )}
           </button>
 
-          {/* Menu colapsado - Solo iconos */}
+          {/* Menu colapsado */}
           {isCollapsed && (
             <div className="mt-2 space-y-1">
               <button
@@ -358,7 +320,6 @@ export default function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
                   <SunIcon className="h-5 w-5 mx-auto" />
                 )}
                 
-                {/* Tooltip */}
                 <div className="absolute left-full top-1/2 transform -translate-y-1/2 ml-2 px-2 py-1 bg-gray-900 text-white text-xs rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
                   {theme === 'light' ? 'Modo Oscuro' : 'Modo Claro'}
                   <div className="absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-1 w-2 h-2 bg-gray-900 rotate-45" />
@@ -372,7 +333,6 @@ export default function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
               >
                 <ArrowRightOnRectangleIcon className="h-5 w-5 mx-auto" />
                 
-                {/* Tooltip */}
                 <div className="absolute left-full top-1/2 transform -translate-y-1/2 ml-2 px-2 py-1 bg-gray-900 text-white text-xs rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
                   Cerrar sesión
                   <div className="absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-1 w-2 h-2 bg-gray-900 rotate-45" />
