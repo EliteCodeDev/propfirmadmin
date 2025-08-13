@@ -55,17 +55,33 @@ export const authOptions: NextAuthOptions = {
           });
 
           if (user && access_token) {
+            // Normalizamos el usuario del backend (puede venir con userID, role, etc.)
+            const rawUser: any = user as any;
+            // Extraer el rol principal desde el backend
+            const roleName: string | undefined = rawUser?.role?.name;
+            // Bloquear acceso a usuarios sin rol o con rol 'user'
+            if (!roleName || roleName === 'user') {
+              throw new Error('No tienes permisos para acceder al panel');
+            }
             const userToReturn = {
-              id: user.userID, // Mapear userID del backend a id que espera NextAuth
-              name: user.username || `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email,
-              email: user.email,
+              id: rawUser.userID ?? rawUser.id, // Mapear userID del backend a id que espera NextAuth
+              name:
+                rawUser.username ||
+                `${rawUser.firstName || ''} ${rawUser.lastName || ''}`.trim() ||
+                rawUser.email,
+              email: rawUser.email ?? undefined,
               image: null, // No hay imagen en el backend
               // Campos personalizados
-              username: user.username,
-              firstName: user.firstName,
-              lastName: user.lastName,
-              isVerified: user.isVerified,
-              roles: user.userRoles || [],
+              username: rawUser.username,
+              firstName: rawUser.firstName,
+              lastName: rawUser.lastName,
+              isVerified: rawUser.isVerified,
+              // Mapear a arreglo de roles desde el rol único del backend
+              roles: Array.isArray(rawUser?.userRoles) && rawUser?.userRoles.length
+                ? rawUser.userRoles
+                : roleName
+                  ? [roleName]
+                  : [],
               accessToken: access_token,
               refreshToken: refresh_token,
             } as User;
@@ -119,8 +135,8 @@ export const authOptions: NextAuthOptions = {
         jwtToken.accessToken = u.accessToken;
         jwtToken.refreshToken = u.refreshToken;
         jwtToken.id = u.id;
-        jwtToken.email = u.email;
-        jwtToken.name = u.name;
+  jwtToken.email = (u.email ?? undefined) as string | undefined;
+  jwtToken.name = (u.name ?? undefined) as string | undefined;
         jwtToken.username = u.username;
         jwtToken.firstName = u.firstName;
         jwtToken.lastName = u.lastName;
