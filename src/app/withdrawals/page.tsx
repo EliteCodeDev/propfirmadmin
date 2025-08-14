@@ -47,7 +47,7 @@ function Badge({ status }: { status: WithdrawalStatus | string }) {
       ? "bg-red-100 text-red-800"
       : "bg-gray-100 text-gray-800";
   return (
-  <span className={`px-1.5 py-[1px] rounded-full text-[10px] leading-tight font-normal ${cls}`}>
+    <span className={`px-1.5 py-[1px] rounded-full text-[10px] leading-tight font-normal ${cls}`}>
       {up}
     </span>
   );
