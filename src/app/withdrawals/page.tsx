@@ -47,7 +47,7 @@ function Badge({ status }: { status: WithdrawalStatus | string }) {
       ? "bg-red-100 text-red-800"
       : "bg-gray-100 text-gray-800";
   return (
-    <span className={`px-2 py-1 rounded-full text-xs font-medium ${cls}`}>
+    <span className={`px-1.5 py-[1px] rounded-full text-[10px] leading-tight font-normal ${cls}`}>
       {up}
     </span>
   );
@@ -271,6 +271,7 @@ function WithdrawalsInner() {
 
         {(() => {
           const columns: ColumnConfig[] = [
+            { key: "withdrawalID", label: "ID", type: "normal" },
             { key: "createdAt", label: "Fecha", type: "normal" },
             { key: "amount", label: "Monto", type: "normal", render: (v) => String(v) },
             { key: "wallet", label: "Wallet", type: "normal" },
@@ -281,6 +282,7 @@ function WithdrawalsInner() {
           ];
 
           const rows = withdrawals.map((w) => ({
+            withdrawalID: w.withdrawalID ?? "-",
             createdAt: w.createdAt ? new Date(w.createdAt).toLocaleString() : "-",
             amount: money.format(Number(w.amount ?? 0)),
             wallet: w.wallet ?? "-",
