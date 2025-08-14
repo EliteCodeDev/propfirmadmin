@@ -159,7 +159,7 @@ export default function tableComponent({ columns = defaultColumns, data = defaul
   };
 
   return (
-    <div className="bg-gray-900 rounded-lg overflow-hidden">
+    <div className="bg-gray-900 rounded-lg overflow-x-auto">
       <Table>
         <TableHeader>
           <TableRow className="bg-gray-800 border-gray-700">
