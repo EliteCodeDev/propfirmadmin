@@ -153,6 +153,22 @@ function WithdrawalsInner() {
     fetcher
   );
 
+  // Derivar httpStatus de forma estable para usar en efectos antes de cualquier return condicional
+  const httpStatus: number | undefined = ((): number | undefined => {
+    if (error && typeof error === 'object' && error !== null) {
+      const e = error as Partial<HttpError>;
+      if (typeof e.status === 'number') return e.status;
+    }
+    return undefined;
+  })();
+
+  // Si el usuario no tiene permisos para ver "Todos (admin)", alterna automáticamente a "Mis retiros"
+  useEffect(() => {
+    if (httpStatus === 403 && scope === "all") {
+      setScope("mine");
+    }
+  }, [httpStatus, scope]);
+
   // Redirección si no hay sesión
   useEffect(() => {
     if (authStatus === "unauthenticated" || (!accessToken && authStatus !== "loading")) {
@@ -179,23 +195,8 @@ function WithdrawalsInner() {
   const pageObj = unwrapPage<Withdrawal>(data as unknown);
   const withdrawals = pageObj.items;
   const totalPages = pageObj.totalPages;
-  
-  const httpStatus: number | undefined = ((): number | undefined => {
-    if (error && typeof error === 'object' && error !== null) {
-      const e = error as Partial<HttpError>;
-      if (typeof e.status === 'number') return e.status;
-    }
-    return undefined;
-  })();
   const isForbidden = httpStatus === 403;
   const isServerErr = httpStatus === 500;
-
-  // Si el usuario no tiene permisos para ver "Todos (admin)", alterna automáticamente a "Mis retiros"
-  useEffect(() => {
-    if (httpStatus === 403 && scope === "all") {
-      setScope("mine");
-    }
-  }, [httpStatus, scope]);
 
   return (
     <MainLayout>
