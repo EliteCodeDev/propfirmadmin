@@ -9,6 +9,7 @@ import React, { useMemo, useState, useEffect } from "react";
 import useSWR from "swr";
 import { SessionProvider, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { TrophyIcon, ArrowTopRightOnSquareIcon } from "@heroicons/react/24/outline";
 
 type LimitParam = number;
 
@@ -84,6 +85,10 @@ function unwrapPage<T = Record<string, unknown>>(raw: unknown): {
   return { items, total, page, limit, totalPages };
 }
 
+/* Helper para headers tipado correctamente */
+const buildHeaders = (token?: string): HeadersInit =>
+  token ? { Authorization: `Bearer ${token}` } : {};
+
 function UsersInner() {
   const router = useRouter();
   const { data: session, status: authStatus } = useSession();
@@ -127,19 +132,19 @@ function UsersInner() {
 
   const usersUrl = `${API_BASE}${usersPath}?${query}`;
 
-  // headers
-  const authHeaders = () => (accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined);
-
-  // fetchers
+  // fetchers (con HeadersInit correcto)
   const fetcher = async (u: string) => {
-    const res = await fetch(u, { headers: authHeaders(), credentials: "include" });
+    const res = await fetch(u, {
+      headers: buildHeaders(accessToken),
+      credentials: "include",
+    });
     if (!res.ok) throw new Error((await res.text()) || `Error ${res.status}`);
     return res.json();
   };
 
   const fetchRoles = async (): Promise<RoleOption[]> => {
     const res = await fetch(`${API_BASE}${rolesPath}?page=1&limit=1000`, {
-      headers: authHeaders(),
+      headers: buildHeaders(accessToken),
       credentials: "include",
     });
     if (!res.ok) throw new Error((await res.text()) || `Error ${res.status}`);
@@ -187,6 +192,28 @@ function UsersInner() {
     { key: "status", label: "STATUS", type: "normal", render: (v) => <StatusBadge confirmed={Boolean(v)} /> },
     { key: "country", label: "COUNTRY", type: "normal" },
     { key: "createdAt", label: "DATE JOINED", type: "normal" },
+
+    // NUEVA COLUMNA: navegar al detalle del usuario
+    {
+      key: "view",
+      label: "VIEW",
+      type: "normal",
+      render: (_: unknown, row: any) => {
+        const u = row.__raw as User;
+        const uid = String(u.userID ?? u.id ?? "");
+        return (
+          <button
+            className="inline-flex items-center gap-1 px-2 py-1 text-xs border rounded-md hover:bg-gray-50 dark:hover:bg-gray-700"
+            title="Ver challenges del usuario"
+            onClick={() => uid && router.push(`/users/${uid}`)}
+          >
+            <ArrowTopRightOnSquareIcon className="w-4 h-4" />
+            View
+          </button>
+        );
+      },
+    },
+
     {
       key: "actions",
       label: "ACTIONS",
@@ -215,7 +242,7 @@ function UsersInner() {
     const roleName = u.role?.name ?? "-";
     const confirmed = Boolean(u.isConfirmed);
     const country = u.address?.country ?? "-";
-    const created = u.createdAt ? new Date(u.createdAt).toLocaleDateString() : "-";
+    const created = u.createdAt ? new Date(u.createdAt as any).toLocaleDateString() : "-";
     return {
       serial,
       name,
@@ -234,7 +261,7 @@ function UsersInner() {
   const createUser = async (body: any) => {
     const res = await fetch(`${API_BASE}${usersPath}`, {
       method: "POST",
-      headers: { "Content-Type": "application/json", ...(authHeaders() ?? {}) },
+      headers: { "Content-Type": "application/json", ...buildHeaders(accessToken) },
       credentials: "include",
       body: JSON.stringify(body),
     });
@@ -242,20 +269,18 @@ function UsersInner() {
     return res.json();
   };
 
-  // ⬇️ Endpoints correctos para roles
   const assignRole = async (userID: string, roleId: string) => {
     const res = await fetch(`${API_BASE}${rolesPath}/assign`, {
       method: "POST",
-      headers: { "Content-Type": "application/json", ...(authHeaders() ?? {}) },
+      headers: { "Content-Type": "application/json", ...buildHeaders(accessToken) },
       credentials: "include",
       body: JSON.stringify({ userID, roleId }),
     });
     if (!res.ok) throw new Error((await res.text()) || `Error ${res.status}`);
-    // algunos controladores no devuelven body; no forzamos res.json()
     return true;
   };
 
-  // Guardar rol (usa POST /api/roles/assign)
+  // Guardar rol
   const onSaveRole = async () => {
     if (!roleModalUser || !selectedRoleID) {
       setMsg("Select a role.");
@@ -275,7 +300,7 @@ function UsersInner() {
     }
   };
 
-  // Crear Admin: crea usuario y asigna rol 'admin'
+  // Crear Admin
   const onCreateAdmin = async () => {
     const adminRole = roleOptions.find((r) => r.name.toLowerCase() === "admin");
     if (!adminRole) {
