@@ -6,6 +6,8 @@ import React, { useMemo, useState, useEffect } from "react";
 import useSWR from "swr";
 import { SessionProvider, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import PaginatedCardTable from "@/components/common/PaginatedCardTable";
+import type { ColumnConfig } from "@/components/common/tableComponent";
 
 type WithdrawalStatus = "pending" | "approved" | "rejected";
 type LimitParam = number;
@@ -111,7 +113,7 @@ function WithdrawalsInner() {
   // Estado
   const [scope, setScope] = useState<Scope>("all");
   const [page, setPage] = useState<number>(1);
-  const [limit, setLimit] = useState<LimitParam>(1000);
+  const [limit, setLimit] = useState<LimitParam>(10);
   const [status, setStatus] = useState<"" | WithdrawalStatus>("");
 
   const accessToken = session?.accessToken as string | undefined;
@@ -267,97 +269,50 @@ function WithdrawalsInner() {
           {`Mostrando ${withdrawals.length} registros`}
         </div>
 
-        <div className="overflow-x-auto border rounded-lg">
-          <table className="min-w-full divide-y">
-            <thead className="bg-gray-50">
-              <tr className="text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                <th className="px-4 py-3">Fecha</th>
-                <th className="px-4 py-3">Monto</th>
-                <th className="px-4 py-3">Wallet</th>
-                <th className="px-4 py-3">Desafío</th>
-                <th className="px-4 py-3">Estado</th>
-                <th className="px-4 py-3">Observación</th>
-                {scope === "all" && <th className="px-4 py-3">Usuario</th>}
-              </tr>
-            </thead>
-            <tbody className="divide-y">
-              {isLoading ? (
-                <tr>
-                  <td className="px-4 py-4 text-sm" colSpan={scope === "all" ? 7 : 6}>
-                    Cargando...
-                  </td>
-                </tr>
-              ) : error ? (
-                <tr>
-                  <td className="px-4 py-4 text-sm text-red-600" colSpan={scope === "all" ? 7 : 6}>
-                    {(error as Error).message}
-                  </td>
-                </tr>
-              ) : withdrawals.length === 0 ? (
-                <tr>
-                  <td className="px-4 py-4 text-sm" colSpan={scope === "all" ? 7 : 6}>
-                    No hay retiros.
-                  </td>
-                </tr>
-              ) : (
-                withdrawals.map((w) => (
-                  <tr key={w.withdrawalID} className="text-sm">
-                    <td className="px-4 py-3">
-                      {w.createdAt ? new Date(w.createdAt).toLocaleString() : "-"}
-                    </td>
-                    <td className="px-4 py-3 font-medium">
-                      {money.format(Number(w.amount ?? 0))}
-                    </td>
-                    <td className="px-4 py-3">{w.wallet ?? "-"}</td>
-                    <td className="px-4 py-3">
-                      {w.challenge?.name || w.challengeID || "-"}
-                    </td>
-                    <td className="px-4 py-3">
-                      <Badge status={w.status} />
-                    </td>
-                    <td className="px-4 py-3">
-                      {w.observation ? w.observation : "-"}
-                    </td>
-                    {scope === "all" && (
-                      <td className="px-4 py-3">
-                        {w.user
-                          ? `${w.user.firstName ?? ""} ${w.user.lastName ?? ""}`.trim() ||
-                            w.user.email ||
-                            w.userID
-                          : w.userID}
-                      </td>
-                    )}
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
+        {(() => {
+          const columns: ColumnConfig[] = [
+            { key: "createdAt", label: "Fecha", type: "normal" },
+            { key: "amount", label: "Monto", type: "normal", render: (v) => String(v) },
+            { key: "wallet", label: "Wallet", type: "normal" },
+            { key: "challenge", label: "Desafío", type: "normal" },
+            { key: "status", label: "Estado", type: "normal", render: (v) => <Badge status={String(v)} /> },
+            { key: "observation", label: "Observación", type: "normal" },
+            ...(scope === "all" ? [{ key: "userName", label: "Usuario", type: "normal" } as ColumnConfig] : []),
+          ];
 
-        {/* Paginación útil solo si limit < total */}
-        {limit !== 1000 && (
-          <div className="flex items-center justify-between">
-            <p className="text-sm text-gray-600">
-              Página {pageObj.page} de {totalPages}
-            </p>
-            <div className="flex items-center gap-2">
-              <button
-                className="px-3 py-2 border rounded-md disabled:opacity-50"
-                onClick={() => setPage((p) => Math.max(1, p - 1))}
-                disabled={page <= 1}
-              >
-                Anterior
-              </button>
-              <button
-                className="px-3 py-2 border rounded-md disabled:opacity-50"
-                onClick={() => setPage((p) => p + 1)}
-                disabled={page >= totalPages}
-              >
-                Siguiente
-              </button>
-            </div>
-          </div>
-        )}
+          const rows = withdrawals.map((w) => ({
+            createdAt: w.createdAt ? new Date(w.createdAt).toLocaleString() : "-",
+            amount: money.format(Number(w.amount ?? 0)),
+            wallet: w.wallet ?? "-",
+            challenge: w.challenge?.name || w.challengeID || "-",
+            status: w.status,
+            observation: w.observation ? w.observation : "-",
+            userName:
+              scope === "all"
+                ? (w.user
+                    ? `${w.user.firstName ?? ""} ${w.user.lastName ?? ""}`.trim() || w.user.email || w.userID
+                    : w.userID)
+                : undefined,
+          }));
+
+          return (
+            <PaginatedCardTable
+              title="Retiros"
+              columns={columns}
+              rows={rows}
+              isLoading={isLoading}
+              emptyText={error ? (error as Error).message : "No hay retiros."}
+              pagination={{
+                currentPage: page,
+                totalPages: Math.max(1, totalPages),
+                totalItems: pageObj.total,
+                pageSize: limit,
+                onPageChange: (p) => setPage(p),
+                onPageSizeChange: (n) => { setPage(1); setLimit(n as LimitParam); },
+              }}
+            />
+          );
+        })()}
       </div>
     </MainLayout>
   );

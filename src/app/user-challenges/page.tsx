@@ -1,13 +1,17 @@
 "use client";
 
 import CardComponent from "@/components/user/cardComponent";
-import TableComponent from "@/components/common/tableComponent";
+import PaginatedCardTable from "@/components/common/PaginatedCardTable";
+import type { ColumnConfig } from "@/components/common/tableComponent";
 import { UserIcon, ClockIcon, ExclamationTriangleIcon } from "@heroicons/react/24/outline";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import MainLayout from "@/components/layouts/MainLayout";
 
 export default function UserPage() {
   const [activeTab, setActiveTab] = useState("orders");
+  // Paginación local para la tabla de Prop Accounts
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
 
   // Datos para las cards superiores
   const contactFields = [
@@ -173,11 +177,32 @@ export default function UserPage() {
             </div>
 
             {/* Table Section */}
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm">
-              <TableComponent
-                columns={propAccountsColumns}
-                data={propAccountsData}
-              />
+            <div className="bg-transparent">
+              {(() => {
+                const columns: ColumnConfig[] = propAccountsColumns as unknown as ColumnConfig[];
+                const totalItems = propAccountsData.length;
+                const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
+                const startIdx = (page - 1) * pageSize;
+                const rows = useMemo(() => (
+                  (propAccountsData as unknown as Record<string, unknown>[]).slice(startIdx, startIdx + pageSize)
+                ), [startIdx, pageSize]);
+
+                return (
+                  <PaginatedCardTable
+                    title="Prop Accounts"
+                    columns={columns}
+                    rows={rows}
+                    pagination={{
+                      currentPage: page,
+                      totalPages,
+                      totalItems,
+                      pageSize,
+                      onPageChange: (p) => setPage(p),
+                      onPageSizeChange: (n) => { setPage(1); setPageSize(n); },
+                    }}
+                  />
+                );
+              })()}
             </div>
           </div>
 

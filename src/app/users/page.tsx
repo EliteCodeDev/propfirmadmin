@@ -3,8 +3,8 @@
 import MainLayout from "@/components/layouts/MainLayout";
 import { usersApi, type UserEntity, type UserQuery } from "@/api/users";
 import { useEffect, useMemo, useState } from "react";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { RowsPerPage } from "@/components/ui/RowsPerPage";
+import PaginatedCardTable from "@/components/common/PaginatedCardTable";
+import type { ColumnConfig } from "@/components/common/tableComponent";
 import { useSession, SessionProvider } from "next-auth/react";
 import { useRouter } from "next/navigation";
 
@@ -18,6 +18,7 @@ function UsersInner() {
   const [error, setError] = useState<string | null>(null);
   const [items, setItems] = useState<UserEntity[]>([]);
   const [totalPages, setTotalPages] = useState(1);
+  const [titleCounts, setTitleCounts] = useState<string>("");
 
   const canLoad = Boolean((session as { accessToken?: string } | null | undefined)?.accessToken);
 
@@ -28,7 +29,7 @@ function UsersInner() {
     setLoading(true);
     setError(null);
     try {
-  const res = await usersApi.list(query);
+      const res = await usersApi.list(query);
       // Normalize shape differences
       const maybeAny = res as unknown as { data?: unknown; totalPages?: unknown } | unknown[];
       const arr = Array.isArray(maybeAny)
@@ -41,6 +42,7 @@ function UsersInner() {
         : 1;
       setItems(arr as UserEntity[]); // server includes extra props; safe cast for display
       setTotalPages(pages);
+      setTitleCounts(`Página ${page} de ${pages}`);
     } catch (e) {
       // Try to decode axios error shape
       const maybeAxios = e as { response?: { status?: number; data?: unknown } };
@@ -80,60 +82,62 @@ function UsersInner() {
               placeholder="Buscar por username"
               className="px-3 py-2 border rounded-md text-sm"
             />
-            <RowsPerPage pageSize={limit} onPageSizeChange={(n) => { setPage(1); setLimit(n); }} />
           </div>
         </div>
 
-        <div className="overflow-x-auto border rounded-lg bg-white dark:bg-gray-800">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>ID</TableHead>
-                <TableHead>Username</TableHead>
-                <TableHead>Email</TableHead>
-                <TableHead>Rol</TableHead>
-                <TableHead>Estado</TableHead>
-                <TableHead>Creado</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {loading ? (
-                <TableRow><TableCell colSpan={6}>Cargando…</TableCell></TableRow>
-              ) : error ? (
-                <TableRow><TableCell colSpan={6} className="text-red-600">{error}</TableCell></TableRow>
-              ) : items.length === 0 ? (
-                <TableRow><TableCell colSpan={6}>Sin usuarios</TableCell></TableRow>
-              ) : (
-        items.map((u) => (
-                  <TableRow key={u.id}>
-          <TableCell>{(u as unknown as { id?: string; userID?: string }).id || (u as unknown as { userID?: string }).userID}</TableCell>
-                    <TableCell>{u.username}</TableCell>
-                    <TableCell>{u.email}</TableCell>
-          <TableCell>{(u as unknown as { role?: { name?: string } })?.role?.name || "-"}</TableCell>
-          <TableCell>{(u as unknown as { isBlocked?: boolean })?.isBlocked ? "Bloqueado" : "Activo"}</TableCell>
-                    <TableCell>{u.createdAt ? new Date(u.createdAt).toLocaleString() : "-"}</TableCell>
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-        </div>
+        {(() => {
+          const columns: ColumnConfig[] = [
+            { key: "id", label: "ID", type: "normal" },
+            { key: "username", label: "Username", type: "normal" },
+            { key: "email", label: "Email", type: "normal" },
+            { key: "role", label: "Rol", type: "normal" },
+            {
+              key: "status",
+              label: "Estado",
+              type: "badge",
+              render: (value) => {
+                const isBlocked = String(value) === "Bloqueado";
+                return (
+                  <span className={`px-3 py-1 rounded-full text-xs font-semibold border ${
+                    isBlocked
+                      ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 border-red-300 dark:border-red-700"
+                      : "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 border-green-300 dark:border-green-700"
+                  }`}>
+                    {value as string}
+                  </span>
+                );
+              },
+            },
+            { key: "createdAt", label: "Creado", type: "normal" },
+          ];
 
-        <div className="flex items-center justify-between">
-          <p className="text-sm text-gray-600">Página {page} de {totalPages}</p>
-          <div className="flex items-center gap-2">
-            <button
-              className="px-3 py-2 border rounded-md disabled:opacity-50"
-              onClick={() => setPage((p) => Math.max(1, p - 1))}
-              disabled={page <= 1}
-            >Anterior</button>
-            <button
-              className="px-3 py-2 border rounded-md disabled:opacity-50"
-              onClick={() => setPage((p) => p + 1)}
-              disabled={page >= totalPages}
-            >Siguiente</button>
-          </div>
-        </div>
+          const rows = items.map((u) => ({
+            id: (u as unknown as { id?: string; userID?: string }).id || (u as unknown as { userID?: string }).userID,
+            username: u.username,
+            email: u.email,
+            role: (u as unknown as { role?: { name?: string } })?.role?.name || "-",
+            status: (u as unknown as { isBlocked?: boolean })?.isBlocked ? "Bloqueado" : "Activo",
+            createdAt: u.createdAt ? new Date(u.createdAt).toLocaleString() : "-",
+          }));
+
+          return (
+            <PaginatedCardTable
+              title="Lista de Usuarios"
+              subtitleBadge={titleCounts}
+              columns={columns}
+              rows={rows}
+              isLoading={loading}
+              emptyText={error ? error : "Sin usuarios"}
+              pagination={{
+                currentPage: page,
+                totalPages: Math.max(1, totalPages),
+                pageSize: limit,
+                onPageChange: (p) => setPage(p),
+                onPageSizeChange: (n) => { setPage(1); setLimit(n); },
+              }}
+            />
+          );
+        })()}
       </div>
     </MainLayout>
   );
