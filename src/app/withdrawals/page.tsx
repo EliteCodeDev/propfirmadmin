@@ -248,7 +248,6 @@ function WithdrawalsInner() {
 
           return (
             <PaginatedCardTable
-              title="Retiros"
               columns={columns}
               rows={rows}
               isLoading={isLoading}

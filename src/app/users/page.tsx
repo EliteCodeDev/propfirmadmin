@@ -379,23 +379,20 @@ function UsersInner() {
           </div>
 
           {/* Tabla */}
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
-            <PaginatedCardTable
-              title=""
-              columns={columns}
-              rows={rows}
-              isLoading={isLoading}
-              emptyText={error ? (error as Error).message : "No users found"}
-              pagination={{
-                currentPage: page,
-                totalPages: Math.max(1, totalPages),
-                totalItems: pageObj.total,
-                pageSize: limit,
-                onPageChange: (p) => setPage(p),
-                onPageSizeChange: (n) => { setPage(1); setLimit(n as LimitParam); },
-              }}
-            />
-          </div>
+          <PaginatedCardTable
+            columns={columns}
+            rows={rows}
+            isLoading={isLoading}
+            emptyText={error ? (error as Error).message : "No users found"}
+            pagination={{
+              currentPage: page,
+              totalPages: Math.max(1, totalPages),
+              totalItems: pageObj.total,
+              pageSize: limit,
+              onPageChange: (p) => setPage(p),
+              onPageSizeChange: (n) => { setPage(1); setLimit(n as LimitParam); },
+            }}
+          />
 
           {msg && <div className="text-sm text-center text-gray-700 dark:text-gray-300">{msg}</div>}
         </div>
