@@ -1,6 +1,8 @@
 // src/app/dashboard/page.tsx
 
-import MainLayout from "@/components/layouts/MainLayout";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { redirect } from "next/navigation";
 
 export default async function Dashboard() {
   const session = await getServerSession(authOptions);

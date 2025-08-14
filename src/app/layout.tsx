@@ -1,9 +1,8 @@
 // Este archivo sigue siendo un Server Component
-import './globals.css';
-import { AuthProvider } from './providers';
-
+import "./globals.css";
+import { AuthProvider } from "./providers";
 export const metadata = {
-  title: 'PropAdmin',
+  title: "PropAdmin",
 };
 
 export default function RootLayout({
@@ -15,9 +14,7 @@ export default function RootLayout({
     <html lang="es">
       <body>
         {/* Aquí envolvemos TODO en nuestro AuthProvider (Client) */}
-        <AuthProvider>
-          {children}
-        </AuthProvider>
+        <AuthProvider>{children}</AuthProvider>
       </body>
     </html>
   );

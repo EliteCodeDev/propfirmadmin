@@ -11,7 +11,7 @@ const REFRESH_THRESHOLD = 60; // 1 minuto
 interface ExtendedJWT extends JWT {
   // 'id' es requerido en JWT extendido para evitar incompatibilidad, usar union con existente
   id: string | number; // NextAuth core espera id declarado en augmentations
-  email?: string;
+  email?: string | null;
   name?: string;
   username?: string;
   firstName?: string;
@@ -56,16 +56,14 @@ export const authOptions: NextAuthOptions = {
 
           if (user && access_token) {
             const userToReturn = {
-              id: user.userID, // Mapear userID del backend a id que espera NextAuth
-              name: user.username || `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email,
+              id: user.id, // Mapear userID del backend a id que espera NextAuth
+              name: user.username,
               email: user.email,
               image: null, // No hay imagen en el backend
               // Campos personalizados
               username: user.username,
-              firstName: user.firstName,
-              lastName: user.lastName,
               isVerified: user.isVerified,
-              roles: user.userRoles || [],
+              roles: user.role || [],
               accessToken: access_token,
               refreshToken: refresh_token,
             } as User;
@@ -114,13 +112,12 @@ export const authOptions: NextAuthOptions = {
           roles?: string[];
           isVerified?: boolean;
         };
-        
+
         // Guardar todos los datos del usuario en el token
         jwtToken.accessToken = u.accessToken;
         jwtToken.refreshToken = u.refreshToken;
         jwtToken.id = u.id;
         jwtToken.email = u.email;
-        jwtToken.name = u.name;
         jwtToken.username = u.username;
         jwtToken.firstName = u.firstName;
         jwtToken.lastName = u.lastName;

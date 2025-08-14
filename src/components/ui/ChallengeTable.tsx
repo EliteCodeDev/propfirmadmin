@@ -36,6 +36,7 @@ interface ChallengeTableProps {
   onEdit: (item: ChallengeItem) => void;
   showPrice?: boolean;
   isLoading?: boolean;
+  createButtonText?: string;
 }
 
 export const ChallengeTable: React.FC<ChallengeTableProps> = ({
@@ -46,10 +47,11 @@ export const ChallengeTable: React.FC<ChallengeTableProps> = ({
   onEdit,
   showPrice = false,
   isLoading = false,
+  createButtonText = "Crear",
 }) => {
   // Validación de datos
   const dataValidation = useArrayValidation(data);
-  
+
   // Paginación local
   const [currentPage, setCurrentPage] = useState(1);
 
@@ -89,16 +91,17 @@ export const ChallengeTable: React.FC<ChallengeTableProps> = ({
           </h3>
           <div className="flex items-center gap-3">
             <div className="text-sm text-zinc-500 dark:text-zinc-400 mr-4">
-              {dataValidation.data.length > 0 && `${dataValidation.data.length} registros`}
+              {dataValidation.data.length > 0 &&
+                `${dataValidation.data.length} registros`}
             </div>
 
             <Button
               variant="secondary"
-              className="group inline-block rounded bg-[var(--app-secondary)] hover:bg-[var(--app-secondary)]/90 px-3 py-2 text-sm font-medium uppercase leading-normal text-white shadow-md transition duration-150 ease-in-out hover:shadow-lg focus:shadow-lg focus:outline-none focus:ring-0 active:shadow-lg flex items-center gap-2"
+              className="group rounded bg-[var(--app-secondary)] hover:bg-[var(--app-secondary)]/90 px-3 py-2 text-sm font-medium uppercase leading-normal text-white shadow-md transition duration-150 ease-in-out hover:shadow-lg focus:shadow-lg focus:outline-none focus:ring-0 active:shadow-lg flex items-center gap-2"
               onClick={onCreate}
             >
               <PlusCircle className="h-4 w-4 group-hover:rotate-90 transition-transform duration-500" />
-              Crear
+              {createButtonText}
             </Button>
           </div>
         </div>
@@ -137,33 +140,35 @@ export const ChallengeTable: React.FC<ChallengeTableProps> = ({
             </TableHeader>
             <TableBody className="divide-y divide-zinc-200 dark:divide-zinc-700">
               {displayedData.length > 0 ? (
-                dataValidation.safeMap((item) => (
-                  <TableRow
-                    key={item?.id || 'unknown'}
-                    className="hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors"
-                  >
-                    <TableCell className="pl-[70px] pr-6 py-3 whitespace-nowrap text-sm text-zinc-600 dark:text-zinc-400">
-                      {item?.id || 'N/A'}
-                    </TableCell>
-                    <TableCell className="px-6 py-3 whitespace-nowrap text-sm text-zinc-600 dark:text-zinc-400 font-medium">
-                      {item?.name || 'Sin nombre'}
-                    </TableCell>
-                    {showPrice && (
-                      <TableCell className="px-6 py-3 whitespace-nowrap text-sm text-zinc-600 dark:text-zinc-400">
-                        {item?.precio || 'N/A'}
+                dataValidation
+                  .safeMap((item) => (
+                    <TableRow
+                      key={item?.id || "unknown"}
+                      className="hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors"
+                    >
+                      <TableCell className="pl-[70px] pr-6 py-3 whitespace-nowrap text-sm text-zinc-600 dark:text-zinc-400">
+                        {item?.id || "N/A"}
                       </TableCell>
-                    )}
-                    <TableCell className="px-6 py-3 whitespace-nowrap text-sm">
-                      <Button
-                        variant="outline"
-                        className="px-3 py-1.5 text-xs bg-white dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-700 rounded-md shadow-sm flex items-center gap-1"
-                        onClick={() => onEdit(item)}
-                      >
-                        <Pencil className="h-4 w-4" /> Editar
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                )).slice(startIndex, endIndex)
+                      <TableCell className="px-6 py-3 whitespace-nowrap text-sm text-zinc-600 dark:text-zinc-400 font-medium">
+                        {item?.name || "Sin nombre"}
+                      </TableCell>
+                      {showPrice && (
+                        <TableCell className="px-6 py-3 whitespace-nowrap text-sm text-zinc-600 dark:text-zinc-400">
+                          {item?.precio || "N/A"}
+                        </TableCell>
+                      )}
+                      <TableCell className="px-6 py-3 whitespace-nowrap text-sm">
+                        <Button
+                          variant="outline"
+                          className="px-3 py-1.5 text-xs bg-white dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-700 rounded-md shadow-sm flex items-center gap-1"
+                          onClick={() => onEdit(item)}
+                        >
+                          <Pencil className="h-4 w-4" /> Editar
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                  .slice(startIndex, endIndex)
               ) : (
                 <TableRow>
                   <TableCell
@@ -191,7 +196,8 @@ export const ChallengeTable: React.FC<ChallengeTableProps> = ({
       <div className="bg-zinc-50 dark:bg-zinc-800/50 px-6 py-3 border-t border-zinc-200 dark:border-zinc-700">
         <div className="flex items-center justify-between">
           <div className="text-sm text-zinc-600 dark:text-zinc-400">
-            Mostrando {displayedData.length} de {dataValidation.data.length} resultados
+            Mostrando {displayedData.length} de {dataValidation.data.length}{" "}
+            resultados
           </div>
           <div className="flex items-center gap-1">
             <button

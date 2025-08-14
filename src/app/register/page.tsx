@@ -5,16 +5,24 @@ import { useRouter } from "next/navigation";
 import { register } from "@/api/auth";
 import { toast, Toaster } from "sonner";
 import Link from "next/link";
+// import Recaptcha from "@/components/common/auth/Recaptcha";
 
 export default function RegisterPage() {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  // const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   const router = useRouter();
 
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    // if (!captchaToken) {
+    //   toast.error("Por favor, completa la verificación de seguridad.");
+    //   return;
+    // }
+
     setIsSubmitting(true);
 
     try {
@@ -102,6 +110,14 @@ export default function RegisterPage() {
               minLength={6}
               className="w-full p-2 border rounded"
             />
+          </div>
+
+          {/* Captcha */}
+          <div>
+            <label className="block text-sm font-medium mb-2">
+              Verificación de seguridad
+            </label>
+            {/* <Recaptcha onVerify={setCaptchaToken} /> */}
           </div>
 
           <button

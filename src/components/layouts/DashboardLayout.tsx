@@ -1,14 +1,14 @@
 import type { PropsWithChildren, ReactNode } from "react";
 import Sidebar from "@/components/common/sidebar/Sidebar";
 
-type MainLayoutProps = PropsWithChildren<{
+type DashboardLayoutProps = PropsWithChildren<{
   /** Slot opcional para un Header (breadcrumbs, buscador, etc.) */
   header?: ReactNode;
   /** Clases extra para el <main> si necesitas personalizar por página */
   className?: string;
 }>;
 
-export function MainLayout({ children, header, className }: MainLayoutProps) {
+export function DashboardLayout({ children, header, className }: DashboardLayoutProps) {
   return (
     <div className="flex min-h-screen bg-gray-100 dark:bg-gray-900 transition-colors duration-200">
       {/* Link de accesibilidad para saltar al contenido */}
