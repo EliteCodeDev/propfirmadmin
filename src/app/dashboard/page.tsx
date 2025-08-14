@@ -26,6 +26,7 @@ export default async function Dashboard() {
         </div>
 
         <div className="flex flex-col space-y-8 relative">
+          {/* Sticky breadcrumb is rendered by MainLayout */}
           {/* Stats grid - merged styles with our essence and reference layout */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6">
             <div className="xl:col-span-2 lg:col-span-1"><StatCard size="sm" label="Total Users" value="140" variant="indigo" delay={0} icon={<UserGroupIcon className="h-6 w-6 text-indigo-600" />} /></div>

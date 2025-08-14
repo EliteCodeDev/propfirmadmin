@@ -1,6 +1,7 @@
 "use client";
 
 import MainLayout from "@/components/layouts/MainLayout";
+import { BanknotesIcon } from "@heroicons/react/24/outline";
 import React, { useMemo, useState, useEffect } from "react";
 import useSWR from "swr";
 import { SessionProvider, useSession } from "next-auth/react";
