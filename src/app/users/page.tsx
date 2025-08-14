@@ -1,6 +1,7 @@
 "use client";
 
 import MainLayout from "@/components/layouts/MainLayout";
+import LoadingSpinner from "@/components/common/loadingSpinner";
 import React, { useMemo, useState, useEffect } from "react";
 import useSWR from "swr";
 import { SessionProvider, useSession } from "next-auth/react";
@@ -133,18 +134,38 @@ function UsersInner() {
     }
   }, [authStatus, accessToken, router]);
 
+  // 👇 Aquí está el cambio principal - usar LoadingSpinner en lugar del div simple
   if (authStatus === "loading" || (!accessToken && authStatus !== "unauthenticated")) {
     return (
-      <MainLayout>
-        <div className="p-6">Verificando sesión…</div>
-      </MainLayout>
+      <LoadingSpinner
+        size="md"
+        text="Verificando Sesión"
+        subtitle="Validando credenciales de usuario..."
+        showProgress={true}
+        steps={[
+          'Verificando token de sesión...',
+          'Validando permisos de usuario...',
+          'Cargando configuración...',
+          'Preparando dashboard...'
+        ]}
+      />
     );
   }
+  
   if (!accessToken) {
     return (
-      <MainLayout>
-        <div className="p-6">Redirigiendo al login…</div>
-      </MainLayout>
+      <LoadingSpinner
+        size="md"
+        text="Redirigiendo"
+        subtitle="Redirigiendo al sistema de login..."
+        showProgress={true}
+        steps={[
+          'Cerrando sesión actual...',
+          'Limpiando datos locales...',
+          'Preparando login...',
+          'Redirigiendo...'
+        ]}
+      />
     );
   }
 
@@ -191,7 +212,7 @@ function UsersInner() {
       status: active, // <- boolean; el render dibuja el badge
       country,
       createdAt: created,
-      // opcional: uuid “oculto” por si quieres tooltip
+      // opcional: uuid "oculto" por si quieres tooltip
       _uuid: (u as any).id ?? (u as any).userID ?? "",
     };
   });
