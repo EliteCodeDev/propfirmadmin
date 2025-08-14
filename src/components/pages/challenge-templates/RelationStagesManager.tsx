@@ -4,10 +4,9 @@ import React, { useEffect, useState } from "react";
 import { ChallengeTable } from "@/components/ui/ChallengeTable";
 import {
   challengeTemplatesApi,
+  type RelationStage,
   type ChallengeRelation,
-  type ChallengeCategory,
-  type ChallengePlan,
-  type ChallengeBalance,
+  type ChallengeStage,
 } from "@/api/challenge-templates";
 import { useArrayValidation } from "@/hooks/useArrayValidation";
 
@@ -21,6 +20,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -42,35 +42,34 @@ import {
 import { toast } from "sonner";
 
 // Validación
-const relationSchema = z.object({
-  categoryID: z.string().min(1, "La categoría es requerida"),
-  planID: z.string().min(1, "El plan es requerido"),
-  balanceID: z.string().optional(),
+const relationStageSchema = z.object({
+  relationID: z.string().min(1, "La relación es requerida"),
+  stageID: z.string().min(1, "El stage es requerido"),
+  numPhase: z.number().min(1, "El número de fase debe ser mayor a 0"),
 });
 
-type RelationFormData = z.infer<typeof relationSchema>;
+type RelationStageFormData = z.infer<typeof relationStageSchema>;
 
-interface RelationsManagerProps {
+interface RelationStagesManagerProps {
   pageSize: number;
 }
 
-export function RelationsManager({ pageSize }: RelationsManagerProps) {
+export function RelationStagesManager({ pageSize }: RelationStagesManagerProps) {
   // Estado
+  const [relationStages, setRelationStages] = useState<RelationStage[]>([]);
   const [relations, setRelations] = useState<ChallengeRelation[]>([]);
-  const [categories, setCategories] = useState<ChallengeCategory[]>([]);
-  const [plans, setPlans] = useState<ChallengePlan[]>([]);
-  const [balances, setBalances] = useState<ChallengeBalance[]>([]);
+  const [stages, setStages] = useState<ChallengeStage[]>([]);
   const [openModal, setOpenModal] = useState(false);
-  const [editItem, setEditItem] = useState<ChallengeRelation | null>(null);
+  const [editItem, setEditItem] = useState<RelationStage | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   // Form
-  const form = useForm<RelationFormData>({
-    resolver: zodResolver(relationSchema),
+  const form = useForm<RelationStageFormData>({
+    resolver: zodResolver(relationStageSchema),
     defaultValues: {
-      categoryID: "",
-      planID: "",
-      balanceID: "",
+      relationID: "",
+      stageID: "",
+      numPhase: 1,
     },
   });
 
@@ -84,18 +83,16 @@ export function RelationsManager({ pageSize }: RelationsManagerProps) {
   const loadAllData = async () => {
     try {
       setIsLoading(true);
-      const [relationsData, categoriesData, plansData, balancesData] =
+      const [relationStagesData, relationsData, stagesData] =
         await Promise.all([
+          challengeTemplatesApi.listRelationStages(),
           challengeTemplatesApi.listRelations(),
-          challengeTemplatesApi.listCategories(),
-          challengeTemplatesApi.listPlans(),
-          challengeTemplatesApi.listBalances(),
+          challengeTemplatesApi.listStages(),
         ]);
 
+      setRelationStages(relationStagesData);
       setRelations(relationsData);
-      setCategories(categoriesData);
-      setPlans(plansData);
-      setBalances(balancesData);
+      setStages(stagesData);
     } catch (error) {
       console.error("Error al cargar datos:", error);
       toast.error("Error al cargar datos");
@@ -110,9 +107,9 @@ export function RelationsManager({ pageSize }: RelationsManagerProps) {
   function handleOpenCreate() {
     setEditItem(null);
     form.reset({
-      categoryID: "",
-      planID: "",
-      balanceID: "",
+      relationID: "",
+      stageID: "",
+      numPhase: 1,
     });
     setOpenModal(true);
   }
@@ -122,31 +119,48 @@ export function RelationsManager({ pageSize }: RelationsManagerProps) {
     name: string;
     originalId?: string;
   }) {
-    const relation = relationsValidation.safeFind((r) => r?.relationID === item.originalId);
-    if (relation) {
-      setEditItem(relation);
+    const relationStage = relationStagesValidation.safeFind(
+      (rs) => rs?.relationStageID === item.originalId
+    );
+    if (relationStage) {
+      setEditItem(relationStage);
       form.reset({
-        categoryID: relation.categoryID || "",
-        planID: relation.planID || "",
-        balanceID: relation.balanceID || "",
+        relationID: relationStage.relationID || "",
+        stageID: relationStage.stageID || "",
+        numPhase: relationStage.numPhase || 1,
       });
       setOpenModal(true);
     }
   }
 
-  async function onSubmit(formValues: RelationFormData) {
+  async function onSubmit(formValues: RelationStageFormData) {
     try {
+      // Validar que no exista ya una relación con la misma fase
+      const existingRelationStage = relationStagesValidation.safeFind(
+        (rs) =>
+          rs?.relationID === formValues.relationID &&
+          rs?.numPhase === formValues.numPhase &&
+          rs?.relationStageID !== editItem?.relationStageID
+      );
+
+      if (existingRelationStage) {
+        toast.error(
+          `Ya existe un stage con la fase ${formValues.numPhase} para esta relación`
+        );
+        return;
+      }
+
       if (editItem) {
         // Editar
-        await challengeTemplatesApi.updateRelation(
-          editItem.relationID,
+        await challengeTemplatesApi.updateRelationStage(
+          editItem.relationStageID,
           formValues
         );
-        toast.success("Relación editada exitosamente");
+        toast.success("Relación de stage editada exitosamente");
       } else {
         // Crear
-        await challengeTemplatesApi.createRelation(formValues);
-        toast.success("Relación creada exitosamente");
+        await challengeTemplatesApi.createRelationStage(formValues);
+        toast.success("Relación de stage creada exitosamente");
       }
       setOpenModal(false);
       await loadAllData(); // Refrescar datos
@@ -159,40 +173,37 @@ export function RelationsManager({ pageSize }: RelationsManagerProps) {
   // --------------------------------------------------
   // 3. Validaciones y helpers para obtener nombres
   // --------------------------------------------------
+  const relationStagesValidation = useArrayValidation(relationStages);
   const relationsValidation = useArrayValidation(relations);
-  const categoriesValidation = useArrayValidation(categories);
-  const plansValidation = useArrayValidation(plans);
-  const balancesValidation = useArrayValidation(balances);
-  
-  const getCategoryName = (id: string) => {
-    const category = categoriesValidation.safeFind((c) => c?.categoryID === id);
-    return category?.name || "N/A";
+  const stagesValidation = useArrayValidation(stages);
+
+  const getRelationName = (id: string) => {
+    const relation = relationsValidation.safeFind((r) => r?.relationID === id);
+    if (!relation) return "N/A";
+    
+    // Construir nombre de la relación
+    const categoryName = relation.category?.name || "Sin categoría";
+    const planName = relation.plan?.name || "Sin plan";
+    return `${categoryName} - ${planName}`;
   };
 
-  const getPlanName = (id: string) => {
-    const plan = plansValidation.safeFind((p) => p?.planID === id);
-    return plan?.name || "N/A";
-  };
-
-  const getBalanceAmount = (id: string) => {
-    const balance = balancesValidation.safeFind((b) => b?.balanceID === id);
-    return balance ? `$${balance.balance?.toLocaleString()}` : "N/A";
+  const getStageName = (id: string) => {
+    const stage = stagesValidation.safeFind((s) => s?.stageID === id);
+    return stage?.name || "N/A";
   };
 
   // --------------------------------------------------
   // 4. Procesar datos para la tabla
   // --------------------------------------------------
-  const tableData = relationsValidation.safeMap((item, index) => {
-    const categoryName = getCategoryName(item?.categoryID || "");
-    const planName = getPlanName(item?.planID || "");
-    const balanceAmount = getBalanceAmount(item?.balanceID || "");
+  const tableData = relationStagesValidation.safeMap((item, index) => {
+    const relationName = getRelationName(item?.relationID || "");
+    const stageName = getStageName(item?.stageID || "");
+    const phase = item?.numPhase || 0;
 
     return {
       id: index + 1,
-      name: `${categoryName} - ${planName}${
-        balanceAmount !== "N/A" ? ` - ${balanceAmount}` : ""
-      }`,
-      originalId: item?.relationID || "",
+      name: `${relationName} - Fase ${phase}: ${stageName}`,
+      originalId: item?.relationStageID || "",
     };
   });
 
@@ -202,7 +213,7 @@ export function RelationsManager({ pageSize }: RelationsManagerProps) {
   return (
     <div>
       <ChallengeTable
-        title="Relaciones"
+        title="Relaciones de Stages"
         data={tableData}
         pageSize={pageSize}
         onCreate={handleOpenCreate}
@@ -214,7 +225,7 @@ export function RelationsManager({ pageSize }: RelationsManagerProps) {
         <DialogContent className="bg-white dark:bg-black text-zinc-800 dark:text-white border border-[var(--app-secondary)]/70 dark:border-blue-500 max-w-lg mx-auto shadow-lg">
           <DialogHeader>
             <DialogTitle className="text-[var(--app-secondary)] dark:text-blue-400 text-sm sm:text-base md:text-lg font-semibold">
-              {editItem ? "Editar" : "Crear"} relación
+              {editItem ? "Editar" : "Crear"} relación de stage
             </DialogTitle>
             <DialogDescription className="text-zinc-600 dark:text-gray-300 text-xs sm:text-sm md:text-base">
               {editItem
@@ -230,11 +241,11 @@ export function RelationsManager({ pageSize }: RelationsManagerProps) {
             >
               <FormField
                 control={form.control}
-                name="categoryID"
+                name="relationID"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-[var(--app-secondary)] dark:text-blue-500 text-sm">
-                      Categoría
+                      Relación
                     </FormLabel>
                     <Select
                       onValueChange={field.onChange}
@@ -242,17 +253,17 @@ export function RelationsManager({ pageSize }: RelationsManagerProps) {
                     >
                       <FormControl>
                         <SelectTrigger className="bg-white dark:bg-transparent border border-zinc-300 dark:border-gray-700 text-zinc-800 dark:text-white text-sm">
-                          <SelectValue placeholder="Selecciona una categoría" />
+                          <SelectValue placeholder="Selecciona una relación" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {categoriesValidation.safeMap((category) => 
-                          category?.categoryID ? (
+                        {relationsValidation.safeMap((relation) =>
+                          relation?.relationID ? (
                             <SelectItem
-                              key={category.categoryID}
-                              value={category.categoryID}
+                              key={relation.relationID}
+                              value={relation.relationID}
                             >
-                              {category?.name || "Sin nombre"}
+                              {getRelationName(relation.relationID)}
                             </SelectItem>
                           ) : null
                         )}
@@ -265,11 +276,11 @@ export function RelationsManager({ pageSize }: RelationsManagerProps) {
 
               <FormField
                 control={form.control}
-                name="planID"
+                name="stageID"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-[var(--app-secondary)] dark:text-blue-500 text-sm">
-                      Plan
+                      Stage
                     </FormLabel>
                     <Select
                       onValueChange={field.onChange}
@@ -277,14 +288,14 @@ export function RelationsManager({ pageSize }: RelationsManagerProps) {
                     >
                       <FormControl>
                         <SelectTrigger className="bg-white dark:bg-transparent border border-zinc-300 dark:border-gray-700 text-zinc-800 dark:text-white text-sm">
-                          <SelectValue placeholder="Selecciona un plan" />
+                          <SelectValue placeholder="Selecciona un stage" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {plansValidation.safeMap((plan) => 
-                          plan?.planID ? (
-                            <SelectItem key={plan.planID} value={plan.planID}>
-                              {plan?.name || "Sin nombre"}
+                        {stagesValidation.safeMap((stage) =>
+                          stage?.stageID ? (
+                            <SelectItem key={stage.stageID} value={stage.stageID}>
+                              {stage?.name || "Sin nombre"}
                             </SelectItem>
                           ) : null
                         )}
@@ -297,36 +308,22 @@ export function RelationsManager({ pageSize }: RelationsManagerProps) {
 
               <FormField
                 control={form.control}
-                name="balanceID"
+                name="numPhase"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-[var(--app-secondary)] dark:text-blue-500 text-sm">
-                      Balance (opcional)
+                      Número de Fase
                     </FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                    >
-                      <FormControl>
-                        <SelectTrigger className="bg-white dark:bg-transparent border border-zinc-300 dark:border-gray-700 text-zinc-800 dark:text-white text-sm">
-                          <SelectValue placeholder="Selecciona un balance (opcional)" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="none">Sin balance</SelectItem>
-                        {balancesValidation.safeMap((balance) => 
-                          balance?.balanceID ? (
-                            <SelectItem
-                              key={balance.balanceID}
-                              value={balance.balanceID}
-                            >
-                              {balance?.name || "Sin nombre"} - $
-                              {balance?.balance?.toLocaleString() || 0}
-                            </SelectItem>
-                          ) : null
-                        )}
-                      </SelectContent>
-                    </Select>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        min="1"
+                        placeholder="Ej: 1, 2, 3..."
+                        className="bg-white dark:bg-transparent border border-zinc-300 dark:border-gray-700 text-zinc-800 dark:text-white text-sm"
+                        {...field}
+                        onChange={(e) => field.onChange(parseInt(e.target.value) || 1)}
+                      />
+                    </FormControl>
                     <FormMessage className="text-red-600 dark:text-red-400" />
                   </FormItem>
                 )}

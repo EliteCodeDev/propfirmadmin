@@ -1,14 +1,14 @@
-import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
-import { ThemeProvider } from '../hooks/useTheme';
-import './globals.css';
-import { AuthProvider } from './providers';
+import type { Metadata } from "next";
+import { Inter } from "next/font/google";
+import { ThemeProvider } from "../hooks/useTheme";
+import "./globals.css";
+import { AuthProvider } from "./providers";
 
-const inter = Inter({ subsets: ['latin'] });
+const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: 'PropFirm Dashboard',
-  description: 'Sistema de gestión de trading y retiros',
+  title: "PropFirm Dashboard",
+  description: "Sistema de gestión de trading y retiros",
 };
 
 export default function RootLayout({
@@ -20,9 +20,7 @@ export default function RootLayout({
     <html lang="es" suppressHydrationWarning>
       <body className={inter.className} suppressHydrationWarning>
         <AuthProvider>
-          <ThemeProvider>
-            {children}
-          </ThemeProvider>
+          <ThemeProvider>{children}</ThemeProvider>
         </AuthProvider>
       </body>
     </html>

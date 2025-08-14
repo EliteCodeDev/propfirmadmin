@@ -35,10 +35,16 @@ import { toast } from "sonner";
 // Validación
 const balanceSchema = z.object({
   name: z.string().min(1, "El nombre es requerido"),
-  balance: z.number().min(0, "El balance debe ser mayor o igual a 0").optional(),
+  balance: z
+    .number()
+    .min(0, "El balance debe ser mayor o igual a 0")
+    .optional(),
   isActive: z.boolean().optional(),
   hasDiscount: z.boolean().optional(),
-  discount: z.string().optional(),
+  discount: z
+    .number()
+    .min(0, "El descuento debe ser mayor o igual a 0")
+    .optional(),
 });
 
 type BalanceFormData = z.infer<typeof balanceSchema>;
@@ -57,7 +63,13 @@ export function BalancesManager({ pageSize }: BalancesManagerProps) {
   // Form
   const form = useForm<BalanceFormData>({
     resolver: zodResolver(balanceSchema),
-    defaultValues: { name: "", balance: 0, isActive: true, hasDiscount: false, discount: "" },
+    defaultValues: {
+      name: "",
+      balance: 0,
+      isActive: true,
+      hasDiscount: false,
+      discount: 0,
+    },
   });
 
   // --------------------------------------------------
@@ -85,11 +97,22 @@ export function BalancesManager({ pageSize }: BalancesManagerProps) {
   // --------------------------------------------------
   function handleOpenCreate() {
     setEditItem(null);
-    form.reset({ name: "", balance: 0, isActive: true, hasDiscount: false, discount: "" });
+    form.reset({
+      name: "",
+      balance: 0,
+      isActive: true,
+      hasDiscount: false,
+      discount: 0,
+    });
     setOpenModal(true);
   }
 
-  function handleOpenEdit(item: { id: number; name: string; precio?: number; originalId?: string }) {
+  function handleOpenEdit(item: {
+    id: number;
+    name: string;
+    precio?: number;
+    originalId?: string;
+  }) {
     const balance = balancesValidation.safeFind(
       (b) => b?.balanceID === item.originalId || b?.balance === item.precio
     );
@@ -100,7 +123,7 @@ export function BalancesManager({ pageSize }: BalancesManagerProps) {
         balance: balance.balance || 0,
         isActive: balance.isActive ?? true,
         hasDiscount: balance.hasDiscount ?? false,
-        discount: balance.discount || "",
+        discount: balance.discount || 0,
       });
       setOpenModal(true);
     }
@@ -110,7 +133,10 @@ export function BalancesManager({ pageSize }: BalancesManagerProps) {
     try {
       if (editItem) {
         // Editar
-        await challengeTemplatesApi.updateBalance(editItem.balanceID, formValues);
+        await challengeTemplatesApi.updateBalance(
+          editItem.balanceID,
+          formValues
+        );
         toast.success("Balance editado exitosamente");
       } else {
         // Crear
@@ -129,7 +155,7 @@ export function BalancesManager({ pageSize }: BalancesManagerProps) {
   // 3. Validación y procesamiento de datos para la tabla
   // --------------------------------------------------
   const balancesValidation = useArrayValidation(balances);
-  
+
   const tableData = balancesValidation.safeMap((item, index) => ({
     id: index + 1, // Número secuencial para la tabla
     name: item?.name || "Sin nombre", // Mostrar el nombre del balance

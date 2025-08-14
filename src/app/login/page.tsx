@@ -5,16 +5,15 @@ import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { toast, Toaster } from "sonner";
 import Link from "next/link";
-import { 
-  EyeIcon, 
-  EyeSlashIcon, 
-  SunIcon, 
+import {
+  EyeIcon,
+  EyeSlashIcon,
+  SunIcon,
   MoonIcon,
   EnvelopeIcon,
-  LockClosedIcon
+  LockClosedIcon,
 } from "@heroicons/react/24/outline";
 import { sendEmailConfirmation } from "@/api/auth";
-
 
 function LoginContent() {
   const [email, setEmail] = useState("");
@@ -24,12 +23,15 @@ function LoginContent() {
   const [isResending, setIsResending] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [showConfirmationError, setShowConfirmationError] = useState(false);
+  // const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   const router = useRouter();
 
   // Cargar preferencia de tema
   useEffect(() => {
     const savedTheme = localStorage.getItem("theme");
-    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+    const prefersDark = window.matchMedia(
+      "(prefers-color-scheme: dark)"
+    ).matches;
     setIsDarkMode(savedTheme === "dark" || (!savedTheme && prefersDark));
   }, []);
 
@@ -50,6 +52,12 @@ function LoginContent() {
 
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    // if (!captchaToken) {
+    //   toast.error("Por favor, completa la verificación de seguridad.");
+    //   return;
+    // }
+
     setIsSubmitting(true);
     setShowConfirmationError(false); // Reset on new submission
 
@@ -91,11 +99,10 @@ function LoginContent() {
   };
 
   return (
-
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 transition-colors duration-300">
-      <Toaster 
-        position="top-right" 
-        richColors 
+      <Toaster
+        position="top-right"
+        richColors
         theme={isDarkMode ? "dark" : "light"}
       />
 
@@ -133,8 +140,8 @@ function LoginContent() {
             <form onSubmit={onSubmit} className="space-y-6">
               {/* Campo Email */}
               <div className="space-y-2">
-                <label 
-                  htmlFor="email" 
+                <label
+                  htmlFor="email"
                   className="block text-sm font-semibold text-slate-700 dark:text-slate-300"
                 >
                   Correo electrónico
@@ -158,8 +165,8 @@ function LoginContent() {
 
               {/* Campo Contraseña */}
               <div className="space-y-2">
-                <label 
-                  htmlFor="password" 
+                <label
+                  htmlFor="password"
                   className="block text-sm font-semibold text-slate-700 dark:text-slate-300"
                 >
                   Contraseña
@@ -191,7 +198,7 @@ function LoginContent() {
                     )}
                   </button>
                 </div>
-                
+
                 {/* Enlace ¿Olvidaste tu contraseña? */}
                 <div className="text-right">
                   <Link
@@ -202,6 +209,11 @@ function LoginContent() {
                   </Link>
                 </div>
               </div>
+
+              {/* Captcha */}
+              {/* <div className="space-y-2">
+                <Recaptcha onVerify={setCaptchaToken} />
+              </div> */}
 
               {/* Botón de envío */}
               <button
@@ -239,7 +251,9 @@ function LoginContent() {
                       disabled={isResending}
                       className="mt-3 text-sm font-medium text-amber-800 dark:text-amber-200 hover:text-amber-900 dark:hover:text-amber-100 disabled:opacity-50 transition-colors"
                     >
-                      {isResending ? "Reenviando..." : "Reenviar correo de confirmación"}
+                      {isResending
+                        ? "Reenviando..."
+                        : "Reenviar correo de confirmación"}
                     </button>
                   </div>
                 </div>
@@ -250,8 +264,8 @@ function LoginContent() {
             <div className="mt-8 text-center">
               <p className="text-sm text-slate-600 dark:text-slate-400">
                 ¿No tienes cuenta?{" "}
-                <Link 
-                  href="/register" 
+                <Link
+                  href="/register"
                   className="font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-colors"
                 >
                   Regístrate aquí
@@ -274,14 +288,16 @@ function LoginContent() {
 
 export default function LoginPage() {
   return (
-    <Suspense fallback={
-      <div className="min-h-screen bg-slate-50 dark:bg-slate-900 flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-slate-600 dark:text-slate-400">Cargando...</p>
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-slate-50 dark:bg-slate-900 flex items-center justify-center">
+          <div className="text-center">
+            <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+            <p className="text-slate-600 dark:text-slate-400">Cargando...</p>
+          </div>
         </div>
-      </div>
-    }>
+      }
+    >
       <LoginContent />
     </Suspense>
   );

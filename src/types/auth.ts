@@ -4,7 +4,7 @@ export interface UserData {
   id: number | string;
   username: string;
   email: string;
-  roles?: string[];
+  role?: string;
   isVerified?: boolean;
 }
 

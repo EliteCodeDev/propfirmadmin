@@ -11,7 +11,7 @@ const REFRESH_THRESHOLD = 60; // 1 minuto
 interface ExtendedJWT extends JWT {
   // 'id' es requerido en JWT extendido para evitar incompatibilidad, usar union con existente
   id: string | number; // NextAuth core espera id declarado en augmentations
-  email?: string;
+  email?: string | null;
   name?: string;
   username?: string;
   firstName?: string;
@@ -74,14 +74,14 @@ export const authOptions: NextAuthOptions = {
             // Extraer el rol principal desde el backend
             const roleName: string | undefined = rawUser?.role?.name;
             // Bloquear acceso a usuarios sin rol o con rol 'user'
-            if (!roleName || roleName === 'user') {
-              throw new Error('No tienes permisos para acceder al panel');
+            if (!roleName || roleName === "user") {
+              throw new Error("No tienes permisos para acceder al panel");
             }
             const userToReturn = {
               id: rawUser.userID ?? rawUser.id, // Mapear userID del backend a id que espera NextAuth
               name:
                 rawUser.username ||
-                `${rawUser.firstName || ''} ${rawUser.lastName || ''}`.trim() ||
+                `${rawUser.firstName || ""} ${rawUser.lastName || ""}`.trim() ||
                 rawUser.email,
               email: rawUser.email ?? undefined,
               image: null, // No hay imagen en el backend
@@ -91,9 +91,10 @@ export const authOptions: NextAuthOptions = {
               lastName: rawUser.lastName,
               isVerified: rawUser.isVerified,
               // Mapear a arreglo de roles desde el rol único del backend
-              roles: Array.isArray(rawUser?.userRoles) && rawUser?.userRoles.length
-                ? rawUser.userRoles
-                : roleName
+              roles:
+                Array.isArray(rawUser?.userRoles) && rawUser?.userRoles.length
+                  ? rawUser.userRoles
+                  : roleName
                   ? [roleName]
                   : [],
               accessToken: access_token,
@@ -144,13 +145,13 @@ export const authOptions: NextAuthOptions = {
           roles?: string[];
           isVerified?: boolean;
         };
-        
+
         // Guardar todos los datos del usuario en el token
         jwtToken.accessToken = u.accessToken;
         jwtToken.refreshToken = u.refreshToken;
         jwtToken.id = u.id;
-  jwtToken.email = (u.email ?? undefined) as string | undefined;
-  jwtToken.name = (u.name ?? undefined) as string | undefined;
+        jwtToken.email = (u.email ?? undefined) as string | undefined;
+        jwtToken.name = (u.name ?? undefined) as string | undefined;
         jwtToken.username = u.username;
         jwtToken.firstName = u.firstName;
         jwtToken.lastName = u.lastName;

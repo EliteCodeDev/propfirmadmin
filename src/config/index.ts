@@ -10,6 +10,7 @@ const isClient = typeof window !== "undefined";
 
 const PUBLIC_ENV = {
   NEXT_PUBLIC_BACKEND_URL: process.env.NEXT_PUBLIC_BACKEND_URL,
+  NEXT_PUBLIC_CLOUDFLARE_SITE_KEY: process.env.NEXT_PUBLIC_CLOUDFLARE_SITE_KEY,
 } as const;
 
 export const getEnv = (
@@ -84,6 +85,19 @@ export const internalApiBaseUrl = `${internalBackendUrl}/api`;
 export const NEXTAUTH_SECRET = getEnv("NEXTAUTH_SECRET", {
   required: !isClient, // Solo requerido en el servidor
   default: isClient ? "" : "dev-secret-change", // Vacío en cliente, valor por defecto en servidor
+});
+
+// Cloudflare Turnstile (público)
+export const CLOUDFLARE_SITE_KEY = getEnv("NEXT_PUBLIC_CLOUDFLARE_SITE_KEY", {
+  required: false,
+  default: "",
+  logIfDefault: true,
+});
+
+// Cloudflare Turnstile Secret (solo servidor)
+export const CLOUDFLARE_SECRET_KEY = getEnv("NEXT_PRIVATE_CLOUDFLARE_SECRET_KEY", {
+  required: !isClient,
+  default: isClient ? "" : "",
 });
 
 // Helper para exponer un snapshot (útil en depuración).
