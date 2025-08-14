@@ -91,9 +91,9 @@ function WithdrawalsInner() {
   const { data: session, status: authStatus } = useSession();
 
   // Estado
-  const [scope, setScope] = useState<Scope>("all"); // 👈 por defecto “Todos”
+  const [scope, setScope] = useState<Scope>("all");
   const [page, setPage] = useState<number>(1);
-  const [limit, setLimit] = useState<LimitParam>(1000); // 👈 muestra todo
+  const [limit, setLimit] = useState<LimitParam>(1000);
   const [status, setStatus] = useState<"" | WithdrawalStatus>("");
 
   const accessToken = (session as any)?.accessToken as string | undefined;
