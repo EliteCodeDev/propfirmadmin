@@ -179,7 +179,7 @@ export default function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
           
           <button
             onClick={toggleSidebar}
-            className="p-1.5 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-200"
+            className="p-1.5 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-200 cursor-pointer"
           >
             {isCollapsed ? (
               <Bars3Icon className="h-5 w-5" />
@@ -279,7 +279,7 @@ export default function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
             <div className="absolute bottom-full left-4 right-4 mb-2 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 py-2 z-50">
               <button
                 onClick={toggleTheme}
-                className="w-full flex items-center px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200"
+                className="w-full flex items-center px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200 cursor-pointer"
               >
                 {theme === 'light' ? (
                   <MoonIcon className="h-4 w-4 mr-3" />
@@ -293,7 +293,7 @@ export default function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
 
               <button 
                 onClick={() => router.push('/profile')} 
-                className="w-full flex items-center px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200"
+                className="w-full flex items-center px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200 cursor-pointer"
               >
                 <UserIcon className="h-4 w-4 mr-3" />
                 Mi Perfil
@@ -303,7 +303,7 @@ export default function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
 
               <button
                 onClick={() => signOut({ callbackUrl: '/login' })}
-                className="w-full flex items-center px-4 py-2.5 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors duration-200"
+                className="w-full flex items-center px-4 py-2.5 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors duration-200 cursor-pointer"
               >
                 <ArrowRightOnRectangleIcon className="h-4 w-4 mr-3" />
                 Cerrar Sesión
@@ -312,14 +312,14 @@ export default function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
           )}
 
           {/* User Button */}
-          <button
+      <button
             onClick={() => setUserMenuOpen(!userMenuOpen)}
             className={classNames(
               "group flex items-center w-full rounded-xl transition-all duration-200 relative",
               isCollapsed 
                 ? "p-2 justify-center" 
                 : "px-3 py-3",
-              "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+        "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer"
             )}
             title={isCollapsed ? "Menú de usuario" : ""}
           >
@@ -363,7 +363,7 @@ export default function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
             <div className="mt-2 space-y-1">
               <button
                 onClick={toggleTheme}
-                className="w-full p-2 rounded-lg text-gray-400 hover:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-200 group relative"
+                className="w-full p-2 rounded-lg text-gray-400 hover:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-200 group relative cursor-pointer"
                 title={theme === 'light' ? 'Modo Oscuro' : 'Modo Claro'}
               >
                 {theme === 'light' ? (
@@ -380,7 +380,7 @@ export default function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
 
               <button
                 onClick={() => signOut({ callbackUrl: '/login' })}
-                className="w-full p-2 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors duration-200 group relative"
+                className="w-full p-2 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors duration-200 group relative cursor-pointer"
                 title="Cerrar sesión"
               >
                 <ArrowRightOnRectangleIcon className="h-5 w-5 mx-auto" />
