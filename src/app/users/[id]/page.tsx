@@ -70,7 +70,6 @@ const buildHeaders = (token?: string): HeadersInit => {
   return h;
 };
 
-// Arrays en {data:{data:[...]}} | {data:[...]} | {items:[...]} | [...]
 const unwrapItems = <T,>(raw: any): T[] => {
   if (!raw) return [];
   const lvl1 = raw?.data ?? raw?.items ?? raw;
@@ -89,7 +88,6 @@ const unwrapItems = <T,>(raw: any): T[] => {
   return [];
 };
 
-// Un solo objeto (ej. /api/users/:id)
 const unwrapOne = <T,>(raw: any): T | null => {
   if (!raw) return null;
   const lvl1 = raw?.data ?? raw?.item ?? raw;
@@ -102,14 +100,12 @@ const unwrapOne = <T,>(raw: any): T | null => {
   return null;
 };
 
-// Fetcher autenticado basado en la clave [url, token]
 async function authedFetcher([url, token]: [string, string]) {
   if (!token) throw new Error("Missing access token");
   const full = url.startsWith("http") ? url : `${API_BASE}${url}`;
   const res = await fetch(full, {
     method: "GET",
     headers: buildHeaders(token),
-    // credentials: "include", // habilítalo solo si tu backend usa cookies
   });
   if (!res.ok) {
     const text = await res.text().catch(() => "");
@@ -118,18 +114,16 @@ async function authedFetcher([url, token]: [string, string]) {
   return res.json();
 }
 
-/** Construye variantes de URL para filtrar por userId; la última es fallback sin filtro */
 function buildChallengeUrls(userId: string) {
   const uid = encodeURIComponent(userId);
   return [
     `/api/challenges?userID=${uid}&page=1&limit=1000`,
     `/api/challenges?userId=${uid}&page=1&limit=1000`,
     `/api/challenges?user=${uid}&page=1&limit=1000`,
-    `/api/challenges?page=1&limit=1000`, // fallback: traer todo
+    `/api/challenges?page=1&limit=1000`,
   ];
 }
 
-/** Filtro local robusto por userId */
 function filterByUserId<T extends {
   userID?: unknown; userId?: unknown;
   user?: { id?: unknown; userID?: unknown } | null;
@@ -148,11 +142,15 @@ function UserDetailInner() {
 
   const { data: session, status } = useSession();
   const token = (session as any)?.accessToken as string | undefined;
+
+  // Estados de carga unificados
+  const isAuthLoading = status === "loading";
+  const isUnauthenticated = status === "unauthenticated";
   const canFetch = status === "authenticated" && !!token;
 
   useEffect(() => {
-    if (status === "unauthenticated") router.replace("/login");
-  }, [status, router]);
+    if (isUnauthenticated) router.replace("/login");
+  }, [isUnauthenticated, router]);
 
   /* ---- Usuario ---- */
   const {
@@ -166,11 +164,9 @@ function UserDetailInner() {
   );
 
   const user = useMemo<User>(() => (unwrapOne<User>(userRaw) ?? {}) as User, [userRaw]);
+  const hasUserData = !!(user?.userID || user?.id || user?.username);
 
-  /* ---- Challenges del usuario ----
-     1) Intenta con ?userID=?, ?userId=?, ?user=?
-     2) Si no hay datos o el backend no filtra, trae todo y filtra local
-  */
+  /* ---- Challenges del usuario ---- */
   const urls = useMemo(() => (userId ? buildChallengeUrls(userId) : []), [userId]);
 
   const {
@@ -178,35 +174,36 @@ function UserDetailInner() {
     isLoading: chLoading,
     error: chErr,
   } = useSWR(
-    canFetch && urls.length ? [urls, token!] : null,
+    canFetch && hasUserData && urls.length ? [urls, token!] : null,
     async ([uList, tok]: [string[], string]) => {
       for (let i = 0; i < uList.length - 1; i++) {
         try {
           const j = await authedFetcher([uList[i], tok]);
           const arr = unwrapItems<Challenge>(j);
-          if (arr.length > 0) return arr; // si trajo algo filtrado, úsalo
+          if (arr.length > 0) return arr;
         } catch {
           // intenta siguiente variante
         }
       }
-      // fallback: trae todo y filtra local
       const jf = await authedFetcher([uList[uList.length - 1], tok]);
       return unwrapItems<Challenge>(jf);
     },
     { revalidateOnFocus: false }
   );
 
-  // Filtrado local por userId SIEMPRE (cubre caso backend no filtra)
   const challenges: Challenge[] = useMemo(() => {
     const list = Array.isArray(chRaw) ? (chRaw as Challenge[]) : [];
     return userId ? filterByUserId(list, userId) : [];
   }, [chRaw, userId]);
 
+  // Estados de carga específicos
+  const isInitialLoading = isAuthLoading || !token;
+  const isUserDataLoading = userLoading && !hasUserData;
+  const isChallengesLoading = chLoading;
+  const hasErrors = userErr || chErr;
+
   /* ---- Cards ---- */
-  const fullName =
-    `${user?.firstName ?? ""} ${user?.lastName ?? ""}`.trim() ||
-    user?.username ||
-    "-";
+  const fullName = `${user?.firstName ?? ""} ${user?.lastName ?? ""}`.trim() || user?.username || "-";
 
   const contactFields = [
     { label: "Email", value: user?.email ?? "-" },
@@ -214,16 +211,13 @@ function UserDetailInner() {
     { label: "Name", value: fullName },
     {
       label: "Address",
-      value:
-        [
-          user?.address?.address1,
-          user?.address?.city,
-          user?.address?.state,
-          user?.address?.country,
-          user?.address?.zipCode,
-        ]
-          .filter(Boolean)
-          .join(", ") || "-",
+      value: [
+        user?.address?.address1,
+        user?.address?.city,
+        user?.address?.state,
+        user?.address?.country,
+        user?.address?.zipCode,
+      ].filter(Boolean).join(", ") || "-",
     },
   ];
 
@@ -268,8 +262,7 @@ function UserDetailInner() {
       (challenges || []).map((c) => {
         const login = c?.brokerAccount?.login ?? "-";
         const platform = c?.brokerAccount?.platform ?? "-";
-        const sizeRaw =
-          c?.brokerAccount?.initialBalance ?? c?.dynamicBalance ?? null;
+        const sizeRaw = c?.brokerAccount?.initialBalance ?? c?.dynamicBalance ?? null;
 
         const sizeNum =
           sizeRaw == null
@@ -303,126 +296,185 @@ function UserDetailInner() {
     [mapped, startIdx, pageSize]
   );
 
-  const showAuthSpinner = status === "loading" || !token;
+  // Renderizado condicional por estados de carga
+  if (isInitialLoading) {
+    return (
+      <LoadingSpinner
+        size="md"
+        text="Verificando Sesión"
+        subtitle="Validando credenciales de usuario..."
+        showProgress
+        steps={[
+          'Verificando token de sesión...',
+          'Validando permisos de usuario...',
+          'Cargando configuración...',
+          'Preparando dashboard...'
+        ]}
+      />
+    );
+  }
+
+  if (isUserDataLoading) {
+    return (
+      <MainLayout>
+        <LoadingSpinner
+          size="md"
+          text="Cargando Challenges"
+          subtitle="Obteniendo información del usuario..."
+          showProgress
+          steps={[
+            'Consultando datos del usuario...',
+            'Cargando información de contacto...',
+            'Obteniendo detalles de cuenta...',
+            'Preparando vista de detalles...'
+          ]}
+        />
+      </MainLayout>
+    );
+  }
 
   return (
     <MainLayout>
-      {showAuthSpinner ? (
-        <LoadingSpinner
-          size="md"
-          text="Verificando Sesión"
-          subtitle="Validando credenciales de usuario..."
-          showProgress
-        />
-      ) : (
-        <div className="min-h-screen p-3">
-          <div className="max-w-7xl mx-auto space-y-4">
-            {/* Header */}
-            <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 shadow-sm">
-              <div className="flex items-center justify-between">
-                <button
-                  className="inline-flex items-center px-3 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300"
-                  onClick={() => router.back()}
-                >
-                  <ArrowLeftIcon className="w-4 h-4 mr-2" />
-                  Back to Users
-                </button>
-                <div className="text-right">
-                  <div className="text-xs text-gray-500 dark:text-gray-400">User ID</div>
-                  <div className="text-sm font-mono font-medium text-gray-900 dark:text-gray-100 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded text-center">
-                    {userId}
-                  </div>
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-3 transition-colors duration-200">
+        <div className="max-w-7xl mx-auto space-y-4">
+          {/* Header compacto */}
+          <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 shadow-sm">
+            <div className="flex items-center justify-between">
+              <button
+                className="inline-flex items-center px-3 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 transition-colors duration-200"
+                onClick={() => router.back()}
+              >
+                <ArrowLeftIcon className="w-4 h-4 mr-2" />
+                Back to Users
+              </button>
+              <div className="text-right">
+                <div className="text-xs text-gray-500 dark:text-gray-400">User ID</div>
+                <div className="text-sm font-mono font-medium text-gray-900 dark:text-gray-100 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded text-center">
+                  {userId}
                 </div>
               </div>
-            </div>
-
-            {/* Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 shadow-sm">
-                <div className="flex items-center mb-3">
-                  <UserIcon className="w-5 h-5 text-blue-600 dark:text-blue-400 mr-2" />
-                  <h3 className="text-sm font-semibold">Contact Information</h3>
-                </div>
-                <div className="space-y-2">
-                  {contactFields.map((f, i) => (
-                    <div key={i} className="flex justify-between text-xs">
-                      <span className="text-gray-600 dark:text-gray-400 font-medium">{f.label}:</span>
-                      <span className="font-mono max-w-xs truncate" title={f.value}>{f.value}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 shadow-sm">
-                <div className="flex items-center mb-3">
-                  <ClockIcon className="w-5 h-5 text-emerald-600 dark:text-emerald-400 mr-2" />
-                  <h3 className="text-sm font-semibold">Account Details</h3>
-                </div>
-                <div className="space-y-2">
-                  {accountFields.map((f, i) => (
-                    <div key={i} className="flex justify-between text-xs">
-                      <span className="text-gray-600 dark:text-gray-400 font-medium">{f.label}:</span>
-                      <span className="font-mono max-w-xs truncate" title={f.value}>{f.value}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 shadow-sm">
-                <div className="flex items-center mb-3">
-                  <ExclamationTriangleIcon className="w-5 h-5 text-amber-600 dark:text-amber-400 mr-2" />
-                  <h3 className="text-sm font-semibold">Recent Activity</h3>
-                </div>
-                <div className="space-y-2">
-                  {activityFields.map((f, i) => (
-                    <div key={i} className="flex justify-between text-xs">
-                      <span className="text-gray-600 dark:text-gray-400 font-medium">{f.label}:</span>
-                      <span className="font-mono max-w-xs truncate" title={f.value}>{f.value}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {/* Tabla challenges */}
-            <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
-              <div className="p-4 border-b border-gray-200 dark:border-gray-700">
-                <h2 className="text-lg font-bold">Prop Accounts</h2>
-                <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
-                  Linked challenges & broker accounts ({totalItems} total)
-                </p>
-              </div>
-
-              <PaginatedCardTable
-                columns={columns}
-                rows={rows}
-                isLoading={chLoading || userLoading}
-                emptyText={
-                  chErr?.message ||
-                  userErr?.message ||
-                  (!chLoading && mapped.length === 0 ? "This user has no challenges." : undefined)
-                }
-                pagination={{
-                  currentPage: page,
-                  totalPages,
-                  totalItems,
-                  pageSize,
-                  onPageChange: (p) => setPage(p),
-                  onPageSizeChange: (n) => {
-                    setPage(1);
-                    setPageSize(n);
-                  },
-                }}
-              />
             </div>
           </div>
+
+          {/* Cards de información */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* Contact Information */}
+            <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 shadow-sm">
+              <div className="flex items-center mb-3">
+                <UserIcon className="w-5 h-5 text-blue-600 dark:text-blue-400 mr-2" />
+                <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">Contact Information</h3>
+              </div>
+              <div className="space-y-2">
+                {contactFields.map((f, i) => (
+                  <div key={i} className="flex justify-between items-center text-xs">
+                    <span className="text-gray-600 dark:text-gray-400 font-medium">{f.label}:</span>
+                    <span 
+                      className="text-gray-900 dark:text-gray-100 font-mono text-right max-w-xs truncate" 
+                      title={f.value}
+                    >
+                      {f.value}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Account Details */}
+            <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 shadow-sm">
+              <div className="flex items-center mb-3">
+                <ClockIcon className="w-5 h-5 text-emerald-600 dark:text-emerald-400 mr-2" />
+                <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">Account Details</h3>
+              </div>
+              <div className="space-y-2">
+                {accountFields.map((f, i) => (
+                  <div key={i} className="flex justify-between items-center text-xs">
+                    <span className="text-gray-600 dark:text-gray-400 font-medium">{f.label}:</span>
+                    <span className="text-gray-900 dark:text-gray-100 font-mono text-right max-w-xs truncate" title={f.value}>
+                      {f.value === "Yes" || f.value === "active" ? (
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-100 dark:bg-emerald-900/30 text-emerald-800 dark:text-emerald-300">
+                          {f.value}
+                        </span>
+                      ) : f.value === "No" || f.value === "unconfirmed" ? (
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300">
+                          {f.value}
+                        </span>
+                      ) : (
+                        f.value
+                      )}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Recent Activity */}
+            <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 shadow-sm">
+              <div className="flex items-center mb-3">
+                <ExclamationTriangleIcon className="w-5 h-5 text-amber-600 dark:text-amber-400 mr-2" />
+                <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">Recent Activity</h3>
+              </div>
+              <div className="space-y-2">
+                {activityFields.map((f, i) => (
+                  <div key={i} className="flex justify-between items-center text-xs">
+                    <span className="text-gray-600 dark:text-gray-400 font-medium">{f.label}:</span>
+                    <span 
+                      className="text-gray-900 dark:text-gray-100 font-mono text-right max-w-xs truncate" 
+                      title={f.value}
+                    >
+                      {f.value}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Tabla de challenges */}
+          <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
+            <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100">Prop Accounts</h2>
+                  <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                    Linked challenges & broker accounts ({totalItems} total)
+                  </p>
+                </div>
+                {isChallengesLoading && (
+                  <div className="flex items-center text-xs text-gray-500 dark:text-gray-400">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500 mr-2"></div>
+                    Loading challenges...
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <PaginatedCardTable
+              columns={columns}
+              rows={rows}
+              isLoading={isChallengesLoading}
+              emptyText={
+                hasErrors?.message ||
+                (!isChallengesLoading && mapped.length === 0 ? "This user has no challenges." : undefined)
+              }
+              pagination={{
+                currentPage: page,
+                totalPages,
+                totalItems,
+                pageSize,
+                onPageChange: (p) => setPage(p),
+                onPageSizeChange: (n) => {
+                  setPage(1);
+                  setPageSize(n);
+                },
+              }}
+            />
+          </div>
         </div>
-      )}
+      </div>
     </MainLayout>
   );
 }
 
-/* ========= Wrapper ========= */
 export default function Page() {
   return (
     <SessionProvider>

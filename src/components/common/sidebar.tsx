@@ -44,12 +44,6 @@ const navigation: NavigationItem[] = [
     description: "Gestión de challenges"
   },
   { 
-    name: "User Challenges", 
-    href: "/user-challenges", 
-    icon: TrophyIcon,
-    description: "Desafíos de usuarios"
-  },
-  { 
     name: "Usuarios", 
     href: "/users", 
     icon: UserGroupIcon,
