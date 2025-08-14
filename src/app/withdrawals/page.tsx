@@ -8,6 +8,7 @@ import { SessionProvider, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import PaginatedCardTable from "@/components/common/PaginatedCardTable";
 import type { ColumnConfig } from "@/components/common/tableComponent";
+import { ClipboardIcon } from "@heroicons/react/24/outline";
 
 type WithdrawalStatus = "pending" | "approved" | "rejected";
 type LimitParam = number;
@@ -195,6 +196,7 @@ function WithdrawalsInner() {
   const pageObj = unwrapPage<Withdrawal>(data as unknown);
   const withdrawals = pageObj.items;
   const totalPages = pageObj.totalPages;
+  const offset = (page - 1) * limit;
   const isForbidden = httpStatus === 403;
   const isServerErr = httpStatus === 500;
 
@@ -220,7 +222,31 @@ function WithdrawalsInner() {
 
         {(() => {
           const columns: ColumnConfig[] = [
-            { key: "withdrawalID", label: "Withdrawal ID", type: "normal" },
+            { key: "serial", label: "ID", type: "normal" },
+            {
+              key: "withdrawalID",
+              label: "Withdrawal ID",
+              type: "normal",
+              render: (v) => {
+                const id = String(v ?? "");
+                const short = id ? (id.length > 4 ? `${id.slice(0, 4)}...` : id) : "-";
+                return (
+                  <span className="inline-flex items-center gap-1">
+                    <span className="font-mono">{short}</span>
+                    {id && (
+                      <button
+                        type="button"
+                        className="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700"
+                        title="Copiar ID"
+                        onClick={() => { try { navigator.clipboard?.writeText(id); } catch {} }}
+                      >
+                        <ClipboardIcon className="w-4 h-4 text-gray-500 dark:text-gray-300" />
+                      </button>
+                    )}
+                  </span>
+                );
+              },
+            },
             { key: "createdAt", label: "Fecha", type: "normal" },
             { key: "amount", label: "Monto", type: "normal", render: (v) => String(v) },
             { key: "wallet", label: "Wallet", type: "normal" },
@@ -230,7 +256,8 @@ function WithdrawalsInner() {
             ...(scope === "all" ? [{ key: "userName", label: "Usuario", type: "normal" } as ColumnConfig] : []),
           ];
 
-          const rows = withdrawals.map((w) => ({
+          const rows = withdrawals.map((w, idx) => ({
+            serial: offset + idx + 1,
             withdrawalID: w.withdrawalID ?? "-",
             createdAt: w.createdAt ? new Date(w.createdAt).toLocaleString() : "-",
             amount: money.format(Number(w.amount ?? 0)),
