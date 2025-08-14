@@ -88,9 +88,8 @@ export default function UserPage() {
 
   return (
     <MainLayout>
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-800 p-2">
         <div className="max-w-7xl mx-auto space-y-6">
-
           {/* Top Section - Buttons */}
           <div className="flex items-center justify-between">
             <div className="flex gap-3">

@@ -31,30 +31,38 @@ function humanize(segment: string): string {
 }
 
 export default function BreadcrumbBar() {
-  const pathname = usePathname() || "/dashboard";
+  const pathname = usePathname(); // ❌ sin fallback
 
   const items = useMemo(() => {
-    const segments = pathname.split("/").filter(Boolean);
+    const segments = (pathname ?? "").split("/").filter(Boolean);
     const crumbs: BreadcrumbItem[] = [];
 
-    // Always begin with Dashboard home
-    crumbs.push({ label: "Dashboard", href: "/dashboard", icon: (p) => <HomeIcon {...p} /> });
+    const onDashboard = segments.length === 0 || segments[0] === "dashboard";
+
+    // Home/Dashboard: solo linkeable si NO estás ya en dashboard
+    crumbs.push({
+      label: "Dashboard",
+      href: onDashboard ? undefined : "/dashboard", // ✅ evita clics involuntarios
+      icon: (p) => <HomeIcon {...p} />,
+      current: onDashboard,
+    });
 
     let acc = "";
     segments.forEach((seg, idx) => {
-      if (seg === "dashboard") return; // skip because it's already added
+      if (seg === "dashboard") return; // ya agregado
       acc += `/${seg}`;
       const label = LABELS[seg] || humanize(seg);
       const icon = ICONS[seg];
       const isLast = idx === segments.length - 1;
       crumbs.push({ label, href: isLast ? undefined : acc, icon, current: isLast });
     });
+
     return crumbs;
   }, [pathname]);
 
   return (
-    <div className="sticky top-0 h-16 z-20 backdrop-blur bg-gray-800 dark:bg-gray-900/70 border-b border-gray-200 dark:border-gray-700">
-      <div className="flex items-center justify-start h-16 px-4">
+    <div className="sticky top-0 h-16 z-20 backdrop-blur bg-gray-900/70 border-b border-gray-700">
+      <div className="flex items-center h-16 px-4">
         <Breadcrumbs items={items} />
       </div>
     </div>
