@@ -78,40 +78,78 @@ export function ChallengeTemplatesManager() {
   };
 
   return (
-    <div className="space-y-6">
-      {/* Navigation Tabs */}
-      <div className="flex flex-wrap gap-2 border-b border-zinc-200 dark:border-zinc-700">
-        {tabsValidation.safeMap((tab) => (
-          <button
-            key={tab?.id || 'default'}
-            onClick={() => setActiveTab(tab?.id || 'visualizer')}
-            className={`flex items-center gap-2 px-4 py-2 rounded-t-lg transition-all ${
-              activeTab === tab?.id
-                ? "bg-[var(--app-secondary)] text-black border-b-2 border-[var(--app-secondary)]"
-                : "bg-white dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-700"
-            }`}
-          >
-            {tab?.icon}
-            {tab?.label || 'Tab'}
-          </button>
-        ))}
-      </div>
-
-      {/* Page Size Control - Only show for non-visualizer tabs */}
-      {activeTab !== "visualizer" && (
-        <div className="flex justify-end">
-          <div className="flex items-center gap-3 bg-white/60 dark:bg-zinc-800/60 px-4 py-2 rounded-lg shadow-sm backdrop-blur-sm">
-            <span className="text-zinc-700 dark:text-zinc-300 font-medium text-sm whitespace-nowrap">
-              Filas por página:
-            </span>
-            <RowsPerPage pageSize={pageSize} onPageSizeChange={setPageSize} />
+    <div className="min-h-screen  transition-colors duration-200">
+      <div className="max-w-7xl mx-auto p-6 space-y-6">
+        {/* Header */}
+        <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6 shadow-sm">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+                Challenge Templates Manager
+              </h1>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                Gestiona plantillas, categorías, planes y configuraciones de challenges
+              </p>
+            </div>
+            <div className="flex items-center space-x-2">
+              <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+                <Settings className="w-5 h-5 text-white" />
+              </div>
+            </div>
           </div>
         </div>
-      )}
 
-      {/* Tab Content */}
-      <div className="bg-white/40 dark:bg-zinc-800/40 rounded-xl shadow-md backdrop-blur-sm overflow-hidden">
-        {renderTabContent()}
+        {/* Navigation Tabs */}
+        <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
+          <div className="flex flex-wrap border-b border-gray-200 dark:border-gray-700">
+            {tabsValidation.safeMap((tab, index) => (
+              <button
+                key={tab?.id || `tab-${index}`}
+                onClick={() => setActiveTab(tab?.id || 'visualizer')}
+                className={`flex items-center gap-2 px-6 py-4 text-sm font-medium transition-all duration-200 relative ${
+                  activeTab === tab?.id
+                    ? "bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 border-b-2 border-blue-600"
+                    : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700/50"
+                }`}
+              >
+                <span className={`${
+                  activeTab === tab?.id 
+                    ? "text-blue-600 dark:text-blue-400" 
+                    : "text-gray-500 dark:text-gray-500"
+                }`}>
+                  {tab?.icon}
+                </span>
+                {tab?.label || 'Tab'}
+                
+                {/* Active indicator */}
+                {activeTab === tab?.id && (
+                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600 dark:bg-blue-400" />
+                )}
+              </button>
+            ))}
+          </div>
+
+          {/* Page Size Control - Only show for non-visualizer tabs */}
+          {activeTab !== "visualizer" && (
+            <div className="p-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
+              <div className="flex justify-end">
+                <div className="flex items-center gap-3 bg-white dark:bg-gray-700 px-4 py-2 rounded-lg shadow-sm border border-gray-200 dark:border-gray-600">
+                  <span className="text-gray-700 dark:text-gray-300 font-medium text-sm whitespace-nowrap">
+                    Filas por página:
+                  </span>
+                  <div className="min-w-0">
+                    <RowsPerPage pageSize={pageSize} onPageSizeChange={setPageSize} />
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Tab Content */}
+          <div className="bg-white dark:bg-gray-800">
+            {renderTabContent()}
+          </div>
+        </div>
       </div>
     </div>
   );

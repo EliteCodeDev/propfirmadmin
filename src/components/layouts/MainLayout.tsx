@@ -32,7 +32,7 @@ export default function MainLayout({
   };
 
   return (
-    <div className="flex h-screen bg-gray-100 dark:bg-gray-800">
+    <div className="flex h-screen bg-gray-100 dark:bg-gray-900 transition-colors duration-200">
       {/* Sidebar con estado controlado */}
       <Sidebar 
         collapsed={sidebarCollapsed} 
@@ -49,9 +49,9 @@ export default function MainLayout({
           <BreadcrumbBar />
         </div>
 
-        {/* Área de contenido con scroll */}
+        {/* Área de contenido con scroll y ancho máximo */}
         <main className="flex-1 overflow-y-auto">
-          <div className="p-4 min-h-full">
+          <div className="w-full max-w-7xl mx-auto p-4 min-h-full">
             {children}
           </div>
         </main>
