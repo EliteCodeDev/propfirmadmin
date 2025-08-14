@@ -18,7 +18,6 @@ interface PaginationProps {
 }
 
 interface PaginatedCardTableProps {
-  title: string;
   subtitleBadge?: string;
   columns: ColumnConfig[];
   rows: Record<string, unknown>[];
@@ -92,7 +91,6 @@ const renderCell = (column: ColumnConfig, row: Record<string, unknown>) => {
 
 export default function PaginatedCardTable(props: PaginatedCardTableProps) {
   const {
-    title,
     subtitleBadge,
     columns,
     rows,
@@ -140,7 +138,19 @@ export default function PaginatedCardTable(props: PaginatedCardTableProps) {
   };
 
   return (
-    <Card className="shadow-none border-0 overflow-hidden bg-transparent">
+    <Card className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+      {(subtitleBadge) && (
+        <CardHeader className="px-4 py-3 border-b border-gray-200 dark:border-gray-700/50">
+          <div className="flex items-center justify-between">
+            
+            {subtitleBadge && (
+              <span className="ml-2 px-2 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
+                {subtitleBadge}
+              </span>
+            )}
+          </div>
+        </CardHeader>
+      )}
       <CardContent className="p-0">
         <div className="overflow-x-auto">
           <Table className="w-full">

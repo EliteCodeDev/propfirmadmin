@@ -38,6 +38,12 @@ const navigation: NavigationItem[] = [
     description: "Panel principal"
   },
   { 
+    name: "Challenges", 
+    href: "/challenges", 
+    icon: TrophyIcon,
+    description: "Gestión de challenges"
+  },
+  { 
     name: "User Challenges", 
     href: "/user-challenges", 
     icon: TrophyIcon,

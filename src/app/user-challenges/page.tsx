@@ -189,7 +189,6 @@ export default function UserPage() {
 
                 return (
                   <PaginatedCardTable
-                    title="Prop Accounts"
                     columns={columns}
                     rows={rows}
                     pagination={{
