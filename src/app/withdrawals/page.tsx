@@ -56,26 +56,43 @@ const money = new Intl.NumberFormat("en-US", {
   minimumFractionDigits: 2,
 });
 
-function unwrapPage<T = any>(raw: any): {
+type UnknownRecord = Record<string, unknown>;
+interface HttpError extends Error { status?: number; body?: string }
+
+function unwrapPage<T = UnknownRecord>(raw: unknown): {
   items: T[];
   total: number;
   page: number;
   limit: number;
   totalPages: number;
 } {
-  const layer = raw?.data && !Array.isArray(raw.data) ? raw.data : raw;
+  const r = raw as UnknownRecord | undefined;
+  const dataField = (r && (r as UnknownRecord)["data"]) as unknown;
+  const layer: UnknownRecord | unknown[] | undefined =
+    dataField && !Array.isArray(dataField) ? (dataField as UnknownRecord) : r;
 
-  const items: T[] = Array.isArray(layer?.data)
-    ? layer.data
-    : Array.isArray(layer?.items)
-    ? layer.items
-    : Array.isArray(layer)
-    ? layer
-    : [];
+  let items: T[] = [];
+  if (layer && typeof layer === "object" && !Array.isArray(layer)) {
+    const maybeData = (layer as UnknownRecord)["data"] as unknown;
+    const maybeItems = (layer as UnknownRecord)["items"] as unknown;
+    if (Array.isArray(maybeData)) items = maybeData as T[];
+    else if (Array.isArray(maybeItems)) items = maybeItems as T[];
+  } else if (Array.isArray(layer)) {
+    items = layer as T[];
+  }
 
-  const total = typeof layer?.total === "number" ? layer.total : items.length;
-  const page = typeof layer?.page === "number" ? layer.page : 1;
-  const limit = typeof layer?.limit === "number" ? layer.limit : items.length;
+  const total =
+    layer && typeof layer === "object" && typeof (layer as UnknownRecord)["total"] === "number"
+      ? ((layer as UnknownRecord)["total"] as number)
+      : items.length;
+  const page =
+    layer && typeof layer === "object" && typeof (layer as UnknownRecord)["page"] === "number"
+      ? ((layer as UnknownRecord)["page"] as number)
+      : 1;
+  const limit =
+    layer && typeof layer === "object" && typeof (layer as UnknownRecord)["limit"] === "number"
+      ? ((layer as UnknownRecord)["limit"] as number)
+      : items.length;
   const totalPages =
     typeof layer?.totalPages === "number"
       ? layer.totalPages
@@ -96,7 +113,7 @@ function WithdrawalsInner() {
   const [limit, setLimit] = useState<LimitParam>(1000);
   const [status, setStatus] = useState<"" | WithdrawalStatus>("");
 
-  const accessToken = (session as any)?.accessToken as string | undefined;
+  const accessToken = session?.accessToken as string | undefined;
 
   const query = useMemo(() => {
     const q = new URLSearchParams();
@@ -120,8 +137,9 @@ function WithdrawalsInner() {
     });
     if (!res.ok) {
       const text = await res.text();
-      const err = new Error(text || `Error ${res.status}`) as any;
-      (err.status = res.status), (err.body = text);
+      const err: HttpError = new Error(text || `Error ${res.status}`);
+      err.status = res.status;
+      err.body = text;
       throw err;
     }
     return res.json();
@@ -155,12 +173,19 @@ function WithdrawalsInner() {
     );
   }
 
-  const pageObj = unwrapPage<Withdrawal>(data as any);
+  const pageObj = unwrapPage<Withdrawal>(data as unknown);
   const withdrawals = pageObj.items;
   const totalPages = pageObj.totalPages;
-
-  const isForbidden = (error as any)?.status === 403;
-  const isServerErr = (error as any)?.status === 500;
+  
+  const httpStatus: number | undefined = ((): number | undefined => {
+    if (error && typeof error === 'object' && error !== null) {
+      const e = error as Partial<HttpError>;
+      if (typeof e.status === 'number') return e.status;
+    }
+    return undefined;
+  })();
+  const isForbidden = httpStatus === 403;
+  const isServerErr = httpStatus === 500;
 
   return (
     <MainLayout>
@@ -188,7 +213,7 @@ function WithdrawalsInner() {
               value={status}
               onChange={(e) => {
                 setPage(1);
-                setStatus(e.target.value as any);
+                setStatus(e.target.value as '' | WithdrawalStatus);
               }}
             >
               <option value="">Todos los estados</option>

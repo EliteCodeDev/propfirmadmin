@@ -21,24 +21,6 @@ interface TemplateVisualizerProps {
   pageSize?: number;
 }
 
-// Función para formatear la fecha en dd/mm/aaaa
-function formatDate(dateString?: string) {
-  if (!dateString) return "—";
-  const date = new Date(dateString);
-  const day = String(date.getDate()).padStart(2, "0");
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const year = date.getFullYear();
-  return `${day}/${month}/${year}`;
-}
-
-// Función para formatear valores porcentuales
-function formatPercentage(value?: number | null) {
-  if (value === null || value === undefined) {
-    return "—";
-  }
-  return `${value}%`;
-}
-
 export function TemplateVisualizer({}: TemplateVisualizerProps) {
   // Estado de datos
   const [categories, setCategories] = useState<ChallengeCategory[]>([]);
@@ -146,7 +128,14 @@ export function TemplateVisualizer({}: TemplateVisualizerProps) {
         }),
       };
     }).filter((cat) => cat.relations.length > 0);
-  }, [categoriesValidation.data, relationsValidation.data, plansValidation.data, balancesValidation.data, stagesValidation.data, relationStagesValidation.data]);
+  }, [
+    categoriesValidation,
+    relationsValidation,
+    plansValidation,
+    balancesValidation,
+    stagesValidation,
+    relationStagesValidation,
+  ]);
 
   // Seleccionar la primera categoría por defecto cuando los datos estén listos
   useEffect(() => {
