@@ -90,10 +90,6 @@ function ProfileInner() {
                 <input disabled value={user?.username ?? ""} className="px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white/90 dark:bg-gray-900/30" />
               </label>
             </div>
-
-            <div className="mt-6 text-xs text-gray-500">
-              Edición de datos próximamente. Si necesitas cambiar información, contacta a un administrador.
-            </div>
           </div>
         </div>
       </div>
