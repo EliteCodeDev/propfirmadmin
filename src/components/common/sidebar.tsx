@@ -135,17 +135,16 @@ export default function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
       )}>
         {/* Header */}
         <div className={classNames(
-          "flex items-center justify-between h-16 px-4 shadow-sm border-b border-gray-200 dark:border-gray-700",
+          "flex items-center justify-between h-16 bg-gray-800 px-4 shadow-sm border-b border-gray-200 dark:border-gray-700",
           isCollapsed ? "px-2" : "px-4"
         )}>
-          {!isCollapsed && (
-            <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm">PF</span>
-              </div>
-              <h1 className="text-xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-                PropFirm
-              </h1>
+          {!isCollapsed && process.env.NEXT_PUBLIC_LOGO_APP && (
+            <div className="flex-1 mr-2">
+              <img 
+                src={process.env.NEXT_PUBLIC_LOGO_APP} 
+                alt="Logo" 
+                className="h-8 w-full object-contain"
+              />
             </div>
           )}
           
