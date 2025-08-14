@@ -10,7 +10,8 @@ import { useParams, useRouter } from "next/navigation";
 import { SessionProvider, useSession } from "next-auth/react";
 import useSWR from "swr";
 import { useEffect, useMemo, useState } from "react";
-import { UserIcon, ClockIcon, ExclamationTriangleIcon, ArrowLeftIcon } from "@heroicons/react/24/outline";
+import { UserIcon, ClockIcon, ExclamationTriangleIcon, ArrowLeftIcon, PencilSquareIcon } from "@heroicons/react/24/outline";
+import EditUserModal from "@/components/user/EditUserModal";
 
 const API_BASE = (process.env.NEXT_PUBLIC_BACKEND_URL || "").replace(/\/$/, "");
 
@@ -54,6 +55,7 @@ function UserDetailInner() {
     // Hooks
     const { data: session, status } = useSession();
     const token = (session as any)?.accessToken as string | undefined;
+    const [editOpen, setEditOpen] = useState(false);
 
     useEffect(() => {
         if (status === "unauthenticated") router.replace("/login");
@@ -66,7 +68,7 @@ function UserDetailInner() {
     };
 
     // SWR con claves condicionales
-    const { data: userRaw, isLoading: userLoading, error: userErr } =
+    const { data: userRaw, isLoading: userLoading, error: userErr, mutate: mutateUser } =
         useSWR(token && userId ? `${API_BASE}/api/users/${userId}` : null, fetcher);
 
     const { data: chRaw, isLoading: chLoading, error: chErr } =
@@ -208,11 +210,21 @@ function UserDetailInner() {
 
                     {/* Cards de información */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 shadow-sm">
-                            <div className="flex items-center mb-3">
-                                <UserIcon className="w-5 h-5 text-blue-600 dark:text-blue-400 mr-2" />
-                                <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">Contact Information</h3>
-                            </div>
+                                                <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 shadow-sm">
+                                                        <div className="flex items-center justify-between mb-3">
+                                                                <div className="flex items-center">
+                                                                        <UserIcon className="w-5 h-5 text-blue-600 dark:text-blue-400 mr-2" />
+                                                                        <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">Contact Information</h3>
+                                                                </div>
+                                                                <button
+                                                                    className="p-1.5 rounded-md border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700"
+                                                                    title="Edit user"
+                                                                    aria-label="Edit user"
+                                                                    onClick={() => setEditOpen(true)}
+                                                                >
+                                                                    <PencilSquareIcon className="w-4 h-4 text-gray-700 dark:text-gray-300" />
+                                                                </button>
+                                                        </div>
                             <div className="space-y-2">
                                 {contactFields.map((field, idx) => (
                                     <div key={idx} className="flex justify-between items-center text-xs">
@@ -296,6 +308,36 @@ function UserDetailInner() {
                     </div>
                 </div>
             </div>
+                        {editOpen && (
+                            <EditUserModal
+                                open={editOpen}
+                                user={user as any}
+                                onClose={() => setEditOpen(false)}
+                                onSubmit={async (vals, uid) => {
+                                    const payload: any = {
+                                        username: vals.username,
+                                        email: vals.email,
+                                        firstName: vals.firstName,
+                                        lastName: vals.lastName,
+                                        phone: vals.phone,
+                                        isConfirmed: vals.isConfirmed,
+                                        isBlocked: vals.isBlocked,
+                                        isVerified: vals.isVerified,
+                                    };
+                                    Object.keys(payload).forEach((k) => payload[k] === undefined && delete payload[k]);
+                                    const res = await fetch(`${API_BASE}/api/users/${uid}`, {
+                                        method: 'PATCH',
+                                        headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+                                        credentials: 'include',
+                                        body: JSON.stringify(payload),
+                                    });
+                                    if (!res.ok) throw new Error(await res.text() || `Error ${res.status}`);
+                                    await mutateUser();
+                                }}
+                                title="Edit User"
+                                submitLabel="Save"
+                            />
+                        )}
         </MainLayout>
     );
 }
@@ -304,6 +346,8 @@ export default function Page() {
     return (
         <SessionProvider>
             <UserDetailInner />
+            {/* Edit User Modal bound to current user data */}
+            {/* We mount it here to share SessionProvider; visibility controlled inside */}
         </SessionProvider>
     );
 }

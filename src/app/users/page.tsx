@@ -4,12 +4,13 @@ import MainLayout from "@/components/layouts/MainLayout";
 import LoadingSpinner from "@/components/common/loadingSpinner";
 import PaginatedCardTable from "@/components/common/PaginatedCardTable";
 import type { ColumnConfig } from "@/components/common/tableComponent";
+import EditUserModal from "@/components/user/EditUserModal";
 
 import React, { useMemo, useState, useEffect } from "react";
 import useSWR from "swr";
 import { SessionProvider, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { TrophyIcon, ArrowTopRightOnSquareIcon } from "@heroicons/react/24/outline";
+import { TrophyIcon, ArrowTopRightOnSquareIcon, PencilSquareIcon } from "@heroicons/react/24/outline";
 
 type LimitParam = number;
 
@@ -115,6 +116,10 @@ function UsersInner() {
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
 
+  // Modal editar usuario
+  const [editOpen, setEditOpen] = useState(false);
+  const [editUser, setEditUser] = useState<User | null>(null);
+
   const accessToken = (session as any)?.accessToken as string | undefined;
 
   // Querystring
@@ -192,6 +197,21 @@ function UsersInner() {
     { key: "status", label: "STATUS", type: "normal", render: (v) => <StatusBadge confirmed={Boolean(v)} /> },
     { key: "country", label: "COUNTRY", type: "normal" },
     { key: "createdAt", label: "DATE JOINED", type: "normal" },
+    {
+      key: "edit",
+      label: "EDIT",
+      type: "normal",
+      render: (_: unknown, row: any) => (
+        <button
+          className="p-1.5 rounded-md border hover:bg-gray-50 dark:hover:bg-gray-700"
+          title="Edit user"
+          aria-label="Edit user"
+          onClick={() => { setEditUser(row.__raw as User); setEditOpen(true); }}
+        >
+          <PencilSquareIcon className="w-4 h-4 text-gray-700 dark:text-gray-300" />
+        </button>
+      ),
+    },
 
     // NUEVA COLUMNA: navegar al detalle del usuario
     {
@@ -261,6 +281,17 @@ function UsersInner() {
   const createUser = async (body: any) => {
     const res = await fetch(`${API_BASE}${usersPath}`, {
       method: "POST",
+      headers: { "Content-Type": "application/json", ...buildHeaders(accessToken) },
+      credentials: "include",
+      body: JSON.stringify(body),
+    });
+    if (!res.ok) throw new Error((await res.text()) || `Error ${res.status}`);
+    return res.json();
+  };
+
+  const updateUser = async (userId: string, body: any) => {
+    const res = await fetch(`${API_BASE}${usersPath}/${userId}`, {
+      method: "PATCH",
       headers: { "Content-Type": "application/json", ...buildHeaders(accessToken) },
       credentials: "include",
       body: JSON.stringify(body),
@@ -498,6 +529,34 @@ function UsersInner() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Modal Editar Usuario (Reutilizable) */}
+      {editOpen && (
+        <EditUserModal
+          open={editOpen}
+          user={editUser as any}
+          onClose={() => { setEditOpen(false); setEditUser(null); }}
+          onSubmit={async (vals, uid) => {
+            // Solo enviar campos permitidos por UpdateUserDto
+            const payload: any = {
+              username: vals.username,
+              email: vals.email,
+              firstName: vals.firstName,
+              lastName: vals.lastName,
+              phone: vals.phone,
+              isConfirmed: vals.isConfirmed,
+              isBlocked: vals.isBlocked,
+              isVerified: vals.isVerified,
+            };
+            // limpiar undefined para no sobrescribir con undefined
+            Object.keys(payload).forEach((k) => payload[k] === undefined && delete payload[k]);
+            await updateUser(uid, payload);
+            await mutate();
+          }}
+          title="Edit User"
+          submitLabel="Save"
+        />
       )}
     </MainLayout>
   );
