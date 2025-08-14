@@ -153,7 +153,7 @@ export default function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
       )}>
         {/* Header */}
         <div className={classNames(
-          "flex items-center justify-between h-16 bg-gray-900 shadow-sm border-b border-gray-200 dark:border-gray-700",
+          "flex items-center justify-between h-16 bg-black shadow-sm  dark:border-gray-700",
           isCollapsed ? "px-2" : "px-4"
         )}>
           {!isCollapsed && process.env.NEXT_PUBLIC_LOGO_APP && (
