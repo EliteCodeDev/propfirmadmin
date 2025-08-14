@@ -220,7 +220,7 @@ function WithdrawalsInner() {
 
         {(() => {
           const columns: ColumnConfig[] = [
-            { key: "withdrawalID", label: "ID", type: "normal" },
+            { key: "withdrawalID", label: "Withdrawal ID", type: "normal" },
             { key: "createdAt", label: "Fecha", type: "normal" },
             { key: "amount", label: "Monto", type: "normal", render: (v) => String(v) },
             { key: "wallet", label: "Wallet", type: "normal" },

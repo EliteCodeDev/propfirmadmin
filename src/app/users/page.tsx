@@ -147,22 +147,86 @@ function UsersInner() {
     return res.json();
   };
 
-  const fetchRoles = async (): Promise<RoleOption[]> => {
-    const res = await fetch(`${API_BASE}${rolesPath}?page=1&limit=1000`, {
-      headers: buildHeaders(accessToken),
-      credentials: "include",
-    });
-    if (!res.ok) throw new Error((await res.text()) || `Error ${res.status}`);
+  const fetchRoles = async (token?: string): Promise<RoleOption[]> => {
+    // Backend valida limit <= 100; incluimos reintentos en caso de validaciones estrictas
+    const tryFetch = async (url: string) => {
+      const r = await fetch(url, {
+        headers: { Accept: "application/json", ...buildHeaders(token) },
+        credentials: "include",
+      });
+      return r;
+    };
+
+    let res = await tryFetch(`${API_BASE}${rolesPath}?page=1&limit=100`);
+    if (!res.ok && (res.status === 400 || res.status === 422)) {
+      // Reintentar con un límite menor
+      res = await tryFetch(`${API_BASE}${rolesPath}?page=1&limit=50`);
+    }
+    if (!res.ok && (res.status === 400 || res.status === 422)) {
+      // Último intento: sin paginación (usa defaults del backend)
+      res = await tryFetch(`${API_BASE}${rolesPath}`);
+    }
+    if (!res.ok) {
+      const text = await res.text();
+      throw new Error(text || `Error ${res.status}`);
+    }
+
     const json = await res.json();
-    const items = Array.isArray(json) ? json : Array.isArray(json?.data) ? json.data : [];
-    return items
+    // Debug: ayuda a diagnosticar si el backend responde con tupla u objeto
+    try {
+      console.debug("[roles] raw response", json);
+    } catch {}
+    // Soportar múltiples formatos de respuesta:
+    // 1) [items, total] (findAndCount)
+    // 2) { data: items, meta: { ... } }
+    // 2b) { data: { data: items, meta: { ... } } }
+    // 3) items[] directo
+    let items: any[] = [];
+    if (Array.isArray(json)) {
+      // Caso [items, total] o items[] directo
+      if (Array.isArray(json[0]) && (typeof json[1] === "number" || typeof json[1] === "object")) {
+        items = json[0] as any[];
+      } else {
+        items = json as any[];
+      }
+    } else if (Array.isArray((json as any)?.data)) {
+      // Puede ser data = items[] o data = [items[], total]
+      const d = (json as any).data as any[];
+      if (Array.isArray(d[0]) && (typeof d[1] === "number" || typeof d[1] === "object")) {
+        items = d[0] as any[];
+      } else {
+        items = d as any[];
+      }
+    } else if (Array.isArray((json as any)?.items)) {
+      items = (json as any).items as any[];
+    } else if (Array.isArray((json as any)?.roles)) {
+      items = (json as any).roles as any[];
+    } else if (Array.isArray((json as any)?.data?.data)) {
+      items = (json as any).data.data as any[];
+    } else if (Array.isArray((json as any)?.data?.items)) {
+      items = (json as any).data.items as any[];
+    } else if (Array.isArray((json as any)?.data?.roles)) {
+      items = (json as any).data.roles as any[];
+    } else if (Array.isArray((json as any)?.result?.data)) {
+      items = (json as any).result.data as any[];
+    } else if (Array.isArray((json as any)?.payload?.data)) {
+      items = (json as any).payload.data as any[];
+    }
+    const result = items
       .map((x: any) => ({ roleID: String(x.roleID ?? x.id ?? ""), name: String(x.name ?? "") }))
       .filter((x: RoleOption) => x.roleID && x.name);
+    try {
+      console.debug("[roles] parsed count", result.length);
+    } catch {}
+    return result;
   };
 
   // SWR
   const { data, error, isLoading, mutate } = useSWR<PageResponse<User>>(accessToken ? usersUrl : null, fetcher);
-  const { data: rolesData } = useSWR<RoleOption[]>(accessToken ? "roles" : null, fetchRoles);
+  const { data: rolesData, error: rolesError, isLoading: rolesLoading, mutate: mutateRoles } = useSWR<RoleOption[]>(
+    accessToken ? ["roles", accessToken] : null,
+    ([, token]) => fetchRoles(token as string | undefined)
+  );
 
   // Redirección si no hay sesión
   useEffect(() => {
@@ -239,12 +303,14 @@ function UsersInner() {
       label: "ACTIONS",
       type: "normal",
       render: (_: unknown, row: any) => (
-        <button
+    <button
           className="px-2 py-1 text-xs border rounded-md hover:bg-gray-50 dark:hover:bg-gray-700"
           onClick={() => {
             setRoleModalUser(row.__raw as User);
             setSelectedRoleID(String((row.__raw as User)?.role?.roleID ?? ""));
-            setRoleModalOpen(true);
+      // revalidar roles al abrir para evitar estados viejos
+      mutateRoles();
+      setRoleModalOpen(true);
           }}
         >
           Change role
@@ -468,12 +534,20 @@ function UsersInner() {
               className="w-full px-3 py-2 text-sm border rounded-lg bg-white dark:bg-gray-700 dark:border-gray-600"
               value={selectedRoleID}
               onChange={(e) => setSelectedRoleID(e.target.value)}
+              disabled={rolesLoading}
             >
-              <option value="">-- Select --</option>
+              {rolesLoading && <option value="">Loading...</option>}
+              {!rolesLoading && <option value="">-- Select --</option>}
+              {!rolesLoading && roleOptions.length === 0 && <option value="" disabled>No roles available</option>}
               {roleOptions.map((r) => (
                 <option key={r.roleID} value={r.roleID}>{r.name}</option>
               ))}
             </select>
+            {rolesError && (
+              <p className="mt-2 text-xs text-red-600 dark:text-red-400 break-words">
+                Failed to load roles. {rolesError instanceof Error ? rolesError.message : ''}
+              </p>
+            )}
 
             <div className="mt-5 flex items-center justify-end gap-2">
               <button

@@ -128,7 +128,7 @@ function ChallengesInner() {
   const totalPages = pageObj.totalPages;
 
   const columns: ColumnConfig[] = [
-    { key: "challengeID", label: "ID", type: "normal" },
+    { key: "challengeID", label: "Challenge ID", type: "normal" },
     { key: "user", label: "User", type: "normal" },
     { key: "plan", label: "Plan", type: "normal" },
     { key: "category", label: "Category", type: "normal" },
