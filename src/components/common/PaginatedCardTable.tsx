@@ -140,12 +140,12 @@ export default function PaginatedCardTable(props: PaginatedCardTableProps) {
             <TableHeader>
               <TableRow className="bg-zinc-50 dark:bg-zinc-800/50">
                 {columns.map((c) => (
-                  <TableHead key={c.key} className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-zinc-600 dark:text-zinc-400 whitespace-normal break-words">
+                  <TableHead key={c.key} className="px-6 py-4 text-left text-[11px] sm:text-xs font-bold uppercase tracking-wider text-zinc-600 dark:text-zinc-400 whitespace-normal break-words">
                     {c.label}
                   </TableHead>
                 ))}
                 {renderActions && (
-                  <TableHead className="px-6 py-4 text-center text-xs font-bold uppercase tracking-wider text-zinc-600 dark:text-zinc-400 whitespace-normal break-words">
+                  <TableHead className="px-6 py-4 text-center text-[11px] sm:text-xs font-bold uppercase tracking-wider text-zinc-600 dark:text-zinc-400 whitespace-normal break-words">
                     {actionsHeader || "Acciones"}
                   </TableHead>
                 )}
@@ -177,12 +177,12 @@ export default function PaginatedCardTable(props: PaginatedCardTableProps) {
                 rows.map((row, idx) => (
                   <TableRow key={idx} className="hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors">
                     {columns.map((c) => (
-                      <TableCell key={c.key} className="px-6 py-4 align-middle whitespace-normal break-words">
+                      <TableCell key={c.key} className="px-6 py-4 align-middle whitespace-normal break-words text-xs">
                         {renderCell(c, row)}
                       </TableCell>
                     ))}
                     {renderActions && (
-                      <TableCell className="px-6 py-4 align-middle text-center">
+                      <TableCell className="px-6 py-4 align-middle text-center text-xs">
                         {renderActions(row, idx)}
                       </TableCell>
                     )}
