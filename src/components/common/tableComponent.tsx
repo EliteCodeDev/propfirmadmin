@@ -160,11 +160,15 @@ export default function tableComponent({ columns = defaultColumns, data = defaul
 
   return (
     <div className="bg-gray-900 rounded-lg overflow-hidden">
-      <Table>
+      {/* Use fixed layout and allow wrapping to prevent horizontal overflow */}
+      <Table className="table-fixed">
         <TableHeader>
           <TableRow className="bg-gray-800 border-gray-700">
             {normalizedColumns.map((column, index) => (
-              <TableHead key={index} className="font-medium text-gray-300 text-sm uppercase tracking-wide py-4 px-6">
+              <TableHead
+                key={index}
+                className="font-medium text-gray-300 text-xs sm:text-sm uppercase tracking-wide py-2 sm:py-4 px-3 sm:px-6 whitespace-normal break-words"
+              >
                 {column.label}
               </TableHead>
             ))}
@@ -172,12 +176,15 @@ export default function tableComponent({ columns = defaultColumns, data = defaul
         </TableHeader>
         <TableBody>
           {data.map((row, index) => (
-            <TableRow 
-              key={index} 
+            <TableRow
+              key={index}
               className="bg-gray-900 border-gray-800 hover:bg-gray-800/50 transition-colors"
             >
               {normalizedColumns.map((column, cellIndex) => (
-                <TableCell key={cellIndex} className="py-4 px-6 text-gray-100">
+                <TableCell
+                  key={cellIndex}
+                  className="py-2 sm:py-4 px-3 sm:px-6 text-gray-100 whitespace-normal break-words"
+                >
                   {renderCell(column, row)}
                 </TableCell>
               ))}
