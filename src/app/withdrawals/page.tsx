@@ -190,73 +190,21 @@ function WithdrawalsInner() {
   const isForbidden = httpStatus === 403;
   const isServerErr = httpStatus === 500;
 
+  // Si el usuario no tiene permisos para ver "Todos (admin)", alterna automáticamente a "Mis retiros"
+  useEffect(() => {
+    if (httpStatus === 403 && scope === "all") {
+      setScope("mine");
+    }
+  }, [httpStatus, scope]);
+
   return (
     <MainLayout>
       <div className="p-6 space-y-6 pt-4">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-start">
           <h1 className="text-2xl font-semibold">Retiros</h1>
-
-          <div className="flex items-center gap-3">
-            {/* Ámbito: mis retiros / todos */}
-            <select
-              className="border rounded-md px-3 py-2 text-sm"
-              value={scope}
-              onChange={(e) => {
-                setPage(1);
-                setScope(e.target.value as Scope);
-              }}
-            >
-              <option value="all">Todos (admin)</option>
-              <option value="mine">Mis retiros</option>
-            </select>
-
-            {/* Filtro estado (minúsculas) */}
-            <select
-              className="border rounded-md px-3 py-2 text-sm"
-              value={status}
-              onChange={(e) => {
-                setPage(1);
-                setStatus(e.target.value as '' | WithdrawalStatus);
-              }}
-            >
-              <option value="">Todos los estados</option>
-              <option value="pending">Pendiente</option>
-              <option value="approved">Aprobado</option>
-              <option value="rejected">Rechazado</option>
-            </select>
-
-            {/* Límite */}
-            <select
-              className="border rounded-md px-3 py-2 text-sm"
-              value={String(limit)}
-              onChange={(e) => {
-                const val = Number(e.target.value);
-                setPage(1);
-                setLimit(val as LimitParam);
-              }}
-            >
-              <option value="1000">Todos</option>
-              <option value="10">10 por página</option>
-              <option value="20">20 por página</option>
-              <option value="50">50 por página</option>
-            </select>
-
-            <button
-              className="border rounded-md px-3 py-2 text-sm hover:bg-gray-50"
-              onClick={() => mutate()}
-            >
-              Refrescar
-            </button>
-          </div>
         </div>
 
         {/* Mensajes de error claros */}
-        {isForbidden && scope === "all" && (
-          <div className="p-3 rounded-md bg-amber-50 text-amber-800 text-sm border border-amber-200">
-            No estás autorizado para ver <b>Todos (admin)</b>. Cambia a <b>Mis retiros</b> o inicia
-            sesión con un usuario administrador.
-          </div>
-        )}
 
         {isServerErr && (
           <div className="p-3 rounded-md bg-red-50 text-red-700 text-sm border border-red-200">
