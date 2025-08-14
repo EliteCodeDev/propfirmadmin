@@ -9,10 +9,26 @@ export default function MainLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false;
+    try {
+      const saved = localStorage.getItem('sidebarCollapsed');
+      return saved === 'true';
+    } catch {
+      return false;
+    }
+  });
 
   const handleSidebarToggle = () => {
-    setSidebarCollapsed(!sidebarCollapsed);
+    setSidebarCollapsed((prev) => {
+      const next = !prev;
+      try {
+        localStorage.setItem('sidebarCollapsed', String(next));
+      } catch {
+        // ignore
+      }
+      return next;
+    });
   };
 
   return (

@@ -136,6 +136,16 @@ export default function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
     router.push(href);
   };
 
+  // Click handler para el botón de usuario: navegar cuando está colapsado, desplegar menú cuando está expandido
+  const handleUserButtonClick = () => {
+    if (isCollapsed) {
+      // Asumimos la ruta existente '/profile'
+      router.push('/profile');
+      return;
+    }
+    setUserMenuOpen(!userMenuOpen);
+  };
+
   return (
     <>
       {/* Mobile backdrop - solo visible en mobile cuando sidebar está expandido */}
@@ -190,7 +200,10 @@ export default function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
         </div>
 
         {/* Navigation */}
-        <div className="flex-1 overflow-y-auto py-4">
+        <div className={classNames(
+          "flex-1 py-4 overflow-x-visible",
+          isCollapsed ? "overflow-y-visible" : "overflow-y-auto"
+        )}>
           <nav className={classNames("space-y-1", isCollapsed ? "px-2" : "px-3")}>
             {navigation.map((item) => {
               const isActive = pathname === item.href;
@@ -312,8 +325,8 @@ export default function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
           )}
 
           {/* User Button */}
-      <button
-            onClick={() => setUserMenuOpen(!userMenuOpen)}
+  <button
+    onClick={handleUserButtonClick}
             className={classNames(
               "group flex items-center w-full rounded-xl transition-all duration-200 relative",
               isCollapsed 
@@ -321,7 +334,8 @@ export default function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
                 : "px-3 py-3",
         "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer"
             )}
-            title={isCollapsed ? "Menú de usuario" : ""}
+    title={isCollapsed ? "Perfil" : ""}
+    aria-label={isCollapsed ? "Perfil" : "Menú de usuario"}
           >
             <div className="relative flex items-center">
               <div className="relative">
@@ -352,7 +366,7 @@ export default function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
 
             {isCollapsed && (
               <div className="absolute left-full top-1/2 transform -translate-y-1/2 ml-2 px-2 py-1 bg-gray-900 text-white text-xs rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
-                Menú de usuario
+                Perfil
                 <div className="absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-1 w-2 h-2 bg-gray-900 rotate-45" />
               </div>
             )}
