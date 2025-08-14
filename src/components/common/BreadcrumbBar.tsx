@@ -31,7 +31,7 @@ function humanize(segment: string): string {
 }
 
 export default function BreadcrumbBar() {
-  const pathname = usePathname(); // ❌ sin fallback
+  const pathname = usePathname();
 
   const items = useMemo(() => {
     const segments = (pathname ?? "").split("/").filter(Boolean);
@@ -42,14 +42,14 @@ export default function BreadcrumbBar() {
     // Home/Dashboard: solo linkeable si NO estás ya en dashboard
     crumbs.push({
       label: "Dashboard",
-      href: onDashboard ? undefined : "/dashboard", // ✅ evita clics involuntarios
+      href: onDashboard ? undefined : "/dashboard", 
       icon: (p) => <HomeIcon {...p} />,
       current: onDashboard,
     });
 
     let acc = "";
     segments.forEach((seg, idx) => {
-      if (seg === "dashboard") return; // ya agregado
+      if (seg === "dashboard") return; 
       acc += `/${seg}`;
       const label = LABELS[seg] || humanize(seg);
       const icon = ICONS[seg];
