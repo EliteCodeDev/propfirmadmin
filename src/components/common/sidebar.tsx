@@ -170,7 +170,7 @@ export default function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
       )}
 
       <div className={classNames(
-        "fixed inset-y-0 left-0 z-30 flex flex-col transition-all duration-300 ease-in-out lg:relative",
+        "fixed inset-y-0 left-0 z-30 flex flex-col h-screen transition-all duration-300 ease-in-out lg:relative",
         isCollapsed ? "w-16" : "w-64",
         "bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl shadow-2xl border-r border-gray-200/50 dark:border-gray-700/50"
       )}>
@@ -212,11 +212,8 @@ export default function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
           </button>
         </div>
 
-        {/* Navigation */}
-        <div className={classNames(
-          "flex-1 py-4 overflow-x-visible",
-          isCollapsed ? "overflow-y-visible" : "overflow-y-auto"
-        )}>
+  {/* Navigation (scrollable area) */}
+  <div className="flex-1 min-h-0 py-4 overflow-x-visible overflow-y-auto">
           <nav className={classNames("space-y-2", isCollapsed ? "px-2" : "px-3")}>
             {navigation.map((item, index) => {
               const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
@@ -313,9 +310,9 @@ export default function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
           </nav>
         </div>
 
-        {/* User Menu Section */}
+        {/* User Menu Section (fixed bottom area) */}
         <div className={classNames(
-          "border-t border-gray-200/50 dark:border-gray-700/50 relative bg-gradient-to-r from-gray-50/50 to-white/50 dark:from-gray-800/50 dark:to-gray-900/50",
+          "border-t border-gray-200/50 dark:border-gray-700/50 relative bg-gradient-to-r from-gray-50/50 to-white/50 dark:from-gray-800/50 dark:to-gray-900/50 flex-shrink-0",
           isCollapsed ? "p-2" : "p-4"
         )} ref={userMenuRef}>
           {/* Dropdown Menu */}
