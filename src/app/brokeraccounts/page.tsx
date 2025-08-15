@@ -2,7 +2,7 @@
 
 import MainLayout from "@/components/layouts/MainLayout";
 import PaginatedCardTable from "@/components/common/PaginatedCardTable";
-import type { ColumnConfig } from "@/components/common/tableComponent";
+import type { ColumnConfig } from "@/components/common/TableComponent";
 import React, { useEffect, useMemo, useState } from "react";
 import useSWR from "swr";
 import { SessionProvider, useSession } from "next-auth/react";
@@ -37,7 +37,9 @@ function UsedBadge({ used }: { used: boolean }) {
     ? "bg-rose-100 text-rose-800 dark:bg-rose-900/20 dark:text-rose-300 border border-rose-200 dark:border-rose-800"
     : "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/20 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800";
   return (
-    <span className={`px-2 py-0.5 rounded-full text-[11px] ${cls}`}>{used ? "Used" : "Free"}</span>
+    <span className={`px-2 py-0.5 rounded-full text-[11px] ${cls}`}>
+      {used ? "Used" : "Free"}
+    </span>
   );
 }
 
@@ -47,7 +49,9 @@ const money = new Intl.NumberFormat("en-US", {
   minimumFractionDigits: 2,
 });
 
-function unwrapPage<T = Record<string, unknown>>(raw: unknown): {
+function unwrapPage<T = Record<string, unknown>>(
+  raw: unknown
+): {
   items: T[];
   total: number;
   page: number;
@@ -60,12 +64,19 @@ function unwrapPage<T = Record<string, unknown>>(raw: unknown): {
   if (Array.isArray(lvl1)) items = lvl1 as T[];
   else if (lvl1 && typeof lvl1 === "object") {
     if (Array.isArray((lvl1 as any).data)) items = (lvl1 as any).data as T[];
-    else if (Array.isArray((lvl1 as any).items)) items = (lvl1 as any).items as T[];
+    else if (Array.isArray((lvl1 as any).items))
+      items = (lvl1 as any).items as T[];
   }
 
-  const total = typeof (lvl1 as any)?.total === "number" ? (lvl1 as any).total : items.length;
+  const total =
+    typeof (lvl1 as any)?.total === "number"
+      ? (lvl1 as any).total
+      : items.length;
   const page = typeof (lvl1 as any)?.page === "number" ? (lvl1 as any).page : 1;
-  const limit = typeof (lvl1 as any)?.limit === "number" ? (lvl1 as any).limit : items.length || 10;
+  const limit =
+    typeof (lvl1 as any)?.limit === "number"
+      ? (lvl1 as any).limit
+      : items.length || 10;
   const totalPages =
     typeof (lvl1 as any)?.totalPages === "number"
       ? (lvl1 as any).totalPages
@@ -90,7 +101,8 @@ function BrokerAccountsInner() {
     const q = new URLSearchParams();
     q.set("page", String(page));
     q.set("limit", String(limit));
-    if (usedFilter !== "all") q.set("isUsed", usedFilter === "used" ? "true" : "false");
+    if (usedFilter !== "all")
+      q.set("isUsed", usedFilter === "used" ? "true" : "false");
     return q.toString();
   }, [page, limit, usedFilter]);
 
@@ -99,26 +111,33 @@ function BrokerAccountsInner() {
 
   const fetcher = async (u: string) => {
     const res = await fetch(u, {
-      headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
+      headers: accessToken
+        ? { Authorization: `Bearer ${accessToken}` }
+        : undefined,
       credentials: "include",
     });
     if (!res.ok) throw new Error((await res.text()) || `Error ${res.status}`);
     return res.json();
   };
 
-  const { data, error, isLoading, mutate } = useSWR<PageResponse<BrokerAccount>>(
-    accessToken ? url : null,
-    fetcher
-  );
+  const { data, error, isLoading, mutate } = useSWR<
+    PageResponse<BrokerAccount>
+  >(accessToken ? url : null, fetcher);
 
   // Redirección si no hay sesión
   useEffect(() => {
-    if (authStatus === "unauthenticated" || (!accessToken && authStatus !== "loading")) {
+    if (
+      authStatus === "unauthenticated" ||
+      (!accessToken && authStatus !== "loading")
+    ) {
       router.replace("/login");
     }
   }, [authStatus, accessToken, router]);
 
-  if (authStatus === "loading" || (!accessToken && authStatus !== "unauthenticated")) {
+  if (
+    authStatus === "loading" ||
+    (!accessToken && authStatus !== "unauthenticated")
+  ) {
     return (
       <MainLayout>
         <div className="p-6">Verificando sesión…</div>
@@ -145,7 +164,12 @@ function BrokerAccountsInner() {
     { key: "server", label: "Server", type: "normal" },
     { key: "serverIp", label: "Server IP", type: "normal" },
     { key: "platform", label: "Platform", type: "normal" },
-    { key: "used", label: "Used", type: "normal", render: (v) => <UsedBadge used={Boolean(v)} /> },
+    {
+      key: "used",
+      label: "Used",
+      type: "normal",
+      render: (v) => <UsedBadge used={Boolean(v)} />,
+    },
     { key: "balance", label: "Initial Balance", type: "normal" },
   ];
 
@@ -156,7 +180,10 @@ function BrokerAccountsInner() {
     serverIp: a.serverIp || "-",
     platform: a.platform || "-",
     used: a.isUsed,
-    balance: typeof a.innitialBalance === "number" ? money.format(Number(a.innitialBalance)) : "-",
+    balance:
+      typeof a.innitialBalance === "number"
+        ? money.format(Number(a.innitialBalance))
+        : "-",
   }));
 
   return (
@@ -165,7 +192,9 @@ function BrokerAccountsInner() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-semibold">Broker Accounts</h1>
-            <p className="text-sm text-gray-500">List of available and used broker accounts</p>
+            <p className="text-sm text-gray-500">
+              List of available and used broker accounts
+            </p>
           </div>
           <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg px-4 py-2 text-white shadow-sm">
             <div className="text-xs font-medium">Total Accounts</div>
@@ -176,11 +205,16 @@ function BrokerAccountsInner() {
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4">
           <div className="flex flex-col sm:flex-row gap-3 items-end">
             <div className="w-full sm:w-48">
-              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Used filter</label>
+              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Used filter
+              </label>
               <select
                 className="block w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
                 value={usedFilter}
-                onChange={(e) => { setPage(1); setUsedFilter(e.target.value as UsedFilter); }}
+                onChange={(e) => {
+                  setPage(1);
+                  setUsedFilter(e.target.value as UsedFilter);
+                }}
               >
                 <option value="all">All</option>
                 <option value="free">Free</option>
@@ -189,11 +223,17 @@ function BrokerAccountsInner() {
             </div>
 
             <div className="w-full sm:w-48">
-              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Items per page</label>
+              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Items per page
+              </label>
               <select
                 className="block w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
                 value={String(limit)}
-                onChange={(e) => { const n = Number(e.target.value) as LimitParam; setPage(1); setLimit(n); }}
+                onChange={(e) => {
+                  const n = Number(e.target.value) as LimitParam;
+                  setPage(1);
+                  setLimit(n);
+                }}
               >
                 <option value="10">10 items</option>
                 <option value="20">20 items</option>
@@ -203,7 +243,9 @@ function BrokerAccountsInner() {
             </div>
 
             <div className="w-full sm:w-auto">
-              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Actions</label>
+              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Actions
+              </label>
               <button
                 onClick={() => mutate()}
                 disabled={isLoading}
@@ -219,14 +261,19 @@ function BrokerAccountsInner() {
           columns={columns}
           rows={rows}
           isLoading={isLoading}
-          emptyText={error ? (error as Error).message : "No broker accounts found"}
+          emptyText={
+            error ? (error as Error).message : "No broker accounts found"
+          }
           pagination={{
             currentPage: page,
             totalPages: Math.max(1, totalPages),
             totalItems: pageObj.total,
             pageSize: limit,
             onPageChange: (p) => setPage(p),
-            onPageSizeChange: (n) => { setPage(1); setLimit(n as LimitParam); },
+            onPageSizeChange: (n) => {
+              setPage(1);
+              setLimit(n as LimitParam);
+            },
           }}
         />
       </div>

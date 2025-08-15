@@ -6,7 +6,7 @@ import useSWR from "swr";
 import { SessionProvider, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import PaginatedCardTable from "@/components/common/PaginatedCardTable";
-import type { ColumnConfig } from "@/components/common/tableComponent";
+import type { ColumnConfig } from "@/components/common/TableComponent";
 // Removed ClipboardIcon import as Withdrawal ID column is removed
 
 type WithdrawalStatus = "pending" | "approved" | "rejected";

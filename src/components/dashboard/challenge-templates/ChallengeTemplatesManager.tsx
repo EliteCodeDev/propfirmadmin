@@ -55,7 +55,7 @@ export function ChallengeTemplatesManager() {
       icon: <Layers className="w-4 h-4" />,
     },
   ];
-  
+
   const tabsValidation = useArrayValidation(tabs);
 
   const renderTabContent = () => {
@@ -88,7 +88,8 @@ export function ChallengeTemplatesManager() {
                 Challenge Templates Manager
               </h1>
               <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                Gestiona plantillas, categorías, planes y configuraciones de challenges
+                Gestiona plantillas, categorías, planes y configuraciones de
+                challenges
               </p>
             </div>
             <div className="flex items-center space-x-2">
@@ -105,22 +106,24 @@ export function ChallengeTemplatesManager() {
             {tabsValidation.safeMap((tab, index) => (
               <button
                 key={tab?.id || `tab-${index}`}
-                onClick={() => setActiveTab(tab?.id || 'visualizer')}
+                onClick={() => setActiveTab(tab?.id || "visualizer")}
                 className={`flex items-center gap-2 px-6 py-4 text-sm font-medium transition-all duration-200 relative ${
                   activeTab === tab?.id
                     ? "bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 border-b-2 border-blue-600"
                     : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700/50"
                 }`}
               >
-                <span className={`${
-                  activeTab === tab?.id 
-                    ? "text-blue-600 dark:text-blue-400" 
-                    : "text-gray-500 dark:text-gray-500"
-                }`}>
+                <span
+                  className={`${
+                    activeTab === tab?.id
+                      ? "text-blue-600 dark:text-blue-400"
+                      : "text-gray-500 dark:text-gray-500"
+                  }`}
+                >
                   {tab?.icon}
                 </span>
-                {tab?.label || 'Tab'}
-                
+                {tab?.label || "Tab"}
+
                 {/* Active indicator */}
                 {activeTab === tab?.id && (
                   <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600 dark:bg-blue-400" />
@@ -138,7 +141,10 @@ export function ChallengeTemplatesManager() {
                     Filas por página:
                   </span>
                   <div className="min-w-0">
-                    <RowsPerPage pageSize={pageSize} onPageSizeChange={setPageSize} />
+                    <RowsPerPage
+                      pageSize={pageSize}
+                      onPageSizeChange={setPageSize}
+                    />
                   </div>
                 </div>
               </div>
@@ -146,9 +152,7 @@ export function ChallengeTemplatesManager() {
           )}
 
           {/* Tab Content */}
-          <div className="bg-white dark:bg-gray-800">
-            {renderTabContent()}
-          </div>
+          <div className="bg-white dark:bg-gray-800">{renderTabContent()}</div>
         </div>
       </div>
     </div>

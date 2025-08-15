@@ -18,8 +18,20 @@ export interface ChallengeBalance {
   name: string;
   isActive: boolean;
   hasDiscount: boolean;
-  discount?: string;
+  discount?: number;
   balance?: number;
+}
+
+export interface RelationBalance {
+  relationBalanceID: string;
+
+  balanceID: string;
+  relationID: string;
+  price: number;
+  isActive: boolean;
+  hasDiscount: boolean;
+  discount?: number;
+  relation?: ChallengeRelation;
 }
 
 export interface ChallengeRelation {
@@ -31,6 +43,7 @@ export interface ChallengeRelation {
   plan?: ChallengePlan;
   balance?: ChallengeBalance;
   stages?: RelationStage[];
+  relationBalances?: RelationBalance[];
 }
 
 export interface ChallengeStage {
@@ -75,15 +88,25 @@ export interface CreateBalancePayload {
   name: string;
   isActive?: boolean;
   hasDiscount?: boolean;
-  discount?: string;
+  discount?: number;
   balance?: number;
 }
 export type UpdateBalancePayload = Partial<CreateBalancePayload>;
 
+export interface CreateRelationBalancePayload {
+  balanceID: string;
+  relationID: string;
+  price: number;
+  isActive?: boolean;
+  hasDiscount?: boolean;
+  discount?: number;
+}
+export type UpdateRelationBalancePayload =
+  Partial<CreateRelationBalancePayload>;
+
 export interface CreateRelationPayload {
-  categoryID: string;
+  categoryID?: string;
   planID: string;
-  balanceID?: string;
 }
 export type UpdateRelationPayload = Partial<CreateRelationPayload>;
 
@@ -369,6 +392,43 @@ export const challengeTemplatesApi = {
   deleteRelationStage: async (id: string): Promise<{ success: boolean }> => {
     const { data } = await client.delete(
       `/challenge-templates/relation-stages/${id}`
+    );
+    return data;
+  },
+
+  // Relation Balances
+  createRelationBalance: async (
+    payload: CreateRelationBalancePayload
+  ): Promise<RelationBalance> => {
+    const { data } = await client.post(
+      "/challenge-templates/relation-balances",
+      payload
+    );
+    return data;
+  },
+  listRelationBalances: async (): Promise<RelationBalance[]> => {
+    const { data } = await client.get("/challenge-templates/relation-balances");
+    return data.data;
+  },
+  getRelationBalance: async (id: string): Promise<RelationBalance> => {
+    const { data } = await client.get(
+      `/challenge-templates/relation-balances/${id}`
+    );
+    return data;
+  },
+  updateRelationBalance: async (
+    id: string,
+    payload: UpdateRelationBalancePayload
+  ): Promise<RelationBalance> => {
+    const { data } = await client.patch(
+      `/challenge-templates/relation-balances/${id}`,
+      payload
+    );
+    return data;
+  },
+  deleteRelationBalance: async (id: string): Promise<{ success: boolean }> => {
+    const { data } = await client.delete(
+      `/challenge-templates/relation-balances/${id}`
     );
     return data;
   },

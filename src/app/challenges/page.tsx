@@ -2,7 +2,7 @@
 
 import MainLayout from "@/components/layouts/MainLayout";
 import PaginatedCardTable from "@/components/common/PaginatedCardTable";
-import type { ColumnConfig } from "@/components/common/tableComponent";
+import type { ColumnConfig } from "@/components/common/TableComponent";
 import React, { useMemo, useState, useEffect } from "react";
 import useSWR from "swr";
 import { SessionProvider, useSession } from "next-auth/react";
@@ -24,7 +24,11 @@ interface Challenge {
   parentID?: string | null;
   brokerAccountID?: string | null;
   // relations
-  user?: { firstName?: string | null; lastName?: string | null; email?: string | null };
+  user?: {
+    firstName?: string | null;
+    lastName?: string | null;
+    email?: string | null;
+  };
   relation?: { plan?: { name?: string }; category?: { name?: string } };
   brokerAccount?: { login?: string | null; platform?: string | null };
 }
@@ -39,7 +43,9 @@ interface PageResponse<T> {
 
 const API_BASE = (process.env.NEXT_PUBLIC_BACKEND_URL || "").replace(/\/$/, "");
 
-function unwrapPage<T = Record<string, unknown>>(raw: unknown): {
+function unwrapPage<T = Record<string, unknown>>(
+  raw: unknown
+): {
   items: T[];
   total: number;
   page: number;
@@ -52,12 +58,19 @@ function unwrapPage<T = Record<string, unknown>>(raw: unknown): {
   if (Array.isArray(lvl1)) items = lvl1 as T[];
   else if (lvl1 && typeof lvl1 === "object") {
     if (Array.isArray((lvl1 as any).data)) items = (lvl1 as any).data as T[];
-    else if (Array.isArray((lvl1 as any).items)) items = (lvl1 as any).items as T[];
+    else if (Array.isArray((lvl1 as any).items))
+      items = (lvl1 as any).items as T[];
   }
 
-  const total = typeof (lvl1 as any)?.total === "number" ? (lvl1 as any).total : items.length;
+  const total =
+    typeof (lvl1 as any)?.total === "number"
+      ? (lvl1 as any).total
+      : items.length;
   const page = typeof (lvl1 as any)?.page === "number" ? (lvl1 as any).page : 1;
-  const limit = typeof (lvl1 as any)?.limit === "number" ? (lvl1 as any).limit : items.length || 10;
+  const limit =
+    typeof (lvl1 as any)?.limit === "number"
+      ? (lvl1 as any).limit
+      : items.length || 10;
   const totalPages =
     typeof (lvl1 as any)?.totalPages === "number"
       ? (lvl1 as any).totalPages
@@ -87,27 +100,39 @@ function ChallengesInner() {
     return q.toString();
   }, [page, limit, status]);
 
-  const basePath = scope === "all" ? "/api/challenges" : "/api/challenges/my-challenges";
+  const basePath =
+    scope === "all" ? "/api/challenges" : "/api/challenges/my-challenges";
   const url = `${API_BASE}${basePath}?${query}`;
 
   const fetcher = async (u: string) => {
     const res = await fetch(u, {
-      headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
+      headers: accessToken
+        ? { Authorization: `Bearer ${accessToken}` }
+        : undefined,
       credentials: "include",
     });
     if (!res.ok) throw new Error((await res.text()) || `Error ${res.status}`);
     return res.json();
   };
 
-  const { data, error, isLoading } = useSWR<PageResponse<Challenge>>(accessToken ? url : null, fetcher);
+  const { data, error, isLoading } = useSWR<PageResponse<Challenge>>(
+    accessToken ? url : null,
+    fetcher
+  );
 
   useEffect(() => {
-    if (authStatus === "unauthenticated" || (!accessToken && authStatus !== "loading")) {
+    if (
+      authStatus === "unauthenticated" ||
+      (!accessToken && authStatus !== "loading")
+    ) {
       router.replace("/login");
     }
   }, [authStatus, accessToken, router]);
 
-  if (authStatus === "loading" || (!accessToken && authStatus !== "unauthenticated")) {
+  if (
+    authStatus === "loading" ||
+    (!accessToken && authStatus !== "unauthenticated")
+  ) {
     return (
       <MainLayout>
         <div className="p-6">Verificando sesión…</div>
@@ -145,14 +170,18 @@ function ChallengesInner() {
   const rows = challenges.map((c, idx) => {
     const serial = offset + idx + 1;
     const userName = c.user
-      ? `${c.user.firstName ?? ""} ${c.user.lastName ?? ""}`.trim() || c.user.email || c.userID
+      ? `${c.user.firstName ?? ""} ${c.user.lastName ?? ""}`.trim() ||
+        c.user.email ||
+        c.userID
       : c.userID;
     const plan = c.relation?.plan?.name ?? "-";
     const category = c.relation?.category?.name ?? "-";
     const login = c.brokerAccount?.login ?? "-";
     const platform = c.brokerAccount?.platform ?? "-";
     const dynBal = c.dynamicBalance != null ? String(c.dynamicBalance) : "-";
-    const start = c.startDate ? new Date(c.startDate).toLocaleDateString() : "-";
+    const start = c.startDate
+      ? new Date(c.startDate).toLocaleDateString()
+      : "-";
     const end = c.endDate ? new Date(c.endDate).toLocaleDateString() : "-";
 
     return {
@@ -177,8 +206,12 @@ function ChallengesInner() {
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div>
-              <h1 className="text-xl font-bold text-gray-900 dark:text-white">Challenges</h1>
-              <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">Manage and monitor all user challenges</p>
+              <h1 className="text-xl font-bold text-gray-900 dark:text-white">
+                Challenges
+              </h1>
+              <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                Manage and monitor all user challenges
+              </p>
             </div>
             <div className="flex items-center gap-3">
               <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg px-4 py-2 text-white shadow-sm">
@@ -193,11 +226,16 @@ function ChallengesInner() {
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4">
           <div className="flex flex-col sm:flex-row gap-3 items-end">
             <div className="w-full sm:w-48">
-              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Scope</label>
+              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Scope
+              </label>
               <select
                 className="block w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                 value={scope}
-                onChange={(e) => { setPage(1); setScope(e.target.value as Scope); }}
+                onChange={(e) => {
+                  setPage(1);
+                  setScope(e.target.value as Scope);
+                }}
               >
                 <option value="all">All (admin)</option>
                 <option value="mine">My challenges</option>
@@ -205,11 +243,16 @@ function ChallengesInner() {
             </div>
 
             <div className="w-full sm:w-48">
-              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Status</label>
+              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Status
+              </label>
               <select
                 className="block w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                 value={status}
-                onChange={(e) => { setPage(1); setStatus(e.target.value); }}
+                onChange={(e) => {
+                  setPage(1);
+                  setStatus(e.target.value);
+                }}
               >
                 <option value="">All</option>
                 <option value="initial">Initial</option>
@@ -225,11 +268,17 @@ function ChallengesInner() {
             </div>
 
             <div className="w-full sm:w-48">
-              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Items per page</label>
+              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Items per page
+              </label>
               <select
                 className="block w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                 value={String(limit)}
-                onChange={(e) => { const n = Number(e.target.value) as LimitParam; setPage(1); setLimit(n); }}
+                onChange={(e) => {
+                  const n = Number(e.target.value) as LimitParam;
+                  setPage(1);
+                  setLimit(n);
+                }}
               >
                 <option value="10">10</option>
                 <option value="20">20</option>
@@ -251,7 +300,10 @@ function ChallengesInner() {
             totalItems: pageObj.total,
             pageSize: limit,
             onPageChange: (p) => setPage(p),
-            onPageSizeChange: (n) => { setPage(1); setLimit(n as LimitParam); },
+            onPageSizeChange: (n) => {
+              setPage(1);
+              setLimit(n as LimitParam);
+            },
           }}
         />
       </div>
