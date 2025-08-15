@@ -35,7 +35,7 @@ client.interceptors.response.use(
       if (status === 401) {
         try {
           if (typeof window !== "undefined") {
-            await signOut({ callbackUrl: "/login" });
+            await signOut({ callbackUrl: "/auth/login" });
           }
         } catch {}
       }
@@ -49,7 +49,7 @@ client.interceptors.response.use(
     } else {
       console.error("API Error Message:", error.message);
     }
-    return Promise.reject(error);
+    return Promise.reject(error instanceof Error ? error : new Error(error?.message || 'Unknown error'));
   }
 );
 

@@ -42,7 +42,7 @@ function ResetPasswordContent() {
     try {
       await resetPassword({ code, password, passwordConfirmation });
       toast.success("Contraseña actualizada con éxito");
-      setTimeout(() => router.push("/login"), 2000);
+      setTimeout(() => router.push("/auth/login"), 2000);
     } catch (error) {
       console.error("Reset password error:", error);
       toast.error(
@@ -103,7 +103,7 @@ function ResetPasswordContent() {
         </form>
 
         <p className="mt-6 text-sm text-center">
-          <Link href="/login" className="text-blue-600 hover:underline">
+          <Link href="/auth/login" className="text-blue-600 hover:underline">
             Volver a inicio de sesión
           </Link>
         </p>
