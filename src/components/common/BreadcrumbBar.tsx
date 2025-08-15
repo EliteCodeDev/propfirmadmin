@@ -32,9 +32,9 @@ function humanize(segment: string): string {
 
 export default function BreadcrumbBar() {
   const pathname = usePathname();
-  const segments = pathname.split("/").filter(Boolean);
 
   const crumbs = useMemo((): BreadcrumbItem[] => {
+  const segments = pathname.split("/").filter(Boolean);
     const crumbs: BreadcrumbItem[] = [];
     
     // Si estamos en rutas de auth, no mostrar breadcrumbs
@@ -65,7 +65,7 @@ export default function BreadcrumbBar() {
     });
 
     return crumbs;
-  }, [pathname, segments]);
+  }, [pathname]);
 
   return (
     <div className="sticky top-0 h-16 z-20 bg-gradient-to-r from-slate-900 via-gray-900 to-slate-900 shadow-lg border-b border-gray-700/50">

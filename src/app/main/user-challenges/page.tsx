@@ -4,7 +4,7 @@ import CardComponent from "@/components/user/cardComponent";
 import PaginatedCardTable from "@/components/common/PaginatedCardTable";
 import type { ColumnConfig } from "@/components/common/tableComponent";
 import { UserIcon, ClockIcon, ExclamationTriangleIcon } from "@heroicons/react/24/outline";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import MainLayout from "@/components/layouts/MainLayout";
 
 export default function UserPage() {
@@ -183,9 +183,7 @@ export default function UserPage() {
                 const totalItems = propAccountsData.length;
                 const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
                 const startIdx = (page - 1) * pageSize;
-                const rows = useMemo(() => (
-                  (propAccountsData as unknown as Record<string, unknown>[]).slice(startIdx, startIdx + pageSize)
-                ), [startIdx, pageSize]);
+                const rows = (propAccountsData as unknown as Record<string, unknown>[]).slice(startIdx, startIdx + pageSize);
 
                 return (
                   <PaginatedCardTable

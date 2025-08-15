@@ -5,3 +5,4 @@ export * from "./user";
 export * from "./challenge";
 export * from "./broker";
 export * from "./withdrawal";
+export * from "./http";
