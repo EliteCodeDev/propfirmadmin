@@ -57,6 +57,12 @@ const navigation: NavigationItem[] = [
     description: "Lista de usuarios"
   },
   { 
+    name: "Broker Accounts", 
+    href: "/brokeraccounts", 
+    icon: DocumentTextIcon,
+    description: "Gestión de cuentas de broker"
+  },
+  { 
     name: "Retiros", 
     href: "/withdrawals", 
     icon: BanknotesIcon,
