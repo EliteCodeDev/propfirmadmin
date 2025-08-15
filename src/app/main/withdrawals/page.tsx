@@ -173,7 +173,7 @@ function WithdrawalsInner() {
   // Redirección si no hay sesión
   useEffect(() => {
     if (authStatus === "unauthenticated" || (!accessToken && authStatus !== "loading")) {
-      router.replace("/login");
+      router.replace("/auth/login");
     }
   }, [authStatus, accessToken, router]);
 

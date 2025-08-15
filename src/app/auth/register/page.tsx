@@ -24,7 +24,7 @@ export default function RegisterPage() {
       );
       // Redirect to login page after a short delay
       setTimeout(() => {
-        router.push("/login");
+        router.push("/auth/login");
       }, 3000);
     } catch (error) {
       // Definimos un tipo para el objeto de error que esperamos de Strapi/Axios
@@ -115,7 +115,7 @@ export default function RegisterPage() {
 
         <p className="mt-6 text-sm text-center">
           ¿Ya tienes cuenta?{" "}
-          <Link href="/login" className="text-blue-600 hover:underline">
+          <Link href="/auth/login" className="text-blue-600 hover:underline">
             Inicia sesión
           </Link>
         </p>

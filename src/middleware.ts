@@ -3,8 +3,8 @@ import type { NextRequest } from "next/server";
 import { getToken } from "next-auth/jwt";
 import { NEXTAUTH_SECRET } from "@/config";
 
-const AUTH_PATHS = ["/login", "/register", "/forgot-password", "/reset-password"];
-const PROTECTED_ROOT = "/dashboard";
+const AUTH_PATHS = ["/auth/login", "/auth/register", "/auth/forgot-password", "/auth/reset-password"];
+const PROTECTED_ROOT = "/main/dashboard";
 
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
@@ -27,7 +27,7 @@ export async function middleware(req: NextRequest) {
     const isPublic = AUTH_PATHS.some((p) => pathname.startsWith(p));
     if (!isPublic) {
       const url = req.nextUrl.clone();
-      url.pathname = "/login";
+      url.pathname = "/auth/login";
       if (pathname !== "/") {
         url.searchParams.set("callbackUrl", pathname);
       }

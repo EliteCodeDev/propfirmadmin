@@ -149,7 +149,7 @@ function UserDetailInner() {
   const canFetch = status === "authenticated" && !!token;
 
   useEffect(() => {
-    if (isUnauthenticated) router.replace("/login");
+    if (isUnauthenticated) router.replace("/auth/login");
   }, [isUnauthenticated, router]);
 
   /* ---- Usuario ---- */

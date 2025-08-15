@@ -63,7 +63,7 @@ function LoginContent() {
 
     if (res?.ok) {
       toast.success("¡Bienvenido de vuelta!");
-      router.push("/dashboard");
+      router.push("/main/dashboard");
     } else {
       if (res?.error === "Email not confirmed") {
         setShowConfirmationError(true);
@@ -195,7 +195,7 @@ function LoginContent() {
                 {/* Enlace ¿Olvidaste tu contraseña? */}
                 <div className="text-right">
                   <Link
-                    href="/forgot-password"
+                    href="/auth/forgot-password"
                     className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium transition-colors"
                   >
                     ¿Olvidaste tu contraseña?
@@ -251,7 +251,7 @@ function LoginContent() {
               <p className="text-sm text-slate-600 dark:text-slate-400">
                 ¿No tienes cuenta?{" "}
                 <Link 
-                  href="/register" 
+                  href="/auth/register" 
                   className="font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-colors"
                 >
                   Regístrate aquí

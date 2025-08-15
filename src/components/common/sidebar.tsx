@@ -34,37 +34,37 @@ interface NavigationItem {
 const navigation: NavigationItem[] = [
   { 
     name: "Dashboard", 
-    href: "/dashboard", 
+    href: "/main/dashboard", 
     icon: HomeIcon,
     description: "Panel principal"
   },
   { 
     name: "Challenges", 
-    href: "/challenges", 
+    href: "/main/challenges", 
     icon: TrophyIcon,
     description: "Gestión de challenges"
   },
   { 
     name: "Challenge Templates", 
-    href: "/challenge-templates", 
+    href: "/main/challenge-templates", 
     icon: DocumentTextIcon,
     description: "Plantillas de challenges"
   },
   { 
     name: "Usuarios", 
-    href: "/users", 
+    href: "/main/users", 
     icon: UserGroupIcon,
     description: "Lista de usuarios"
   },
   { 
     name: "Broker Accounts", 
-    href: "/brokeraccounts", 
+    href: "/main/brokeraccounts", 
     icon: DocumentTextIcon,
     description: "Gestión de cuentas de broker"
   },
   { 
     name: "Retiros", 
-    href: "/withdrawals", 
+    href: "/main/withdrawals", 
     icon: BanknotesIcon,
     description: "Gestión de retiros",
   },
@@ -152,8 +152,8 @@ export default function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
   // Click handler para el botón de usuario: navegar cuando está colapsado, desplegar menú cuando está expandido
   const handleUserButtonClick = () => {
     if (isCollapsed) {
-      // Asumimos la ruta existente '/profile'
-      router.push('/profile');
+      // Asumimos la ruta existente '/main/profile'
+      router.push('/main/profile');
       return;
     }
     setUserMenuOpen(!userMenuOpen);
@@ -336,7 +336,7 @@ export default function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
               <div className="h-px bg-gradient-to-r from-transparent via-gray-200 dark:via-gray-600 to-transparent my-2" />
 
               <button 
-                onClick={() => router.push('/profile')} 
+                onClick={() => router.push('/main/profile')} 
                 className="w-full flex items-center px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gradient-to-r hover:from-gray-100 hover:to-gray-50 dark:hover:from-gray-700 dark:hover:to-gray-600 transition-all duration-200 cursor-pointer rounded-lg mx-1"
               >
                 <UserIcon className="h-4 w-4 mr-3 text-blue-500" />
@@ -346,7 +346,7 @@ export default function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
               <div className="h-px bg-gradient-to-r from-transparent via-gray-200 dark:via-gray-600 to-transparent my-2" />
 
               <button
-                onClick={() => signOut({ callbackUrl: '/login' })}
+                onClick={() => signOut({ callbackUrl: '/auth/login' })}
                 className="w-full flex items-center px-4 py-3 text-sm text-red-600 dark:text-red-400 hover:bg-gradient-to-r hover:from-red-50 hover:to-red-25 dark:hover:from-red-900/20 dark:hover:to-red-800/20 transition-all duration-200 cursor-pointer rounded-lg mx-1"
               >
                 <ArrowRightOnRectangleIcon className="h-4 w-4 mr-3" />
@@ -424,7 +424,7 @@ export default function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
               </button>
 
               <button
-                onClick={() => signOut({ callbackUrl: '/login' })}
+                onClick={() => signOut({ callbackUrl: '/auth/login' })}
                 className="w-full p-3 rounded-xl text-gray-500 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-400 hover:bg-gradient-to-r hover:from-red-50 hover:to-red-25 dark:hover:from-red-900/20 dark:hover:to-red-800/20 transition-all duration-200 group relative cursor-pointer hover:shadow-md"
                 title="Cerrar sesión"
               >
