@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { useState, useRef, useEffect } from "react";
 import {
@@ -22,6 +23,7 @@ import {
 import { signOut } from "next-auth/react";
 import { useSession } from "next-auth/react";
 import { useTheme } from "../../hooks/useTheme";
+import { LOGO_APP } from "@/config";
 
 interface NavigationItem {
   name: string;
@@ -196,17 +198,22 @@ export default function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
             isCollapsed ? "px-2 justify-center" : "px-4 justify-between"
           )}
         >
-          {!isCollapsed && process.env.NEXT_PUBLIC_LOGO_APP && (
+          {!isCollapsed && LOGO_APP && (
             <div className="flex-1 mr-2">
-              <img
-                src={process.env.NEXT_PUBLIC_LOGO_APP}
-                alt="Logo"
-                className="h-8 w-full object-contain"
-              />
+              <div className="relative h-8 w-full">
+                <Image
+                  src={LOGO_APP}
+                  alt="Logo"
+                  fill
+                  className="object-contain"
+                  sizes="(max-width: 1024px) 100vw, 256px"
+                  priority
+                />
+              </div>
             </div>
           )}
 
-          {!isCollapsed && !process.env.NEXT_PUBLIC_LOGO_APP && (
+      {!isCollapsed && !LOGO_APP && (
             <div className="flex items-center space-x-2">
               <div className="w-8 h-8 bg-gradient-to-br from-blue-500 via-purple-500 to-indigo-600 rounded-lg flex items-center justify-center shadow-lg">
                 <span className="text-white font-bold text-sm">PF</span>

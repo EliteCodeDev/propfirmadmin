@@ -8,6 +8,7 @@ import useSWR from "swr";
 import { SessionProvider, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import type { Challenge, PageResponse } from "@/types";
+import { apiBaseUrl } from "@/config";
 
 type LimitParam = number;
 type Scope = "mine" | "all";
@@ -16,7 +17,7 @@ type Scope = "mine" | "all";
 // interface Challenge { ... }
 // interface PageResponse<T> { ... }
 
-const API_BASE = (process.env.NEXT_PUBLIC_BACKEND_URL || "").replace(/\/$/, "");
+const API_BASE = apiBaseUrl.replace(/\/$/, "");
 
 function unwrapPage<T = Record<string, unknown>>(raw: unknown): {
   items: T[];
@@ -25,21 +26,29 @@ function unwrapPage<T = Record<string, unknown>>(raw: unknown): {
   limit: number;
   totalPages: number;
 } {
-  const lvl1 = (raw as any)?.data ?? raw;
+  const lvl1Data = (raw as { data?: unknown })?.data;
+  const lvl1: unknown = lvl1Data !== undefined ? lvl1Data : raw;
 
   let items: T[] = [];
   if (Array.isArray(lvl1)) items = lvl1 as T[];
   else if (lvl1 && typeof lvl1 === "object") {
-    if (Array.isArray((lvl1 as any).data)) items = (lvl1 as any).data as T[];
-    else if (Array.isArray((lvl1 as any).items)) items = (lvl1 as any).items as T[];
+    const dataArr = (lvl1 as { data?: unknown }).data;
+    const itemsArr = (lvl1 as { items?: unknown }).items;
+    if (Array.isArray(dataArr)) items = dataArr as T[];
+    else if (Array.isArray(itemsArr)) items = itemsArr as T[];
   }
 
-  const total = typeof (lvl1 as any)?.total === "number" ? (lvl1 as any).total : items.length;
-  const page = typeof (lvl1 as any)?.page === "number" ? (lvl1 as any).page : 1;
-  const limit = typeof (lvl1 as any)?.limit === "number" ? (lvl1 as any).limit : items.length || 10;
+  const totalVal = (lvl1 as { total?: unknown })?.total;
+  const pageVal = (lvl1 as { page?: unknown })?.page;
+  const limitVal = (lvl1 as { limit?: unknown })?.limit;
+  const totalPagesVal = (lvl1 as { totalPages?: unknown })?.totalPages;
+
+  const total = typeof totalVal === "number" ? totalVal : items.length;
+  const page = typeof pageVal === "number" ? pageVal : 1;
+  const limit = typeof limitVal === "number" ? limitVal : items.length || 10;
   const totalPages =
-    typeof (lvl1 as any)?.totalPages === "number"
-      ? (lvl1 as any).totalPages
+    typeof totalPagesVal === "number"
+      ? totalPagesVal
       : limit > 0
       ? Math.max(1, Math.ceil(total / limit))
       : 1;
@@ -56,7 +65,7 @@ function ChallengesInner() {
   const [limit, setLimit] = useState<LimitParam>(10);
   const [status, setStatus] = useState<string>("");
 
-  const accessToken = (session as any)?.accessToken as string | undefined;
+  const accessToken = session?.accessToken as string | undefined;
 
   const query = useMemo(() => {
     const q = new URLSearchParams();
@@ -121,7 +130,7 @@ function ChallengesInner() {
     { key: "endDate", label: "End", type: "normal" },
   ];
 
-  const rows = challenges.map((c, idx) => {
+  const rows: Record<string, unknown>[] = challenges.map((c, idx) => {
     const serial = offset + idx + 1;
     const userName = c.user
       ? `${c.user.firstName ?? ""} ${c.user.lastName ?? ""}`.trim() || c.user.email || c.userID
@@ -134,7 +143,7 @@ function ChallengesInner() {
     const start = c.startDate ? new Date(c.startDate).toLocaleDateString() : "-";
     const end = c.endDate ? new Date(c.endDate).toLocaleDateString() : "-";
 
-    return {
+  const row: Record<string, unknown> = {
       serial,
       user: userName,
       plan,
@@ -146,7 +155,8 @@ function ChallengesInner() {
       status: c.status ?? "-",
       startDate: start,
       endDate: end,
-    } as Record<string, unknown>;
+  };
+  return row;
   });
 
   return (

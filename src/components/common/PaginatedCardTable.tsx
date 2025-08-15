@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useMemo } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import type { ColumnConfig } from "./tableComponent";
@@ -34,8 +34,8 @@ function usePageNumbers(currentPage: number, totalPages: number, windowSize = 5)
   return useMemo(() => {
     const maxToShow = Math.max(3, windowSize);
     const half = Math.floor(maxToShow / 2);
-    let startPage = Math.max(1, currentPage - half);
-    let endPage = Math.min(totalPages, startPage + maxToShow - 1);
+  let startPage = Math.max(1, currentPage - half);
+  const endPage = Math.min(totalPages, startPage + maxToShow - 1);
     if (endPage - startPage + 1 < maxToShow) {
       startPage = Math.max(1, endPage - maxToShow + 1);
     }
@@ -103,13 +103,14 @@ export default function PaginatedCardTable(props: PaginatedCardTableProps) {
     pagination,
   } = props;
 
-  const { currentPage, totalPages, totalItems, pageSize, onPageChange, onPageSizeChange } = pagination;
-  const startRecord = (currentPage - 1) * pageSize + 1;
-  const endRecord = typeof totalItems === "number"
-    ? Math.min(currentPage * pageSize, totalItems)
-    : currentPage * pageSize;
+  const { currentPage, totalPages, pageSize, onPageChange, onPageSizeChange } = pagination;
+  // Records range UI not displayed currently; can be re-enabled if needed
+  // const startRecord = (currentPage - 1) * pageSize + 1;
+  // const endRecord = typeof totalItems === "number"
+  //   ? Math.min(currentPage * pageSize, totalItems)
+  //   : currentPage * pageSize;
 
-  const { pageNumbers, startPage, endPage } = usePageNumbers(currentPage, totalPages);
+  const { pageNumbers, startPage } = usePageNumbers(currentPage, totalPages);
 
   const colCount = columns.length + (renderActions ? 1 : 0);
 
@@ -262,12 +263,12 @@ export default function PaginatedCardTable(props: PaginatedCardTableProps) {
                     </button>
                   ))}
 
-                  {endPage < totalPages && (
+          {pageNumbers.length && pageNumbers[pageNumbers.length - 1] < totalPages ? (
                     <>
-                      {endPage < totalPages - 1 && <span className="px-1 text-gray-400 dark:text-gray-500 text-xs">...</span>}
+            {pageNumbers[pageNumbers.length - 1] < totalPages - 1 && <span className="px-1 text-gray-400 dark:text-gray-500 text-xs">...</span>}
                       <button onClick={() => onPageChange(totalPages)} className="px-2.5 py-1 rounded-md text-xs text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600/30 transition-colors">{totalPages}</button>
                     </>
-                  )}
+          ) : null}
                 </div>
 
                 <div className="flex sm:hidden items-center gap-1">
