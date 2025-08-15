@@ -6,7 +6,8 @@ import { PlansManager } from "./PlansManager";
 import { BalancesManager } from "./BalancesManager";
 import { RelationsManager } from "./RelationsManager";
 import { StagesManager } from "./StagesManager";
-import { TemplateVisualizer } from "./TemplateVisualizer";
+import PaginatedCardTable from "@/components/common/PaginatedCardTable";
+import type { ColumnConfig } from "@/components/common/tableComponent";
 import { RowsPerPage } from "@/components/ui/RowsPerPage";
 import { useArrayValidation } from "@/hooks/useArrayValidation";
 import { Settings, PackageIcon, Layers, Link, Eye, Folder } from "lucide-react";
@@ -22,6 +23,51 @@ type TabType =
 export function ChallengeTemplatesManager() {
   const [activeTab, setActiveTab] = useState<TabType>("visualizer");
   const [pageSize, setPageSize] = useState(10);
+  const [page, setPage] = useState(1);
+
+  // Datos de ejemplo para la tabla
+  const templateColumns: ColumnConfig[] = [
+    { key: "id", label: "ID", type: "normal" },
+    { key: "name", label: "Nombre", type: "normal" },
+    { key: "category", label: "Categoría", type: "normal" },
+    { key: "plan", label: "Plan", type: "normal" },
+    { key: "balance", label: "Balance", type: "normal" },
+    { key: "status", label: "Estado", type: "normal" },
+    { key: "created", label: "Creado", type: "normal" },
+  ];
+
+  const templateData = [
+    {
+      id: "1",
+      name: "Template 1",
+      category: "Premium",
+      plan: "Starter Plan",
+      balance: "$10,000",
+      status: "Activo",
+      created: "2025-01-15"
+    },
+    {
+      id: "2", 
+      name: "Template 2",
+      category: "Basic",
+      plan: "Pro Plan",
+      balance: "$25,000",
+      status: "Inactivo",
+      created: "2025-01-10"
+    },
+    {
+      id: "3",
+      name: "Template 3", 
+      category: "Advanced",
+      plan: "Enterprise Plan",
+      balance: "$50,000",
+      status: "Activo",
+      created: "2025-01-05"
+    }
+  ];
+
+  const totalItems = templateData.length;
+  const totalPages = Math.ceil(totalItems / pageSize);
 
   const tabs = [
     {
@@ -61,7 +107,22 @@ export function ChallengeTemplatesManager() {
   const renderTabContent = () => {
     switch (activeTab) {
       case "visualizer":
-        return <TemplateVisualizer pageSize={pageSize} />;
+        return (
+          <PaginatedCardTable
+            columns={templateColumns}
+            rows={templateData}
+            isLoading={false}
+            emptyText="No hay templates disponibles"
+            pagination={{
+              currentPage: page,
+              totalPages: totalPages,
+              totalItems: totalItems,
+              pageSize: pageSize,
+              onPageChange: (p) => setPage(p),
+              onPageSizeChange: (n) => { setPage(1); setPageSize(n); },
+            }}
+          />
+        );
       case "categories":
         return <CategoriesManager pageSize={pageSize} />;
       case "plans":
@@ -73,12 +134,27 @@ export function ChallengeTemplatesManager() {
       case "stages":
         return <StagesManager pageSize={pageSize} />;
       default:
-        return <TemplateVisualizer />;
+        return (
+          <PaginatedCardTable
+            columns={templateColumns}
+            rows={templateData}
+            isLoading={false}
+            emptyText="No hay templates disponibles"
+            pagination={{
+              currentPage: page,
+              totalPages: totalPages,
+              totalItems: totalItems,
+              pageSize: pageSize,
+              onPageChange: (p) => setPage(p),
+              onPageSizeChange: (n) => { setPage(1); setPageSize(n); },
+            }}
+          />
+        );
     }
   };
 
   return (
-    <div className="min-h-screen  transition-colors duration-200">
+    <div className="min-h-screen transition-colors duration-200">
       <div className="max-w-7xl mx-auto p-6 space-y-6">
         {/* Header */}
         <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6 shadow-sm">
@@ -100,8 +176,8 @@ export function ChallengeTemplatesManager() {
         </div>
 
         {/* Navigation Tabs */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
-          <div className="flex flex-wrap border-b border-gray-200 dark:border-gray-700">
+        <div className="dark:bg-gray-800 rounded-lg border-gray-200 dark:border-gray-700 overflow-hidden">
+          <div className="bg-white flex flex-wrap border-b border-gray-200 dark:border-gray-700 shadow-sm">
             {tabsValidation.safeMap((tab, index) => (
               <button
                 key={tab?.id || `tab-${index}`}
@@ -130,8 +206,8 @@ export function ChallengeTemplatesManager() {
           </div>
 
           {/* Page Size Control - Only show for non-visualizer tabs */}
-          {activeTab !== "visualizer" && (
-            <div className="p-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
+          {/*activeTab !== "visualizer" && (
+            <div className="p-4 border-b border-gray-200 dark:border-gray-700 bg-gray-500 dark:bg-gray-800/50">
               <div className="flex justify-end">
                 <div className="flex items-center gap-3 bg-white dark:bg-gray-700 px-4 py-2 rounded-lg shadow-sm border border-gray-200 dark:border-gray-600">
                   <span className="text-gray-700 dark:text-gray-300 font-medium text-sm whitespace-nowrap">
@@ -143,10 +219,10 @@ export function ChallengeTemplatesManager() {
                 </div>
               </div>
             </div>
-          )}
+          )*/}
 
           {/* Tab Content */}
-          <div className="bg-white dark:bg-gray-800">
+          <div className=" mt-6">
             {renderTabContent()}
           </div>
         </div>

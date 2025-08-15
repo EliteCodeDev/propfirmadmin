@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { ChallengeTable } from "@/components/ui/ChallengeTable";
+import PaginatedCardTable from "@/components/common/PaginatedCardTable";
+import type { ColumnConfig } from "@/components/common/tableComponent";
 import {
   challengeTemplatesApi,
   type ChallengeBalance,
@@ -31,6 +32,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { toast } from "sonner";
+import { Edit, Plus } from "lucide-react";
 
 // Validación
 const balanceSchema = z.object({
@@ -53,6 +55,7 @@ export function BalancesManager({ pageSize }: BalancesManagerProps) {
   const [openModal, setOpenModal] = useState(false);
   const [editItem, setEditItem] = useState<ChallengeBalance | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [page, setPage] = useState(1);
 
   // Form
   const form = useForm<BalanceFormData>({
@@ -137,19 +140,67 @@ export function BalancesManager({ pageSize }: BalancesManagerProps) {
     originalId: item?.balanceID || "", // Guardamos el ID real para operaciones
   }));
 
+  // Columnas para la tabla (ID, Nombre, Precio)
+  const columns: ColumnConfig[] = [
+    { key: "id", label: "ID", type: "normal" },
+    { key: "name", label: "Nombre", type: "normal" },
+    { key: "precio", label: "Precio", type: "normal" },
+    { key: "aa", label: "aa", type: "normal" }
+  ];
+
+  // Paginación
+  const totalPages = Math.max(1, Math.ceil(tableData.length / pageSize));
+  const startIndex = (page - 1) * pageSize;
+  const paginatedRows = tableData.slice(startIndex, startIndex + pageSize);
+
+  const renderActions = (row: Record<string, unknown>) => (
+    <div className="flex items-center justify-center">
+      <Button
+        variant="outline"
+        size="sm"
+        className="h-8 w-8 p-0"
+        onClick={() =>
+          handleOpenEdit({
+            id: Number(row.id),
+            name: String(row.name || ""),
+            precio: Number(row.precio || 0),
+            originalId: String(row.originalId || ""),
+          })
+        }
+      >
+        <Edit className="h-4 w-4" />
+      </Button>
+    </div>
+  );
+
   // --------------------------------------------------
   // 4. Render
   // --------------------------------------------------
   return (
     <div>
-      <ChallengeTable
-        title="Balances"
-        data={tableData}
-        pageSize={pageSize}
-        onCreate={handleOpenCreate}
-        onEdit={handleOpenEdit}
+      {/* Encabezado mínimo para mantener botón de creación, sin tocar otros cards/diseños */}
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-2xl font-bold">Balances</h2>
+        <Button onClick={handleOpenCreate} className="group">
+          <Plus className="mr-2 h-4 w-4 transition-transform duration-200 group-hover:rotate-90" />
+          Crear balance
+        </Button>
+      </div>
+
+      <PaginatedCardTable
+        columns={columns}
+        rows={paginatedRows}
         isLoading={isLoading}
-        showPrice={true} // Mostrar columna de precio para balances
+        actionsHeader="Acciones"
+        renderActions={renderActions}
+        pagination={{
+          currentPage: page,
+          totalPages,
+          totalItems: tableData.length,
+          pageSize,
+          onPageChange: setPage,
+          onPageSizeChange: () => {},
+        }}
       />
 
       <Dialog open={openModal} onOpenChange={setOpenModal}>
