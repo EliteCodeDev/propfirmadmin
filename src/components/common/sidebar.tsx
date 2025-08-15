@@ -8,6 +8,8 @@ import {
   UserGroupIcon,
   BanknotesIcon,
   TrophyIcon,
+  DocumentTextIcon,
+  ArrowRightOnRectangleIcon,
   ChevronRightIcon,
   Bars3Icon,
   XMarkIcon,
@@ -21,7 +23,6 @@ import { signOut } from "next-auth/react";
 import { useSession } from "next-auth/react";
 import { useTheme } from "../../hooks/useTheme";
 
-// ✅ Interfaz corregida con badge opcional
 interface NavigationItem {
   name: string;
   href: string;
@@ -37,11 +38,17 @@ const navigation: NavigationItem[] = [
     icon: HomeIcon,
     description: "Panel principal",
   },
-  {
-    name: "User Challenges",
-    href: "/user-challenges",
+  { 
+    name: "Challenges", 
+    href: "/challenges", 
     icon: TrophyIcon,
-    description: "Desafíos de usuarios",
+    description: "Gestión de challenges"
+  },
+  { 
+    name: "Challenge Templates", 
+    href: "/challenge-templates", 
+    icon: DocumentTextIcon,
+    description: "Plantillas de challenges"
   },
   {
     name: "Usuarios",
@@ -49,9 +56,15 @@ const navigation: NavigationItem[] = [
     icon: UserGroupIcon,
     description: "Lista de usuarios",
   },
-  {
-    name: "Retiros",
-    href: "/withdrawals",
+  { 
+    name: "Broker Accounts", 
+    href: "/brokeraccounts", 
+    icon: DocumentTextIcon,
+    description: "Gestión de cuentas de broker"
+  },
+  { 
+    name: "Retiros", 
+    href: "/withdrawals", 
     icon: BanknotesIcon,
     description: "Gestión de retiros",
   },
@@ -74,6 +87,11 @@ export default function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
   const { theme, toggleTheme } = useTheme();
   const userMenuRef = useRef<HTMLDivElement>(null);
   const { data: session } = useSession();
+
+  // Sincronizar con el estado externo
+  useEffect(() => {
+    setIsCollapsed(collapsed);
+  }, [collapsed]);
 
   // Derive user display data from session
   const user = session?.user;
@@ -103,7 +121,8 @@ export default function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
   })();
 
   const toggleSidebar = () => {
-    setIsCollapsed(!isCollapsed);
+    const newCollapsedState = !isCollapsed;
+    setIsCollapsed(newCollapsedState);
     onToggle?.();
   };
 
@@ -130,30 +149,49 @@ export default function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
     }
   }, [isCollapsed]);
 
+  // Handler para navegación con prevención de problemas
+  const handleNavigation = (href: string, e: React.MouseEvent) => {
+    e.preventDefault();
+    
+    // Evitar navegación duplicada si ya estamos en la ruta
+    if (pathname === href) {
+      return;
+    }
+    
+    // Usar router.push para navegación programática
+    router.push(href);
+  };
+
+  // Click handler para el botón de usuario: navegar cuando está colapsado, desplegar menú cuando está expandido
+  const handleUserButtonClick = () => {
+    if (isCollapsed) {
+      // Asumimos la ruta existente '/profile'
+      router.push('/profile');
+      return;
+    }
+    setUserMenuOpen(!userMenuOpen);
+  };
+
   return (
     <>
-      {/* Mobile backdrop */}
+      {/* Mobile backdrop - solo visible en mobile cuando sidebar está expandido */}
       {!isCollapsed && (
-        <div
-          className="fixed inset-0 bg-black bg-opacity-50 z-20 lg:hidden"
+        <div 
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-20 lg:hidden"
           onClick={toggleSidebar}
         />
       )}
 
-      <div
-        className={classNames(
-          "fixed inset-y-0 left-0 z-30 flex flex-col transition-all duration-300 ease-in-out lg:static lg:inset-auto",
-          isCollapsed ? "w-16" : "w-64",
-          "bg-white dark:bg-gray-900 shadow-xl border-r border-gray-200 dark:border-gray-700"
-        )}
-      >
+      <div className={classNames(
+        "fixed inset-y-0 left-0 z-30 flex flex-col transition-all duration-300 ease-in-out lg:relative",
+        isCollapsed ? "w-16" : "w-64",
+        "bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl shadow-2xl border-r border-gray-200/50 dark:border-gray-700/50"
+      )}>
         {/* Header */}
-        <div
-          className={classNames(
-            "flex items-center justify-between h-16 bg-gray-800 px-4 shadow-sm border-b border-gray-200 dark:border-gray-700",
-            isCollapsed ? "px-2" : "px-4"
-          )}
-        >
+        <div className={classNames(
+          "flex items-center h-16 bg-gradient-to-r from-slate-900 via-gray-900 to-slate-900 shadow-lg border-b border-gray-700/50",
+          isCollapsed ? "px-2 justify-center" : "px-4 justify-between"
+        )}>
           {!isCollapsed && process.env.NEXT_PUBLIC_LOGO_APP && (
             <div className="flex-1 mr-2">
               <img
@@ -163,143 +201,166 @@ export default function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
               />
             </div>
           )}
-
+          
+          {!isCollapsed && !process.env.NEXT_PUBLIC_LOGO_APP && (
+            <div className="flex items-center space-x-2">
+              <div className="w-8 h-8 bg-gradient-to-br from-blue-500 via-purple-500 to-indigo-600 rounded-lg flex items-center justify-center shadow-lg">
+                <span className="text-white font-bold text-sm">PF</span>
+              </div>
+              <h1 className="text-xl font-bold text-white">
+                PropFirm
+              </h1>
+            </div>
+          )}
+          
           <button
             onClick={toggleSidebar}
-            className="p-1.5 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-200 cursor-pointer"
+            className="p-1.5 rounded-lg text-gray-300 hover:text-white hover:bg-white/10 transition-all duration-200 cursor-pointer backdrop-blur-sm"
           >
             {isCollapsed ? (
               <Bars3Icon className="h-5 w-5" />
             ) : (
-              <XMarkIcon className="h-5 w-5 lg:hidden" />
+              <XMarkIcon className="h-5 w-5" />
             )}
           </button>
         </div>
 
         {/* Navigation */}
-        <div className="flex-1 overflow-y-auto py-4">
-          <nav
-            className={classNames("space-y-1", isCollapsed ? "px-2" : "px-3")}
-          >
-            {navigation.map((item) => {
-              const isActive = pathname === item.href;
+        <div className={classNames(
+          "flex-1 py-4 overflow-x-visible",
+          isCollapsed ? "overflow-y-visible" : "overflow-y-auto"
+        )}>
+          <nav className={classNames("space-y-2", isCollapsed ? "px-2" : "px-3")}>
+            {navigation.map((item, index) => {
+              const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
+              const showDivider = index === 0 || index === 2; // Después de Dashboard y Challenge Templates
+              
               return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={classNames(
-                    "group flex items-center text-sm font-medium rounded-xl transition-all duration-200 relative cursor-pointer",
-                    isCollapsed ? "p-2 justify-center" : "px-3 py-2.5",
-                    isActive
-                      ? "bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-lg shadow-indigo-500/25"
-                      : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white"
-                  )}
-                  title={isCollapsed ? item.name : ""}
-                >
-                  {/* Active indicator */}
-                  {isActive && (
-                    <div className="absolute left-0 top-0 bottom-0 w-1 bg-white rounded-r-full" />
-                  )}
-
-                  <item.icon
+                <div key={item.href}>
+                  <Link
+                    href={item.href}
+                    onClick={(e) => handleNavigation(item.href, e)}
                     className={classNames(
-                      "flex-shrink-0 h-5 w-5 transition-colors duration-200",
+                      "group flex items-center text-sm font-medium rounded-xl transition-all duration-300 ease-out relative overflow-hidden",
+                      isCollapsed ? "p-3 justify-center" : "px-4 py-3",
                       isActive
-                        ? "text-white"
-                        : "text-gray-400 group-hover:text-gray-500 dark:group-hover:text-gray-300",
-                      isCollapsed ? "" : "mr-3"
+                        ? "bg-gradient-to-r from-blue-500 via-purple-500 to-indigo-600 text-white shadow-lg shadow-blue-500/25 dark:shadow-blue-500/20 transform scale-[1.02]"
+                        : "text-gray-700 dark:text-gray-300 hover:bg-gradient-to-r hover:from-gray-100 hover:to-gray-50 dark:hover:from-gray-800 dark:hover:to-gray-700 hover:text-gray-900 dark:hover:text-white hover:shadow-md"
                     )}
-                    aria-hidden="true"
-                  />
+                    title={isCollapsed ? item.name : ""}
+                  >
+                    {/* Active glow effect */}
+                    {isActive && (
+                      <div className="absolute inset-0 bg-gradient-to-r from-blue-400/20 via-purple-400/20 to-indigo-400/20 animate-pulse" />
+                    )}
 
-                  {!isCollapsed && (
-                    <>
-                      <div className="flex-1">
-                        <div className="flex items-center justify-between">
-                          <span className="truncate">{item.name}</span>
-                          {/* ✅ Verificación corregida del badge */}
-                          {item.badge && (
-                            <span
-                              className={classNames(
-                                "ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium",
-                                isActive
-                                  ? "bg-white text-indigo-600"
-                                  : "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
-                              )}
-                            >
-                              {item.badge}
-                            </span>
-                          )}
-                        </div>
-                        <p
-                          className={classNames(
-                            "text-xs mt-0.5 truncate",
-                            isActive
-                              ? "text-indigo-100"
-                              : "text-gray-500 dark:text-gray-400"
-                          )}
-                        >
-                          {item.description}
-                        </p>
-                      </div>
+                    {/* Active indicator - Adaptativo para modo claro/oscuro */}
+                    {isActive && (
+                      <div className="absolute left-0 top-2 bottom-2 w-1 bg-gray-800 dark:bg-white rounded-r-full shadow-lg" />
+                    )}
 
-                      {isActive && (
-                        <ChevronRightIcon className="h-4 w-4 text-white ml-2" />
+                    <item.icon
+                      className={classNames(
+                        "flex-shrink-0 h-5 w-5 transition-all duration-300 relative z-10",
+                        isActive
+                          ? "text-white drop-shadow-sm"
+                          : "text-gray-500 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-200",
+                        isCollapsed ? "" : "mr-3"
                       )}
-                    </>
-                  )}
+                      aria-hidden="true"
+                    />
 
-                  {/* Tooltip for collapsed state */}
-                  {isCollapsed && (
-                    <div className="absolute left-full top-1/2 transform -translate-y-1/2 ml-2 px-2 py-1 bg-gray-900 text-white text-xs rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
-                      {item.name}
-                      <div className="absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-1 w-2 h-2 bg-gray-900 rotate-45" />
+                    {!isCollapsed && (
+                      <>
+                        <div className="flex-1 relative z-10">
+                          <div className="flex items-center justify-between">
+                            <span className="truncate font-medium">{item.name}</span>
+                            {item.badge && (
+                              <span className={classNames(
+                                "ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium",
+                                isActive 
+                                  ? "bg-white/20 text-white backdrop-blur-sm"
+                                  : "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400"
+                              )}>
+                                {item.badge}
+                              </span>
+                            )}
+                          </div>
+                          <p className={classNames(
+                            "text-xs mt-0.5 truncate",
+                            isActive 
+                              ? "text-blue-100 dark:text-purple-100"
+                              : "text-gray-500 dark:text-gray-400"
+                          )}>
+                            {item.description}
+                          </p>
+                        </div>
+                        
+                        {isActive && (
+                          <ChevronRightIcon className="h-4 w-4 text-white ml-2 relative z-10 drop-shadow-sm" />
+                        )}
+                      </>
+                    )}
+
+                    {/* Tooltip for collapsed state */}
+                    {isCollapsed && (
+                      <div className="absolute left-full top-1/2 transform -translate-y-1/2 ml-3 px-3 py-2 bg-gray-900 dark:bg-gray-800 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none whitespace-nowrap z-50 shadow-xl backdrop-blur-sm">
+                        {item.name}
+                        <div className="absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-1 w-2 h-2 bg-gray-900 dark:bg-gray-800 rotate-45" />
+                      </div>
+                    )}
+                  </Link>
+
+                  {/* Separador entre secciones - Mejorado para modo claro */}
+                  {showDivider && (
+                    <div className={classNames(
+                      "my-4",
+                      isCollapsed ? "px-2" : "px-4"
+                    )}>
+                      <div className="h-px bg-gradient-to-r from-transparent via-gray-400 dark:via-gray-600 to-transparent opacity-60"></div>
                     </div>
                   )}
-                </Link>
+                </div>
               );
             })}
           </nav>
         </div>
 
         {/* User Menu Section */}
-        <div
-          className={classNames(
-            "border-t border-gray-200 dark:border-gray-700 relative",
-            isCollapsed ? "p-2" : "p-4"
-          )}
-          ref={userMenuRef}
-        >
+        <div className={classNames(
+          "border-t border-gray-200/50 dark:border-gray-700/50 relative bg-gradient-to-r from-gray-50/50 to-white/50 dark:from-gray-800/50 dark:to-gray-900/50",
+          isCollapsed ? "p-2" : "p-4"
+        )} ref={userMenuRef}>
           {/* Dropdown Menu */}
           {userMenuOpen && !isCollapsed && (
-            <div className="absolute bottom-full left-4 right-4 mb-2 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 py-2 z-50">
+            <div className="absolute bottom-full left-4 right-4 mb-2 bg-white/95 dark:bg-gray-800/95 backdrop-blur-xl rounded-xl shadow-2xl border border-gray-200/50 dark:border-gray-700/50 py-2 z-50">
               <button
                 onClick={toggleTheme}
-                className="w-full flex items-center px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200 cursor-pointer"
+                className="w-full flex items-center px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gradient-to-r hover:from-gray-100 hover:to-gray-50 dark:hover:from-gray-700 dark:hover:to-gray-600 transition-all duration-200 cursor-pointer rounded-lg mx-1"
               >
-                {theme === "light" ? (
-                  <MoonIcon className="h-4 w-4 mr-3" />
+                {theme === 'light' ? (
+                  <MoonIcon className="h-4 w-4 mr-3 text-indigo-500" />
                 ) : (
-                  <SunIcon className="h-4 w-4 mr-3" />
+                  <SunIcon className="h-4 w-4 mr-3 text-amber-500" />
                 )}
                 {theme === "light" ? "Modo Oscuro" : "Modo Claro"}
               </button>
 
-              <div className="h-px bg-gray-200 dark:bg-gray-600 my-1" />
+              <div className="h-px bg-gradient-to-r from-transparent via-gray-200 dark:via-gray-600 to-transparent my-2" />
 
-              <button
-                onClick={() => router.push("/profile")}
-                className="w-full flex items-center px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200 cursor-pointer"
+              <button 
+                onClick={() => router.push('/profile')} 
+                className="w-full flex items-center px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gradient-to-r hover:from-gray-100 hover:to-gray-50 dark:hover:from-gray-700 dark:hover:to-gray-600 transition-all duration-200 cursor-pointer rounded-lg mx-1"
               >
-                <UserIcon className="h-4 w-4 mr-3" />
+                <UserIcon className="h-4 w-4 mr-3 text-blue-500" />
                 Mi Perfil
               </button>
 
-              <div className="h-px bg-gray-200 dark:bg-gray-600 my-1" />
+              <div className="h-px bg-gradient-to-r from-transparent via-gray-200 dark:via-gray-600 to-transparent my-2" />
 
               <button
-                onClick={() => signOut({ callbackUrl: "/login" })}
-                className="w-full flex items-center px-4 py-2.5 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors duration-200 cursor-pointer"
+                onClick={() => signOut({ callbackUrl: '/login' })}
+                className="w-full flex items-center px-4 py-3 text-sm text-red-600 dark:text-red-400 hover:bg-gradient-to-r hover:from-red-50 hover:to-red-25 dark:hover:from-red-900/20 dark:hover:to-red-800/20 transition-all duration-200 cursor-pointer rounded-lg mx-1"
               >
                 {/* <ArrowRightOnRectangleIcon className="h-4 w-4 mr-3" /> */}
                 Cerrar Sesión
@@ -309,22 +370,23 @@ export default function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
 
           {/* User Button */}
           <button
-            onClick={() => setUserMenuOpen(!userMenuOpen)}
+            onClick={handleUserButtonClick}
             className={classNames(
-              "group flex items-center w-full rounded-xl transition-all duration-200 relative cursor-pointer",
-              isCollapsed ? "p-2 justify-center" : "px-3 py-3",
-              "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+              "group flex items-center w-full rounded-xl transition-all duration-300 relative overflow-hidden",
+              isCollapsed 
+                ? "p-3 justify-center" 
+                : "px-4 py-3",
+              "text-gray-700 dark:text-gray-300 hover:bg-gradient-to-r hover:from-gray-100 hover:to-gray-50 dark:hover:from-gray-800 dark:hover:to-gray-700 cursor-pointer hover:shadow-md"
             )}
-            title={isCollapsed ? "Menú de usuario" : ""}
+            title={isCollapsed ? "Perfil" : ""}
+            aria-label={isCollapsed ? "Perfil" : "Menú de usuario"}
           >
             <div className="relative flex items-center">
               <div className="relative">
-                <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center">
-                  <span className="text-white font-semibold text-sm">
-                    {initials}
-                  </span>
+                <div className="w-10 h-10 bg-gradient-to-br from-blue-500 via-purple-500 to-indigo-600 rounded-full flex items-center justify-center shadow-lg ring-2 ring-white/20 dark:ring-gray-700/50">
+                  <span className="text-white font-semibold text-sm drop-shadow-sm">{initials}</span>
                 </div>
-                <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-400 border-2 border-white dark:border-gray-900 rounded-full"></div>
+                <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-400 border-2 border-white dark:border-gray-900 rounded-full shadow-sm"></div>
               </div>
 
               {!isCollapsed && (
@@ -340,9 +402,9 @@ export default function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
                     </div>
                     <div className="ml-2">
                       {userMenuOpen ? (
-                        <ChevronUpIcon className="h-4 w-4 text-gray-400" />
+                        <ChevronUpIcon className="h-4 w-4 text-gray-400 dark:text-gray-500 transition-transform duration-200" />
                       ) : (
-                        <ChevronDownIcon className="h-4 w-4 text-gray-400" />
+                        <ChevronDownIcon className="h-4 w-4 text-gray-400 dark:text-gray-500 transition-transform duration-200" />
                       )}
                     </div>
                   </div>
@@ -351,43 +413,43 @@ export default function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
             </div>
 
             {isCollapsed && (
-              <div className="absolute left-full top-1/2 transform -translate-y-1/2 ml-2 px-2 py-1 bg-gray-900 text-white text-xs rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
-                Menú de usuario
-                <div className="absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-1 w-2 h-2 bg-gray-900 rotate-45" />
+              <div className="absolute left-full top-1/2 transform -translate-y-1/2 ml-3 px-3 py-2 bg-gray-900 dark:bg-gray-800 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none whitespace-nowrap z-50 shadow-xl backdrop-blur-sm">
+                Perfil
+                <div className="absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-1 w-2 h-2 bg-gray-900 dark:bg-gray-800 rotate-45" />
               </div>
             )}
           </button>
 
           {/* Menu colapsado */}
           {isCollapsed && (
-            <div className="mt-2 space-y-1">
+            <div className="mt-2 space-y-2">
               <button
                 onClick={toggleTheme}
-                className="w-full p-2 rounded-lg text-gray-400 hover:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-200 group relative cursor-pointer"
-                title={theme === "light" ? "Modo Oscuro" : "Modo Claro"}
+                className="w-full p-3 rounded-xl text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gradient-to-r hover:from-gray-100 hover:to-gray-50 dark:hover:from-gray-800 dark:hover:to-gray-700 transition-all duration-200 group relative cursor-pointer hover:shadow-md"
+                title={theme === 'light' ? 'Modo Oscuro' : 'Modo Claro'}
               >
-                {theme === "light" ? (
-                  <MoonIcon className="h-5 w-5 mx-auto" />
+                {theme === 'light' ? (
+                  <MoonIcon className="h-5 w-5 mx-auto text-indigo-500" />
                 ) : (
-                  <SunIcon className="h-5 w-5 mx-auto" />
+                  <SunIcon className="h-5 w-5 mx-auto text-amber-500" />
                 )}
-
-                <div className="absolute left-full top-1/2 transform -translate-y-1/2 ml-2 px-2 py-1 bg-gray-900 text-white text-xs rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
-                  {theme === "light" ? "Modo Oscuro" : "Modo Claro"}
-                  <div className="absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-1 w-2 h-2 bg-gray-900 rotate-45" />
+                
+                <div className="absolute left-full top-1/2 transform -translate-y-1/2 ml-3 px-3 py-2 bg-gray-900 dark:bg-gray-800 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none whitespace-nowrap z-50 shadow-xl backdrop-blur-sm">
+                  {theme === 'light' ? 'Modo Oscuro' : 'Modo Claro'}
+                  <div className="absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-1 w-2 h-2 bg-gray-900 dark:bg-gray-800 rotate-45" />
                 </div>
               </button>
 
               <button
-                onClick={() => signOut({ callbackUrl: "/login" })}
-                className="w-full p-2 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors duration-200 group relative cursor-pointer"
+                onClick={() => signOut({ callbackUrl: '/login' })}
+                className="w-full p-3 rounded-xl text-gray-500 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-400 hover:bg-gradient-to-r hover:from-red-50 hover:to-red-25 dark:hover:from-red-900/20 dark:hover:to-red-800/20 transition-all duration-200 group relative cursor-pointer hover:shadow-md"
                 title="Cerrar sesión"
               >
-                {/* <ArrowRightOnRectangleIcon className="h-5 w-5 mx-auto" /> */}
-
-                <div className="absolute left-full top-1/2 transform -translate-y-1/2 ml-2 px-2 py-1 bg-gray-900 text-white text-xs rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
+                <ArrowRightOnRectangleIcon className="h-5 w-5 mx-auto" />
+                
+                <div className="absolute left-full top-1/2 transform -translate-y-1/2 ml-3 px-3 py-2 bg-gray-900 dark:bg-gray-800 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none whitespace-nowrap z-50 shadow-xl backdrop-blur-sm">
                   Cerrar sesión
-                  <div className="absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-1 w-2 h-2 bg-gray-900 rotate-45" />
+                  <div className="absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-1 w-2 h-2 bg-gray-900 dark:bg-gray-800 rotate-45" />
                 </div>
               </button>
             </div>

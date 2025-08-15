@@ -5,6 +5,9 @@ import React, { useMemo, useState, useEffect } from "react";
 import useSWR from "swr";
 import { SessionProvider, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import PaginatedCardTable from "@/components/common/PaginatedCardTable";
+import type { ColumnConfig } from "@/components/common/tableComponent";
+// Removed ClipboardIcon import as Withdrawal ID column is removed
 
 type WithdrawalStatus = "pending" | "approved" | "rejected";
 type LimitParam = number;
@@ -44,7 +47,9 @@ function Badge({ status }: { status: WithdrawalStatus | string }) {
       ? "bg-red-100 text-red-800"
       : "bg-gray-100 text-gray-800";
   return (
-    <span className={`px-2 py-1 rounded-full text-xs font-medium ${cls}`}>
+    <span
+      className={`px-1.5 py-[1px] rounded-full text-[10px] leading-tight font-normal ${cls}`}
+    >
       {up}
     </span>
   );
@@ -121,7 +126,7 @@ function WithdrawalsInner() {
   // Estado
   const [scope, setScope] = useState<Scope>("all");
   const [page, setPage] = useState<number>(1);
-  const [limit, setLimit] = useState<LimitParam>(1000);
+  const [limit, setLimit] = useState<LimitParam>(10);
   const [status, setStatus] = useState<"" | WithdrawalStatus>("");
 
   const accessToken = session?.accessToken as string | undefined;
@@ -163,6 +168,22 @@ function WithdrawalsInner() {
     fetcher
   );
 
+  // Derivar httpStatus de forma estable para usar en efectos antes de cualquier return condicional
+  const httpStatus: number | undefined = ((): number | undefined => {
+    if (error && typeof error === "object" && error !== null) {
+      const e = error as Partial<HttpError>;
+      if (typeof e.status === "number") return e.status;
+    }
+    return undefined;
+  })();
+
+  // Si el usuario no tiene permisos para ver "Todos (admin)", alterna automáticamente a "Mis retiros"
+  useEffect(() => {
+    if (httpStatus === 403 && scope === "all") {
+      setScope("mine");
+    }
+  }, [httpStatus, scope]);
+
   // Redirección si no hay sesión
   useEffect(() => {
     if (
@@ -195,84 +216,18 @@ function WithdrawalsInner() {
   const pageObj = unwrapPage<Withdrawal>(data as unknown);
   const withdrawals = pageObj.items;
   const totalPages = pageObj.totalPages;
-
-  const httpStatus: number | undefined = ((): number | undefined => {
-    if (error && typeof error === "object" && error !== null) {
-      const e = error as Partial<HttpError>;
-      if (typeof e.status === "number") return e.status;
-    }
-    return undefined;
-  })();
+  const offset = (page - 1) * limit;
   const isForbidden = httpStatus === 403;
   const isServerErr = httpStatus === 500;
 
   return (
     <MainLayout>
-      <div className="p-6 space-y-6">
-        <div className="flex items-center justify-between">
+      <div className="p-6 space-y-6 pt-4">
+        <div className="flex items-center justify-start">
           <h1 className="text-2xl font-semibold">Retiros</h1>
-
-          <div className="flex items-center gap-3">
-            {/* Ámbito: mis retiros / todos */}
-            <select
-              className="border rounded-md px-3 py-2 text-sm"
-              value={scope}
-              onChange={(e) => {
-                setPage(1);
-                setScope(e.target.value as Scope);
-              }}
-            >
-              <option value="all">Todos (admin)</option>
-              <option value="mine">Mis retiros</option>
-            </select>
-
-            {/* Filtro estado (minúsculas) */}
-            <select
-              className="border rounded-md px-3 py-2 text-sm"
-              value={status}
-              onChange={(e) => {
-                setPage(1);
-                setStatus(e.target.value as "" | WithdrawalStatus);
-              }}
-            >
-              <option value="">Todos los estados</option>
-              <option value="pending">Pendiente</option>
-              <option value="approved">Aprobado</option>
-              <option value="rejected">Rechazado</option>
-            </select>
-
-            {/* Límite */}
-            <select
-              className="border rounded-md px-3 py-2 text-sm"
-              value={String(limit)}
-              onChange={(e) => {
-                const val = Number(e.target.value);
-                setPage(1);
-                setLimit(val as LimitParam);
-              }}
-            >
-              <option value="1000">Todos</option>
-              <option value="10">10 por página</option>
-              <option value="20">20 por página</option>
-              <option value="50">50 por página</option>
-            </select>
-
-            <button
-              className="border rounded-md px-3 py-2 text-sm hover:bg-gray-50"
-              onClick={() => mutate()}
-            >
-              Refrescar
-            </button>
-          </div>
         </div>
 
         {/* Mensajes de error claros */}
-        {isForbidden && scope === "all" && (
-          <div className="p-3 rounded-md bg-amber-50 text-amber-800 text-sm border border-amber-200">
-            No estás autorizado para ver <b>Todos (admin)</b>. Cambia a{" "}
-            <b>Mis retiros</b> o inicia sesión con un usuario administrador.
-          </div>
-        )}
 
         {isServerErr && (
           <div className="p-3 rounded-md bg-red-50 text-red-700 text-sm border border-red-200">
@@ -286,110 +241,79 @@ function WithdrawalsInner() {
           {`Mostrando ${withdrawals.length} registros`}
         </div>
 
-        <div className="overflow-x-auto border rounded-lg">
-          <table className="min-w-full divide-y">
-            <thead className="bg-gray-50">
-              <tr className="text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                <th className="px-4 py-3">Fecha</th>
-                <th className="px-4 py-3">Monto</th>
-                <th className="px-4 py-3">Wallet</th>
-                <th className="px-4 py-3">Desafío</th>
-                <th className="px-4 py-3">Estado</th>
-                <th className="px-4 py-3">Observación</th>
-                {scope === "all" && <th className="px-4 py-3">Usuario</th>}
-              </tr>
-            </thead>
-            <tbody className="divide-y">
-              {isLoading ? (
-                <tr>
-                  <td
-                    className="px-4 py-4 text-sm"
-                    colSpan={scope === "all" ? 7 : 6}
-                  >
-                    Cargando...
-                  </td>
-                </tr>
-              ) : error ? (
-                <tr>
-                  <td
-                    className="px-4 py-4 text-sm text-red-600"
-                    colSpan={scope === "all" ? 7 : 6}
-                  >
-                    {(error as Error).message}
-                  </td>
-                </tr>
-              ) : withdrawals.length === 0 ? (
-                <tr>
-                  <td
-                    className="px-4 py-4 text-sm"
-                    colSpan={scope === "all" ? 7 : 6}
-                  >
-                    No hay retiros.
-                  </td>
-                </tr>
-              ) : (
-                withdrawals.map((w) => (
-                  <tr key={w.withdrawalID} className="text-sm">
-                    <td className="px-4 py-3">
-                      {w.createdAt
-                        ? new Date(w.createdAt).toLocaleString()
-                        : "-"}
-                    </td>
-                    <td className="px-4 py-3 font-medium">
-                      {money.format(Number(w.amount ?? 0))}
-                    </td>
-                    <td className="px-4 py-3">{w.wallet ?? "-"}</td>
-                    <td className="px-4 py-3">
-                      {w.challenge?.name || w.challengeID || "-"}
-                    </td>
-                    <td className="px-4 py-3">
-                      <Badge status={w.status} />
-                    </td>
-                    <td className="px-4 py-3">
-                      {w.observation ? w.observation : "-"}
-                    </td>
-                    {scope === "all" && (
-                      <td className="px-4 py-3">
-                        {w.user
-                          ? `${w.user.firstName ?? ""} ${
-                              w.user.lastName ?? ""
-                            }`.trim() ||
-                            w.user.email ||
-                            w.userID
-                          : w.userID}
-                      </td>
-                    )}
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
+        {(() => {
+          const columns: ColumnConfig[] = [
+            { key: "serial", label: "ID", type: "normal" },
+            { key: "createdAt", label: "Fecha", type: "normal" },
+            {
+              key: "amount",
+              label: "Monto",
+              type: "normal",
+              render: (v) => String(v),
+            },
+            { key: "wallet", label: "Wallet", type: "normal" },
+            { key: "challenge", label: "Desafío", type: "normal" },
+            {
+              key: "status",
+              label: "Estado",
+              type: "normal",
+              render: (v) => <Badge status={String(v)} />,
+            },
+            { key: "observation", label: "Observación", type: "normal" },
+            ...(scope === "all"
+              ? [
+                  {
+                    key: "userName",
+                    label: "Usuario",
+                    type: "normal",
+                  } as ColumnConfig,
+                ]
+              : []),
+          ];
 
-        {/* Paginación útil solo si limit < total */}
-        {limit !== 1000 && (
-          <div className="flex items-center justify-between">
-            <p className="text-sm text-gray-600">
-              Página {pageObj.page} de {totalPages}
-            </p>
-            <div className="flex items-center gap-2">
-              <button
-                className="px-3 py-2 border rounded-md disabled:opacity-50"
-                onClick={() => setPage((p) => Math.max(1, p - 1))}
-                disabled={page <= 1}
-              >
-                Anterior
-              </button>
-              <button
-                className="px-3 py-2 border rounded-md disabled:opacity-50"
-                onClick={() => setPage((p) => p + 1)}
-                disabled={page >= totalPages}
-              >
-                Siguiente
-              </button>
-            </div>
-          </div>
-        )}
+          const rows = withdrawals.map((w, idx) => ({
+            serial: offset + idx + 1,
+            // withdrawalID removed from columns
+            createdAt: w.createdAt
+              ? new Date(w.createdAt).toLocaleString()
+              : "-",
+            amount: money.format(Number(w.amount ?? 0)),
+            wallet: w.wallet ?? "-",
+            challenge: w.challenge?.name || w.challengeID || "-",
+            status: w.status,
+            observation: w.observation ? w.observation : "-",
+            userName:
+              scope === "all"
+                ? w.user
+                  ? `${w.user.firstName ?? ""} ${
+                      w.user.lastName ?? ""
+                    }`.trim() ||
+                    w.user.email ||
+                    w.userID
+                  : w.userID
+                : undefined,
+          }));
+
+          return (
+            <PaginatedCardTable
+              columns={columns}
+              rows={rows}
+              isLoading={isLoading}
+              emptyText={error ? (error as Error).message : "No hay retiros."}
+              pagination={{
+                currentPage: page,
+                totalPages: Math.max(1, totalPages),
+                totalItems: pageObj.total,
+                pageSize: limit,
+                onPageChange: (p) => setPage(p),
+                onPageSizeChange: (n) => {
+                  setPage(1);
+                  setLimit(n as LimitParam);
+                },
+              }}
+            />
+          );
+        })()}
       </div>
     </MainLayout>
   );
