@@ -68,7 +68,7 @@ export default function BreadcrumbBar() {
   }, [pathname, segments]);
 
   return (
-    <div className="sticky top-0 h-16 z-20 backdrop-blur bg-black  border-gray-700">
+    <div className="sticky top-0 h-16 z-20 bg-gradient-to-r from-slate-900 via-gray-900 to-slate-900 shadow-lg border-b border-gray-700/50">
       <div className="flex items-center h-16 px-4">
         <Breadcrumbs items={crumbs} />
       </div>
