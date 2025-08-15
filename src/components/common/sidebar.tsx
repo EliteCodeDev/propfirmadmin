@@ -170,7 +170,7 @@ export default function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
       )}>
         {/* Header */}
         <div className={classNames(
-          "flex items-center h-16 bg-gradient-to-r from-slate-900 via-gray-900 to-slate-900 dark:from-gray-800 dark:via-gray-900 dark:to-gray-800 shadow-lg border-b border-gray-700/50",
+          "flex items-center h-16 bg-gradient-to-r from-slate-900 via-gray-900 to-slate-900 shadow-lg border-b border-gray-700/50",
           isCollapsed ? "px-2 justify-center" : "px-4 justify-between"
         )}>
           {!isCollapsed && process.env.NEXT_PUBLIC_LOGO_APP && (
@@ -178,7 +178,7 @@ export default function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
               <img 
                 src={process.env.NEXT_PUBLIC_LOGO_APP} 
                 alt="Logo" 
-                className="h-8 w-full object-contain filter brightness-0 invert"
+                className="h-8 w-full object-contain"
               />
             </div>
           )}
@@ -188,7 +188,7 @@ export default function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
               <div className="w-8 h-8 bg-gradient-to-br from-blue-500 via-purple-500 to-indigo-600 rounded-lg flex items-center justify-center shadow-lg">
                 <span className="text-white font-bold text-sm">PF</span>
               </div>
-              <h1 className="text-xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-indigo-400 bg-clip-text text-transparent">
+              <h1 className="text-xl font-bold text-white">
                 PropFirm
               </h1>
             </div>
@@ -212,83 +212,96 @@ export default function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
           isCollapsed ? "overflow-y-visible" : "overflow-y-auto"
         )}>
           <nav className={classNames("space-y-2", isCollapsed ? "px-2" : "px-3")}>
-            {navigation.map((item) => {
+            {navigation.map((item, index) => {
               const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
+              const showDivider = index === 0 || index === 2; // Después de Dashboard y Challenge Templates
+              
               return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  onClick={(e) => handleNavigation(item.href, e)}
-                  className={classNames(
-                    "group flex items-center text-sm font-medium rounded-xl transition-all duration-300 ease-out relative overflow-hidden",
-                    isCollapsed ? "p-3 justify-center" : "px-4 py-3",
-                    isActive
-                      ? "bg-gradient-to-r from-blue-500 via-purple-500 to-indigo-600 text-white shadow-lg shadow-blue-500/25 dark:shadow-blue-500/20 transform scale-[1.02]"
-                      : "text-gray-700 dark:text-gray-300 hover:bg-gradient-to-r hover:from-gray-100 hover:to-gray-50 dark:hover:from-gray-800 dark:hover:to-gray-700 hover:text-gray-900 dark:hover:text-white hover:shadow-md"
-                  )}
-                  title={isCollapsed ? item.name : ""}
-                >
-                  {/* Active glow effect */}
-                  {isActive && (
-                    <div className="absolute inset-0 bg-gradient-to-r from-blue-400/20 via-purple-400/20 to-indigo-400/20 animate-pulse" />
-                  )}
-
-                  {/* Active indicator */}
-                  {isActive && (
-                    <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-white via-blue-100 to-white rounded-r-full shadow-sm" />
-                  )}
-
-                  <item.icon
+                <div key={item.href}>
+                  <Link
+                    href={item.href}
+                    onClick={(e) => handleNavigation(item.href, e)}
                     className={classNames(
-                      "flex-shrink-0 h-5 w-5 transition-all duration-300 relative z-10",
+                      "group flex items-center text-sm font-medium rounded-xl transition-all duration-300 ease-out relative overflow-hidden",
+                      isCollapsed ? "p-3 justify-center" : "px-4 py-3",
                       isActive
-                        ? "text-white drop-shadow-sm"
-                        : "text-gray-500 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-200",
-                      isCollapsed ? "" : "mr-3"
+                        ? "bg-gradient-to-r from-blue-500 via-purple-500 to-indigo-600 text-white shadow-lg shadow-blue-500/25 dark:shadow-blue-500/20 transform scale-[1.02]"
+                        : "text-gray-700 dark:text-gray-300 hover:bg-gradient-to-r hover:from-gray-100 hover:to-gray-50 dark:hover:from-gray-800 dark:hover:to-gray-700 hover:text-gray-900 dark:hover:text-white hover:shadow-md"
                     )}
-                    aria-hidden="true"
-                  />
+                    title={isCollapsed ? item.name : ""}
+                  >
+                    {/* Active glow effect */}
+                    {isActive && (
+                      <div className="absolute inset-0 bg-gradient-to-r from-blue-400/20 via-purple-400/20 to-indigo-400/20 animate-pulse" />
+                    )}
 
-                  {!isCollapsed && (
-                    <>
-                      <div className="flex-1 relative z-10">
-                        <div className="flex items-center justify-between">
-                          <span className="truncate font-medium">{item.name}</span>
-                          {item.badge && (
-                            <span className={classNames(
-                              "ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium",
-                              isActive 
-                                ? "bg-white/20 text-white backdrop-blur-sm"
-                                : "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400"
-                            )}>
-                              {item.badge}
-                            </span>
-                          )}
-                        </div>
-                        <p className={classNames(
-                          "text-xs mt-0.5 truncate",
-                          isActive 
-                            ? "text-blue-100 dark:text-purple-100"
-                            : "text-gray-500 dark:text-gray-400"
-                        )}>
-                          {item.description}
-                        </p>
-                      </div>
-                      
-                      {isActive && (
-                        <ChevronRightIcon className="h-4 w-4 text-white ml-2 relative z-10 drop-shadow-sm" />
+                    {/* Active indicator - Adaptativo para modo claro/oscuro */}
+                    {isActive && (
+                      <div className="absolute left-0 top-2 bottom-2 w-1 bg-gray-800 dark:bg-white rounded-r-full shadow-lg" />
+                    )}
+
+                    <item.icon
+                      className={classNames(
+                        "flex-shrink-0 h-5 w-5 transition-all duration-300 relative z-10",
+                        isActive
+                          ? "text-white drop-shadow-sm"
+                          : "text-gray-500 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-200",
+                        isCollapsed ? "" : "mr-3"
                       )}
-                    </>
-                  )}
+                      aria-hidden="true"
+                    />
 
-                  {/* Tooltip for collapsed state */}
-                  {isCollapsed && (
-                    <div className="absolute left-full top-1/2 transform -translate-y-1/2 ml-3 px-3 py-2 bg-gray-900 dark:bg-gray-800 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none whitespace-nowrap z-50 shadow-xl backdrop-blur-sm">
-                      {item.name}
-                      <div className="absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-1 w-2 h-2 bg-gray-900 dark:bg-gray-800 rotate-45" />
+                    {!isCollapsed && (
+                      <>
+                        <div className="flex-1 relative z-10">
+                          <div className="flex items-center justify-between">
+                            <span className="truncate font-medium">{item.name}</span>
+                            {item.badge && (
+                              <span className={classNames(
+                                "ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium",
+                                isActive 
+                                  ? "bg-white/20 text-white backdrop-blur-sm"
+                                  : "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400"
+                              )}>
+                                {item.badge}
+                              </span>
+                            )}
+                          </div>
+                          <p className={classNames(
+                            "text-xs mt-0.5 truncate",
+                            isActive 
+                              ? "text-blue-100 dark:text-purple-100"
+                              : "text-gray-500 dark:text-gray-400"
+                          )}>
+                            {item.description}
+                          </p>
+                        </div>
+                        
+                        {isActive && (
+                          <ChevronRightIcon className="h-4 w-4 text-white ml-2 relative z-10 drop-shadow-sm" />
+                        )}
+                      </>
+                    )}
+
+                    {/* Tooltip for collapsed state */}
+                    {isCollapsed && (
+                      <div className="absolute left-full top-1/2 transform -translate-y-1/2 ml-3 px-3 py-2 bg-gray-900 dark:bg-gray-800 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none whitespace-nowrap z-50 shadow-xl backdrop-blur-sm">
+                        {item.name}
+                        <div className="absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-1 w-2 h-2 bg-gray-900 dark:bg-gray-800 rotate-45" />
+                      </div>
+                    )}
+                  </Link>
+
+                  {/* Separador entre secciones - Mejorado para modo claro */}
+                  {showDivider && (
+                    <div className={classNames(
+                      "my-4",
+                      isCollapsed ? "px-2" : "px-4"
+                    )}>
+                      <div className="h-px bg-gradient-to-r from-transparent via-gray-400 dark:via-gray-600 to-transparent opacity-60"></div>
                     </div>
                   )}
-                </Link>
+                </div>
               );
             })}
           </nav>
