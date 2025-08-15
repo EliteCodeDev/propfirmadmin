@@ -1,8 +1,12 @@
 "use client";
 
-import CardComponent from "@/components/user/cardComponent";
+import CardComponent from "@/components/dashboard/user/cardComponent";
 import TableComponent from "@/components/common/tableComponent";
-import { UserIcon, ClockIcon, ExclamationTriangleIcon } from "@heroicons/react/24/outline";
+import {
+  UserIcon,
+  ClockIcon,
+  ExclamationTriangleIcon,
+} from "@heroicons/react/24/outline";
 import { useState } from "react";
 import MainLayout from "@/components/layouts/MainLayout";
 
@@ -14,20 +18,20 @@ export default function UserPage() {
     { label: "Email", value: "rehanadil900@gmail.com" },
     { label: "Phone", value: "+923035703023" },
     { label: "Name", value: "Arslan Ahmed" },
-    { label: "Address", value: "None of your business" }
+    { label: "Address", value: "None of your business" },
   ];
 
   const accountFields = [
     { label: "Username", value: "Arslan768" },
     { label: "Coupon Code", value: "Arslan768" },
     { label: "Status", value: "pending" },
-    { label: "Is Verified", value: "Yes" }
+    { label: "Is Verified", value: "Yes" },
   ];
 
   const activityFields = [
     { label: "Updated Date", value: "5/6/2025" },
     { label: "Registration", value: "3/3/2025" },
-    { label: "Login Count", value: "23" }
+    { label: "Login Count", value: "23" },
   ];
 
   // Tabs para la sección inferior
@@ -37,60 +41,59 @@ export default function UserPage() {
     { id: "prop-accounts", label: "Prop Accounts" },
     { id: "payouts", label: "Payouts" },
     { id: "emails", label: "E-Mails" },
-    { id: "logs", label: "IP Logs" }
+    { id: "logs", label: "IP Logs" },
   ];
 
   // Columnas para la tabla de Prop Accounts
   const propAccountsColumns = [
-    { key: 'accountNumber', label: 'Account Number', type: 'normal' as const },
-    { key: 'accountType', label: 'Account Type', type: 'normal' as const },
-    { key: 'accountSize', label: 'Account Size', type: 'normal' as const },
-    { key: 'balance', label: 'Balance', type: 'normal' as const },
-    { key: 'equity', label: 'Equity', type: 'normal' as const },
-    { key: 'platform', label: 'Platform', type: 'normal' as const },
-    { key: 'status', label: 'Status', type: 'badge' as const },
-    { key: 'dateReceived', label: 'Date Received', type: 'normal' as const }
+    { key: "accountNumber", label: "Account Number", type: "normal" as const },
+    { key: "accountType", label: "Account Type", type: "normal" as const },
+    { key: "accountSize", label: "Account Size", type: "normal" as const },
+    { key: "balance", label: "Balance", type: "normal" as const },
+    { key: "equity", label: "Equity", type: "normal" as const },
+    { key: "platform", label: "Platform", type: "normal" as const },
+    { key: "status", label: "Status", type: "badge" as const },
+    { key: "dateReceived", label: "Date Received", type: "normal" as const },
   ];
 
   // Datos para la tabla de Prop Accounts
   const propAccountsData = [
     {
-      accountNumber: '789331412',
-      accountType: '2-step-Challenge',
-      accountSize: '10000',
-      balance: '10000',
-      equity: '10000',
-      platform: '',
-      status: 'Active',
-      dateReceived: '30,May,25'
+      accountNumber: "789331412",
+      accountType: "2-step-Challenge",
+      accountSize: "10000",
+      balance: "10000",
+      equity: "10000",
+      platform: "",
+      status: "Active",
+      dateReceived: "30,May,25",
     },
     {
-      accountNumber: '789331423',
-      accountType: '2-step-Challenge',
-      accountSize: '10000',
-      balance: '10000',
-      equity: '10000',
-      platform: '',
-      status: 'Active',
-      dateReceived: '30,May,25'
+      accountNumber: "789331423",
+      accountType: "2-step-Challenge",
+      accountSize: "10000",
+      balance: "10000",
+      equity: "10000",
+      platform: "",
+      status: "Active",
+      dateReceived: "30,May,25",
     },
     {
-      accountNumber: '789331446',
-      accountType: '2-step-Challenge',
-      accountSize: '50000',
-      balance: '50000',
-      equity: '50000',
-      platform: '',
-      status: 'Active',
-      dateReceived: '02,June,25'
-    }
+      accountNumber: "789331446",
+      accountType: "2-step-Challenge",
+      accountSize: "50000",
+      balance: "50000",
+      equity: "50000",
+      platform: "",
+      status: "Active",
+      dateReceived: "02,June,25",
+    },
   ];
 
   return (
     <MainLayout>
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
         <div className="max-w-7xl mx-auto space-y-6">
-
           {/* Top Section - Buttons */}
           <div className="flex items-center justify-between">
             <div className="flex gap-3">
@@ -119,19 +122,25 @@ export default function UserPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <CardComponent
               title="Contact Information"
-              icon={<UserIcon className="w-5 h-5 text-blue-600 dark:text-blue-400" />}
+              icon={
+                <UserIcon className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+              }
               fields={contactFields}
             />
 
             <CardComponent
               title="Account Details"
-              icon={<ClockIcon className="w-5 h-5 text-purple-600 dark:text-purple-400" />}
+              icon={
+                <ClockIcon className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+              }
               fields={accountFields}
             />
 
             <CardComponent
               title="Recent Activity"
-              icon={<ExclamationTriangleIcon className="w-5 h-5 text-red-600 dark:text-red-400" />}
+              icon={
+                <ExclamationTriangleIcon className="w-5 h-5 text-red-600 dark:text-red-400" />
+              }
               fields={activityFields}
             />
           </div>
@@ -149,8 +158,18 @@ export default function UserPage() {
               </div>
 
               <button className="flex items-center gap-2 px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4" />
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4"
+                  />
                 </svg>
                 Toggle Columns
               </button>
@@ -164,8 +183,8 @@ export default function UserPage() {
                   onClick={() => setActiveTab(tab.id)}
                   className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                     activeTab === tab.id
-                      ? 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100'
-                      : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'
+                      ? "bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                      : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100"
                   }`}
                 >
                   {tab.label}
@@ -181,7 +200,6 @@ export default function UserPage() {
               />
             </div>
           </div>
-
         </div>
       </div>
     </MainLayout>

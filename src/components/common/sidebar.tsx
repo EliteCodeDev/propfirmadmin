@@ -8,7 +8,6 @@ import {
   UserGroupIcon,
   BanknotesIcon,
   TrophyIcon,
-  ArrowRightOnRectangleIcon,
   ChevronRightIcon,
   Bars3Icon,
   XMarkIcon,
@@ -32,27 +31,27 @@ interface NavigationItem {
 }
 
 const navigation: NavigationItem[] = [
-  { 
-    name: "Dashboard", 
-    href: "/dashboard", 
+  {
+    name: "Dashboard",
+    href: "/dashboard",
     icon: HomeIcon,
-    description: "Panel principal"
+    description: "Panel principal",
   },
-  { 
-    name: "User Challenges", 
-    href: "/user-challenges", 
-  icon: TrophyIcon,
-    description: "Desafíos de usuarios"
+  {
+    name: "User Challenges",
+    href: "/user-challenges",
+    icon: TrophyIcon,
+    description: "Desafíos de usuarios",
   },
-  { 
-    name: "Usuarios", 
-    href: "/users", 
+  {
+    name: "Usuarios",
+    href: "/users",
     icon: UserGroupIcon,
-    description: "Lista de usuarios"
+    description: "Lista de usuarios",
   },
-  { 
-    name: "Retiros", 
-    href: "/withdrawals", 
+  {
+    name: "Retiros",
+    href: "/withdrawals",
     icon: BanknotesIcon,
     description: "Gestión de retiros",
   },
@@ -82,11 +81,21 @@ export default function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
   const lastName = user?.lastName?.trim();
   const username = user?.username?.trim();
   const email = user?.email?.trim();
-  const displayName = [firstName, lastName].filter(Boolean).join(" ") || username || email || "Usuario";
-  const initials = (firstName?.[0] || username?.[0] || email?.[0] || "U").toUpperCase();
+  const displayName =
+    [firstName, lastName].filter(Boolean).join(" ") ||
+    username ||
+    email ||
+    "Usuario";
+  const initials = (
+    firstName?.[0] ||
+    username?.[0] ||
+    email?.[0] ||
+    "U"
+  ).toUpperCase();
   const roleLabel = (() => {
     const roles = user?.roles as string[] | undefined;
-    const singleRole = (user as unknown as { role?: { name?: string } })?.role?.name as string | undefined;
+    const singleRole = (user as unknown as { role?: { name?: string } })?.role
+      ?.name as string | undefined;
     const candidate = roles?.[0] || singleRole;
     if (!candidate) return "Usuario";
     const normalized = candidate.replace(/[-_]/g, " ");
@@ -101,14 +110,17 @@ export default function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
   // Cerrar el menú de usuario cuando se hace clic fuera
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
+      if (
+        userMenuRef.current &&
+        !userMenuRef.current.contains(event.target as Node)
+      ) {
         setUserMenuOpen(false);
       }
     }
 
-    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
 
@@ -122,32 +134,36 @@ export default function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
     <>
       {/* Mobile backdrop */}
       {!isCollapsed && (
-        <div 
+        <div
           className="fixed inset-0 bg-black bg-opacity-50 z-20 lg:hidden"
           onClick={toggleSidebar}
         />
       )}
 
-      <div className={classNames(
-        "fixed inset-y-0 left-0 z-30 flex flex-col transition-all duration-300 ease-in-out lg:static lg:inset-auto",
-        isCollapsed ? "w-16" : "w-64",
-        "bg-white dark:bg-gray-900 shadow-xl border-r border-gray-200 dark:border-gray-700"
-      )}>
+      <div
+        className={classNames(
+          "fixed inset-y-0 left-0 z-30 flex flex-col transition-all duration-300 ease-in-out lg:static lg:inset-auto",
+          isCollapsed ? "w-16" : "w-64",
+          "bg-white dark:bg-gray-900 shadow-xl border-r border-gray-200 dark:border-gray-700"
+        )}
+      >
         {/* Header */}
-        <div className={classNames(
-          "flex items-center justify-between h-16 bg-gray-800 px-4 shadow-sm border-b border-gray-200 dark:border-gray-700",
-          isCollapsed ? "px-2" : "px-4"
-        )}>
+        <div
+          className={classNames(
+            "flex items-center justify-between h-16 bg-gray-800 px-4 shadow-sm border-b border-gray-200 dark:border-gray-700",
+            isCollapsed ? "px-2" : "px-4"
+          )}
+        >
           {!isCollapsed && process.env.NEXT_PUBLIC_LOGO_APP && (
             <div className="flex-1 mr-2">
-              <img 
-                src={process.env.NEXT_PUBLIC_LOGO_APP} 
-                alt="Logo" 
+              <img
+                src={process.env.NEXT_PUBLIC_LOGO_APP}
+                alt="Logo"
                 className="h-8 w-full object-contain"
               />
             </div>
           )}
-          
+
           <button
             onClick={toggleSidebar}
             className="p-1.5 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-200 cursor-pointer"
@@ -162,15 +178,17 @@ export default function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
 
         {/* Navigation */}
         <div className="flex-1 overflow-y-auto py-4">
-          <nav className={classNames("space-y-1", isCollapsed ? "px-2" : "px-3")}>
-    {navigation.map((item) => {
+          <nav
+            className={classNames("space-y-1", isCollapsed ? "px-2" : "px-3")}
+          >
+            {navigation.map((item) => {
               const isActive = pathname === item.href;
               return (
-        <Link
-      key={item.href}
+                <Link
+                  key={item.href}
                   href={item.href}
                   className={classNames(
-          "group flex items-center text-sm font-medium rounded-xl transition-all duration-200 relative cursor-pointer",
+                    "group flex items-center text-sm font-medium rounded-xl transition-all duration-200 relative cursor-pointer",
                     isCollapsed ? "p-2 justify-center" : "px-3 py-2.5",
                     isActive
                       ? "bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-lg shadow-indigo-500/25"
@@ -201,26 +219,30 @@ export default function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
                           <span className="truncate">{item.name}</span>
                           {/* ✅ Verificación corregida del badge */}
                           {item.badge && (
-                            <span className={classNames(
-                              "ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium",
-                              isActive 
-                                ? "bg-white text-indigo-600"
-                                : "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
-                            )}>
+                            <span
+                              className={classNames(
+                                "ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium",
+                                isActive
+                                  ? "bg-white text-indigo-600"
+                                  : "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
+                              )}
+                            >
                               {item.badge}
                             </span>
                           )}
                         </div>
-                        <p className={classNames(
-                          "text-xs mt-0.5 truncate",
-                          isActive 
-                            ? "text-indigo-100"
-                            : "text-gray-500 dark:text-gray-400"
-                        )}>
+                        <p
+                          className={classNames(
+                            "text-xs mt-0.5 truncate",
+                            isActive
+                              ? "text-indigo-100"
+                              : "text-gray-500 dark:text-gray-400"
+                          )}
+                        >
                           {item.description}
                         </p>
                       </div>
-                      
+
                       {isActive && (
                         <ChevronRightIcon className="h-4 w-4 text-white ml-2" />
                       )}
@@ -241,10 +263,13 @@ export default function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
         </div>
 
         {/* User Menu Section */}
-        <div className={classNames(
-          "border-t border-gray-200 dark:border-gray-700 relative",
-          isCollapsed ? "p-2" : "p-4"
-        )} ref={userMenuRef}>
+        <div
+          className={classNames(
+            "border-t border-gray-200 dark:border-gray-700 relative",
+            isCollapsed ? "p-2" : "p-4"
+          )}
+          ref={userMenuRef}
+        >
           {/* Dropdown Menu */}
           {userMenuOpen && !isCollapsed && (
             <div className="absolute bottom-full left-4 right-4 mb-2 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 py-2 z-50">
@@ -252,17 +277,20 @@ export default function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
                 onClick={toggleTheme}
                 className="w-full flex items-center px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200 cursor-pointer"
               >
-                {theme === 'light' ? (
+                {theme === "light" ? (
                   <MoonIcon className="h-4 w-4 mr-3" />
                 ) : (
                   <SunIcon className="h-4 w-4 mr-3" />
                 )}
-                {theme === 'light' ? 'Modo Oscuro' : 'Modo Claro'}
+                {theme === "light" ? "Modo Oscuro" : "Modo Claro"}
               </button>
 
               <div className="h-px bg-gray-200 dark:bg-gray-600 my-1" />
 
-              <button onClick={() => router.push('/profile')} className="w-full flex items-center px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200 cursor-pointer">
+              <button
+                onClick={() => router.push("/profile")}
+                className="w-full flex items-center px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200 cursor-pointer"
+              >
                 <UserIcon className="h-4 w-4 mr-3" />
                 Mi Perfil
               </button>
@@ -270,23 +298,21 @@ export default function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
               <div className="h-px bg-gray-200 dark:bg-gray-600 my-1" />
 
               <button
-                onClick={() => signOut({ callbackUrl: '/login' })}
+                onClick={() => signOut({ callbackUrl: "/login" })}
                 className="w-full flex items-center px-4 py-2.5 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors duration-200 cursor-pointer"
               >
-                <ArrowRightOnRectangleIcon className="h-4 w-4 mr-3" />
+                {/* <ArrowRightOnRectangleIcon className="h-4 w-4 mr-3" /> */}
                 Cerrar Sesión
               </button>
             </div>
           )}
 
           {/* User Button */}
-      <button
+          <button
             onClick={() => setUserMenuOpen(!userMenuOpen)}
             className={classNames(
-        "group flex items-center w-full rounded-xl transition-all duration-200 relative cursor-pointer",
-              isCollapsed 
-                ? "p-2 justify-center" 
-                : "px-3 py-3",
+              "group flex items-center w-full rounded-xl transition-all duration-200 relative cursor-pointer",
+              isCollapsed ? "p-2 justify-center" : "px-3 py-3",
               "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
             )}
             title={isCollapsed ? "Menú de usuario" : ""}
@@ -294,7 +320,9 @@ export default function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
             <div className="relative flex items-center">
               <div className="relative">
                 <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center">
-          <span className="text-white font-semibold text-sm">{initials}</span>
+                  <span className="text-white font-semibold text-sm">
+                    {initials}
+                  </span>
                 </div>
                 <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-400 border-2 border-white dark:border-gray-900 rounded-full"></div>
               </div>
@@ -303,8 +331,12 @@ export default function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
                 <div className="ml-3 flex-1 min-w-0">
                   <div className="flex items-center justify-between">
                     <div className="min-w-0">
-                      <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{displayName}</p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{roleLabel}</p>
+                      <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                        {displayName}
+                      </p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                        {roleLabel}
+                      </p>
                     </div>
                     <div className="ml-2">
                       {userMenuOpen ? (
@@ -332,27 +364,27 @@ export default function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
               <button
                 onClick={toggleTheme}
                 className="w-full p-2 rounded-lg text-gray-400 hover:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-200 group relative cursor-pointer"
-                title={theme === 'light' ? 'Modo Oscuro' : 'Modo Claro'}
+                title={theme === "light" ? "Modo Oscuro" : "Modo Claro"}
               >
-                {theme === 'light' ? (
+                {theme === "light" ? (
                   <MoonIcon className="h-5 w-5 mx-auto" />
                 ) : (
                   <SunIcon className="h-5 w-5 mx-auto" />
                 )}
-                
+
                 <div className="absolute left-full top-1/2 transform -translate-y-1/2 ml-2 px-2 py-1 bg-gray-900 text-white text-xs rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
-                  {theme === 'light' ? 'Modo Oscuro' : 'Modo Claro'}
+                  {theme === "light" ? "Modo Oscuro" : "Modo Claro"}
                   <div className="absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-1 w-2 h-2 bg-gray-900 rotate-45" />
                 </div>
               </button>
 
               <button
-                onClick={() => signOut({ callbackUrl: '/login' })}
+                onClick={() => signOut({ callbackUrl: "/login" })}
                 className="w-full p-2 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors duration-200 group relative cursor-pointer"
                 title="Cerrar sesión"
               >
-                <ArrowRightOnRectangleIcon className="h-5 w-5 mx-auto" />
-                
+                {/* <ArrowRightOnRectangleIcon className="h-5 w-5 mx-auto" /> */}
+
                 <div className="absolute left-full top-1/2 transform -translate-y-1/2 ml-2 px-2 py-1 bg-gray-900 text-white text-xs rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
                   Cerrar sesión
                   <div className="absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-1 w-2 h-2 bg-gray-900 rotate-45" />

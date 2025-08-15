@@ -1,7 +1,6 @@
 "use client";
 
 import MainLayout from "@/components/layouts/MainLayout";
-import { BanknotesIcon } from "@heroicons/react/24/outline";
 import React, { useMemo, useState, useEffect } from "react";
 import useSWR from "swr";
 import { SessionProvider, useSession } from "next-auth/react";
@@ -58,9 +57,14 @@ const money = new Intl.NumberFormat("en-US", {
 });
 
 type UnknownRecord = Record<string, unknown>;
-interface HttpError extends Error { status?: number; body?: string }
+interface HttpError extends Error {
+  status?: number;
+  body?: string;
+}
 
-function unwrapPage<T = UnknownRecord>(raw: unknown): {
+function unwrapPage<T = UnknownRecord>(
+  raw: unknown
+): {
   items: T[];
   total: number;
   page: number;
@@ -83,15 +87,21 @@ function unwrapPage<T = UnknownRecord>(raw: unknown): {
   }
 
   const total =
-    layer && typeof layer === "object" && typeof (layer as UnknownRecord)["total"] === "number"
+    layer &&
+    typeof layer === "object" &&
+    typeof (layer as UnknownRecord)["total"] === "number"
       ? ((layer as UnknownRecord)["total"] as number)
       : items.length;
   const page =
-    layer && typeof layer === "object" && typeof (layer as UnknownRecord)["page"] === "number"
+    layer &&
+    typeof layer === "object" &&
+    typeof (layer as UnknownRecord)["page"] === "number"
       ? ((layer as UnknownRecord)["page"] as number)
       : 1;
   const limit =
-    layer && typeof layer === "object" && typeof (layer as UnknownRecord)["limit"] === "number"
+    layer &&
+    typeof layer === "object" &&
+    typeof (layer as UnknownRecord)["limit"] === "number"
       ? ((layer as UnknownRecord)["limit"] as number)
       : items.length;
   const totalPages =
@@ -133,7 +143,9 @@ function WithdrawalsInner() {
 
   const fetcher = async (u: string) => {
     const res = await fetch(u, {
-      headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
+      headers: accessToken
+        ? { Authorization: `Bearer ${accessToken}` }
+        : undefined,
       credentials: "include",
     });
     if (!res.ok) {
@@ -153,12 +165,18 @@ function WithdrawalsInner() {
 
   // Redirección si no hay sesión
   useEffect(() => {
-    if (authStatus === "unauthenticated" || (!accessToken && authStatus !== "loading")) {
+    if (
+      authStatus === "unauthenticated" ||
+      (!accessToken && authStatus !== "loading")
+    ) {
       router.replace("/login");
     }
   }, [authStatus, accessToken, router]);
 
-  if (authStatus === "loading" || (!accessToken && authStatus !== "unauthenticated")) {
+  if (
+    authStatus === "loading" ||
+    (!accessToken && authStatus !== "unauthenticated")
+  ) {
     return (
       <MainLayout>
         <div className="p-6">Verificando sesión…</div>
@@ -177,11 +195,11 @@ function WithdrawalsInner() {
   const pageObj = unwrapPage<Withdrawal>(data as unknown);
   const withdrawals = pageObj.items;
   const totalPages = pageObj.totalPages;
-  
+
   const httpStatus: number | undefined = ((): number | undefined => {
-    if (error && typeof error === 'object' && error !== null) {
+    if (error && typeof error === "object" && error !== null) {
       const e = error as Partial<HttpError>;
-      if (typeof e.status === 'number') return e.status;
+      if (typeof e.status === "number") return e.status;
     }
     return undefined;
   })();
@@ -214,7 +232,7 @@ function WithdrawalsInner() {
               value={status}
               onChange={(e) => {
                 setPage(1);
-                setStatus(e.target.value as '' | WithdrawalStatus);
+                setStatus(e.target.value as "" | WithdrawalStatus);
               }}
             >
               <option value="">Todos los estados</option>
@@ -251,15 +269,16 @@ function WithdrawalsInner() {
         {/* Mensajes de error claros */}
         {isForbidden && scope === "all" && (
           <div className="p-3 rounded-md bg-amber-50 text-amber-800 text-sm border border-amber-200">
-            No estás autorizado para ver <b>Todos (admin)</b>. Cambia a <b>Mis retiros</b> o inicia
-            sesión con un usuario administrador.
+            No estás autorizado para ver <b>Todos (admin)</b>. Cambia a{" "}
+            <b>Mis retiros</b> o inicia sesión con un usuario administrador.
           </div>
         )}
 
         {isServerErr && (
           <div className="p-3 rounded-md bg-red-50 text-red-700 text-sm border border-red-200">
-            El servidor devolvió 500. Asegúrate de enviar <b>status</b> en minúsculas
-            (<code>pending|approved|rejected</code>) y revisa los logs del backend.
+            El servidor devolvió 500. Asegúrate de enviar <b>status</b> en
+            minúsculas (<code>pending|approved|rejected</code>) y revisa los
+            logs del backend.
           </div>
         )}
 
@@ -283,19 +302,28 @@ function WithdrawalsInner() {
             <tbody className="divide-y">
               {isLoading ? (
                 <tr>
-                  <td className="px-4 py-4 text-sm" colSpan={scope === "all" ? 7 : 6}>
+                  <td
+                    className="px-4 py-4 text-sm"
+                    colSpan={scope === "all" ? 7 : 6}
+                  >
                     Cargando...
                   </td>
                 </tr>
               ) : error ? (
                 <tr>
-                  <td className="px-4 py-4 text-sm text-red-600" colSpan={scope === "all" ? 7 : 6}>
+                  <td
+                    className="px-4 py-4 text-sm text-red-600"
+                    colSpan={scope === "all" ? 7 : 6}
+                  >
                     {(error as Error).message}
                   </td>
                 </tr>
               ) : withdrawals.length === 0 ? (
                 <tr>
-                  <td className="px-4 py-4 text-sm" colSpan={scope === "all" ? 7 : 6}>
+                  <td
+                    className="px-4 py-4 text-sm"
+                    colSpan={scope === "all" ? 7 : 6}
+                  >
                     No hay retiros.
                   </td>
                 </tr>
@@ -303,7 +331,9 @@ function WithdrawalsInner() {
                 withdrawals.map((w) => (
                   <tr key={w.withdrawalID} className="text-sm">
                     <td className="px-4 py-3">
-                      {w.createdAt ? new Date(w.createdAt).toLocaleString() : "-"}
+                      {w.createdAt
+                        ? new Date(w.createdAt).toLocaleString()
+                        : "-"}
                     </td>
                     <td className="px-4 py-3 font-medium">
                       {money.format(Number(w.amount ?? 0))}
@@ -321,7 +351,9 @@ function WithdrawalsInner() {
                     {scope === "all" && (
                       <td className="px-4 py-3">
                         {w.user
-                          ? `${w.user.firstName ?? ""} ${w.user.lastName ?? ""}`.trim() ||
+                          ? `${w.user.firstName ?? ""} ${
+                              w.user.lastName ?? ""
+                            }`.trim() ||
                             w.user.email ||
                             w.userID
                           : w.userID}

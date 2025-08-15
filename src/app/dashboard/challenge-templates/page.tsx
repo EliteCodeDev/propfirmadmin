@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { ChallengeTemplatesManager } from "@/components/challenge-templates/ChallengeTemplatesManager";
+import { ChallengeTemplatesManager } from "@/components/dashboard/challenge-templates/ChallengeTemplatesManager";
 
 export default function ChallengeTemplatesPage() {
   return (
