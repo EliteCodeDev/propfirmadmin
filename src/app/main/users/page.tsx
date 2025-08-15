@@ -118,8 +118,8 @@ function UsersInner() {
   }, [page, limit, search]);
 
   // Rutas reales del backend
-  const usersPath = "/api/users";
-  const rolesPath = "/api/roles";
+  const usersPath = "/users";
+  const rolesPath = "/roles";
   const bffRolesAssign = `/api/server/roles/assign`;
 
   const usersUrl = `${API_BASE}${usersPath}?${query}`;

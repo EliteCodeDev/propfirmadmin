@@ -87,10 +87,10 @@ async function authedFetcher([url, token]: [string, string]) {
 function buildChallengeUrls(userId: string) {
   const uid = encodeURIComponent(userId);
   return [
-    `/api/challenges?userID=${uid}&page=1&limit=1000`,
-    `/api/challenges?userId=${uid}&page=1&limit=1000`,
-    `/api/challenges?user=${uid}&page=1&limit=1000`,
-    `/api/challenges?page=1&limit=1000`,
+    `/challenges?userID=${uid}&page=1&limit=1000`,
+    `/challenges?userId=${uid}&page=1&limit=1000`,
+    `/challenges?user=${uid}&page=1&limit=1000`,
+    `/challenges?page=1&limit=1000`,
   ];
 }
 

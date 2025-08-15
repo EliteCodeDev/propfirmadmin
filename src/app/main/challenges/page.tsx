@@ -75,7 +75,7 @@ function ChallengesInner() {
     return q.toString();
   }, [page, limit, status]);
 
-  const basePath = scope === "all" ? "/api/challenges" : "/api/challenges/my-challenges";
+  const basePath = scope === "all" ? "/challenges" : "/challenges/my-challenges";
   const url = `${API_BASE}${basePath}?${query}`;
 
   const fetcher = async (u: string) => {

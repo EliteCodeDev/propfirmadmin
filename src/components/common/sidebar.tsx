@@ -201,7 +201,7 @@ export default function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
           {!isCollapsed && LOGO_APP && (
             <div className="flex-1 mr-2">
               <div className="relative h-8 w-full">
-                <Image
+                <Image 
                   src={LOGO_APP}
                   alt="Logo"
                   fill

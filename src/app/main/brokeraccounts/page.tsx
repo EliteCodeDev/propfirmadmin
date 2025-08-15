@@ -89,7 +89,7 @@ function BrokerAccountsInner() {
     return q.toString();
   }, [page, limit, usedFilter]);
 
-  const basePath = "/api/broker-accounts"; // requiere admin
+  const basePath = "/broker-accounts"; // requiere admin
   const url = `${API_BASE}${basePath}?${query}`;
 
   const fetcher = async (u: string) => {

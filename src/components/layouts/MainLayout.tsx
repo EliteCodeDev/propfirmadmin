@@ -45,7 +45,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
 
       {/* Solo aquí vive el scroll */}
       <main className="col-start-2 row-start-2 min-h-0 overflow-y-auto">
-        <div className="w-full p-6">
+        <div className="w-full">
           {children}
         </div>
       </main>

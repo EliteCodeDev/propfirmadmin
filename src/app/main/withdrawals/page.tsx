@@ -113,8 +113,8 @@ function WithdrawalsInner() {
 
   const basePath =
     scope === "all"
-      ? "/api/withdrawals" // requiere rol admin
-      : "/api/withdrawals/my-withdrawals";
+      ? "/withdrawals" // requiere rol admin
+      : "/withdrawals/my-withdrawals";
 
   const url = `${API_BASE}${basePath}?${query}`;
 
