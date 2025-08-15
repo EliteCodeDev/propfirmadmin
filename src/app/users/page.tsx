@@ -104,14 +104,15 @@ function UsersInner() {
   const [roleModalUser, setRoleModalUser] = useState<User | null>(null);
   const [selectedRoleID, setSelectedRoleID] = useState<string>("");
 
-  const [createAdminOpen, setCreateAdminOpen] = useState(false);
-  const [newAdmin, setNewAdmin] = useState({
+  const [createUserOpen, setCreateUserOpen] = useState(false);
+  const [newUser, setNewUser] = useState({
     firstName: "",
     lastName: "",
     username: "",
     email: "",
     password: "",
   });
+  const [selectedNewRoleID, setSelectedNewRoleID] = useState<string>("");
 
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
@@ -134,6 +135,7 @@ function UsersInner() {
   // Rutas reales del backend
   const usersPath = "/api/users";
   const rolesPath = "/api/roles";
+  const bffRolesAssign = `/api/server/roles/assign`;
 
   const usersUrl = `${API_BASE}${usersPath}?${query}`;
 
@@ -367,13 +369,21 @@ function UsersInner() {
   };
 
   const assignRole = async (userID: string, roleId: string) => {
-    const res = await fetch(`${API_BASE}${rolesPath}/assign`, {
+    // Use BFF to ensure Authorization header is present and avoid CORS
+    const res = await fetch(bffRolesAssign, {
       method: "POST",
-      headers: { "Content-Type": "application/json", ...buildHeaders(accessToken) },
-      credentials: "include",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ userID, roleId }),
     });
-    if (!res.ok) throw new Error((await res.text()) || `Error ${res.status}`);
+    if (!res.ok) {
+      const text = await res.text();
+      try {
+        const json = JSON.parse(text);
+        throw new Error(json?.message || `Error ${res.status}`);
+      } catch {
+        throw new Error(text || `Error ${res.status}`);
+      }
+    }
     return true;
   };
 
@@ -397,30 +407,34 @@ function UsersInner() {
     }
   };
 
-  // Crear Admin
-  const onCreateAdmin = async () => {
-    const adminRole = roleOptions.find((r) => r.name.toLowerCase() === "admin");
-    if (!adminRole) {
-      setMsg("Role 'admin' not found.");
-      return;
-    }
-    if (!newAdmin.email || !newAdmin.username || !newAdmin.password) {
+  // Crear Usuario
+  const onCreateUser = async () => {
+    if (!newUser.email || !newUser.username || !newUser.password) {
       setMsg("Email, Username and Password are required.");
       return;
     }
+    // role es opcional; si no hay, backend intentará asignar 'user'
     try {
-      setBusy(true);
-      const created = await createUser({ ...newAdmin, isConfirmed: true });
-      const uid = String(created?.userID ?? created?.id ?? "");
-      if (!uid) throw new Error("User created but ID missing");
+      // Cerrar modal y limpiar antes del llamado para asegurar UX consistente
+      const payloadUser = { ...newUser };
+      const chosenRoleId = selectedNewRoleID || undefined;
+      setCreateUserOpen(false);
+      setNewUser({ firstName: "", lastName: "", username: "", email: "", password: "" });
+      setSelectedNewRoleID("");
 
-      await assignRole(uid, adminRole.roleID);
-      setMsg("Admin created successfully.");
-      setCreateAdminOpen(false);
-      setNewAdmin({ firstName: "", lastName: "", username: "", email: "", password: "" });
+      setBusy(true);
+      const created = await createUser({ ...payloadUser, roleId: chosenRoleId });
+      const uid = String(created?.userID ?? created?.id ?? "");
+      if (!uid) {
+        // No bloquea el cierre del modal; sólo informa
+        setMsg("User created, but ID was not returned by API.");
+      }
+
+  // Backend ya asigna rol si se envía roleId o por defecto 'user'
+  setMsg("User created.");
       await mutate();
     } catch (e: any) {
-      setMsg(e?.message || "Error creating admin");
+      setMsg(e?.message || "Error creating user");
     } finally {
       setBusy(false);
     }
@@ -442,11 +456,18 @@ function UsersInner() {
                   <div className="text-xs font-medium">Total Users</div>
                   <div className="text-lg font-bold">{pageObj.total}</div>
                 </div>
-                <button
+        <button
                   className="px-3 py-2 text-sm rounded-lg bg-emerald-600 text-white hover:bg-emerald-700"
-                  onClick={() => setCreateAdminOpen(true)}
+                  onClick={() => {
+                    // Preseleccionar rol "user" por defecto
+                    const userRole = roleOptions.find((r) => r.name.toLowerCase() === "user");
+                    setSelectedNewRoleID(userRole?.roleID ?? "");
+          // Refrescar roles al abrir
+          mutateRoles();
+                    setCreateUserOpen(true);
+                  }}
                 >
-                  + Create Admin
+                  + Create User
                 </button>
               </div>
             </div>
@@ -464,10 +485,14 @@ function UsersInner() {
                     </svg>
                   </div>
                   <input
-                    type="text"
+                    type="search"
                     value={search}
                     onChange={(e) => { setPage(1); setSearch(e.target.value); }}
                     placeholder="Search by username, email, or name..."
+                    autoComplete="off"
+                    name="users-search"
+                    autoCorrect="off"
+                    autoCapitalize="none"
                     className="block w-full pl-10 pr-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
                 </div>
@@ -569,35 +594,68 @@ function UsersInner() {
         </div>
       )}
 
-      {/* Modal Crear Admin */}
-      {createAdminOpen && (
+      {/* Modal Crear Usuario */}
+      {createUserOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
           <div className="w-full max-w-md bg-white dark:bg-gray-800 rounded-xl p-5 shadow-lg border border-gray-200 dark:border-gray-700">
-            <h3 className="text-lg font-semibold mb-3 text-gray-900 dark:text-white">Create Admin</h3>
+            <h3 className="text-lg font-semibold mb-3 text-gray-900 dark:text-white">Create User</h3>
             <div className="grid grid-cols-1 gap-3">
               <input className="px-3 py-2 text-sm border rounded-lg bg-white dark:bg-gray-700 dark:border-gray-600"
-                placeholder="First name" value={newAdmin.firstName}
-                onChange={(e) => setNewAdmin((s) => ({ ...s, firstName: e.target.value }))} />
+                placeholder="First name" value={newUser.firstName}
+                onChange={(e) => setNewUser((s) => ({ ...s, firstName: e.target.value }))} />
               <input className="px-3 py-2 text-sm border rounded-lg bg-white dark:bg-gray-700 dark:border-gray-600"
-                placeholder="Last name" value={newAdmin.lastName}
-                onChange={(e) => setNewAdmin((s) => ({ ...s, lastName: e.target.value }))} />
+                placeholder="Last name" value={newUser.lastName}
+                onChange={(e) => setNewUser((s) => ({ ...s, lastName: e.target.value }))} />
               <input className="px-3 py-2 text-sm border rounded-lg bg-white dark:bg-gray-700 dark:border-gray-600"
-                placeholder="Username" value={newAdmin.username}
-                onChange={(e) => setNewAdmin((s) => ({ ...s, username: e.target.value }))} />
+                placeholder="Username" value={newUser.username}
+                onChange={(e) => setNewUser((s) => ({ ...s, username: e.target.value }))} />
               <input className="px-3 py-2 text-sm border rounded-lg bg-white dark:bg-gray-700 dark:border-gray-600"
-                placeholder="Email" type="email" value={newAdmin.email}
-                onChange={(e) => setNewAdmin((s) => ({ ...s, email: e.target.value }))} />
+                placeholder="Email" type="email" value={newUser.email}
+                autoComplete="off" name="new-user-email"
+                onChange={(e) => setNewUser((s) => ({ ...s, email: e.target.value }))} />
               <input className="px-3 py-2 text-sm border rounded-lg bg-white dark:bg-gray-700 dark:border-gray-600"
-                placeholder="Password" type="password" value={newAdmin.password}
-                onChange={(e) => setNewAdmin((s) => ({ ...s, password: e.target.value }))} />
+                placeholder="Password" type="password" value={newUser.password}
+                autoComplete="new-password" name="new-user-password"
+                onChange={(e) => setNewUser((s) => ({ ...s, password: e.target.value }))} />
+
+              {/* Select de Rol */}
+              <div>
+                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Role</label>
+                <select
+                  className="w-full px-3 py-2 text-sm border rounded-lg bg-white dark:bg-gray-700 dark:border-gray-600"
+                  value={selectedNewRoleID}
+                  onChange={(e) => setSelectedNewRoleID(e.target.value)}
+                  disabled={rolesLoading}
+                >
+                  {rolesLoading && <option value="">Loading...</option>}
+                  {!rolesLoading && <option value="">-- Select --</option>}
+                  {!rolesLoading && roleOptions.length === 0 && <option value="" disabled>No roles available</option>}
+                  {roleOptions.map((r) => (
+                    <option key={r.roleID} value={r.roleID}>{r.name}</option>
+                  ))}
+                </select>
+                {rolesError && (
+                  <p className="mt-2 text-xs text-red-600 dark:text-red-400 break-words">
+                    Failed to load roles. {rolesError instanceof Error ? rolesError.message : ''}
+                  </p>
+                )}
+              </div>
             </div>
 
             <div className="mt-5 flex items-center justify-end gap-2">
-              <button className="px-3 py-2 text-sm rounded-lg border" onClick={() => setCreateAdminOpen(false)} disabled={busy}>
+              <button
+                className="px-3 py-2 text-sm rounded-lg border"
+                onClick={() => {
+                  setCreateUserOpen(false);
+                  setNewUser({ firstName: "", lastName: "", username: "", email: "", password: "" });
+                  setSelectedNewRoleID("");
+                }}
+                disabled={busy}
+              >
                 Cancel
               </button>
               <button className="px-3 py-2 text-sm rounded-lg bg-emerald-600 text-white disabled:opacity-50"
-                onClick={onCreateAdmin} disabled={busy}>
+                onClick={onCreateUser} disabled={busy}>
                 {busy ? "Creating..." : "Create"}
               </button>
             </div>

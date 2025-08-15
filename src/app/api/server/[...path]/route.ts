@@ -9,6 +9,7 @@ import {
 const ALLOWED_PREFIXES = [
   "/auth",
   "/users",
+  "/roles",
   "/challenges",
   "/challenge-templates",
   "/smt-api",
