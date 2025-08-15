@@ -7,35 +7,14 @@ import React, { useMemo, useState, useEffect } from "react";
 import useSWR from "swr";
 import { SessionProvider, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import type { Challenge, PageResponse } from "@/types";
 
 type LimitParam = number;
 type Scope = "mine" | "all";
 
-interface Challenge {
-  challengeID: string;
-  userID: string;
-  relationID?: string | null;
-  startDate?: string | Date | null;
-  endDate?: string | Date | null;
-  numPhase?: number | null;
-  dynamicBalance?: number | string | null;
-  status?: string | null;
-  isActive?: boolean;
-  parentID?: string | null;
-  brokerAccountID?: string | null;
-  // relations
-  user?: { firstName?: string | null; lastName?: string | null; email?: string | null };
-  relation?: { plan?: { name?: string }; category?: { name?: string } };
-  brokerAccount?: { login?: string | null; platform?: string | null };
-}
-
-interface PageResponse<T> {
-  data: T[];
-  total: number;
-  page: number;
-  limit: number;
-  totalPages: number;
-}
+// [moved-to-src/types] Original inline types now live in src/types.
+// interface Challenge { ... }
+// interface PageResponse<T> { ... }
 
 const API_BASE = (process.env.NEXT_PUBLIC_BACKEND_URL || "").replace(/\/$/, "");
 

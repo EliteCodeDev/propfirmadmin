@@ -15,52 +15,16 @@ import {
   ExclamationTriangleIcon,
   ArrowLeftIcon,
 } from "@heroicons/react/24/outline";
+import type { User, Challenge } from "@/types";
 
 /* ========= Config ========= */
 const API_BASE = (process.env.NEXT_PUBLIC_BACKEND_URL || "").replace(/\/$/, "");
 const API_KEY = process.env.NEXT_PUBLIC_API_KEY || "";
 
 /* ========= Tipos ========= */
-type Challenge = {
-  challengeID: string;
-  userID?: string;
-  userId?: string;
-  user?: { id?: string; userID?: string } | null;
-  status?: string | null;
-  numPhase?: number | null;
-  startDate?: string | null;
-  createdAt?: string | null;
-  dynamicBalance?: number | string | null;
-  isActive?: boolean | null;
-  brokerAccount?: {
-    login?: string | null;
-    platform?: string | null;
-    initialBalance?: number | null;
-  } | null;
-};
-
-type User = {
-  userID?: string;
-  id?: string;
-  username: string;
-  email: string;
-  firstName?: string | null;
-  lastName?: string | null;
-  phone?: string | null;
-  isVerified?: boolean;
-  isConfirmed?: boolean;
-  createdAt?: string | null;
-  updatedAt?: string | null;
-  couponCode?: string | null;
-  status?: string | null;
-  address?: {
-    address1?: string | null;
-    city?: string | null;
-    state?: string | null;
-    country?: string | null;
-    zipCode?: string | null;
-  } | null;
-};
+// [moved-to-src/types] Original inline types now live in src/types.
+// type Challenge = { ... }
+// type User = { ... }
 
 /* ========= Helpers ========= */
 const buildHeaders = (token?: string): HeadersInit => {

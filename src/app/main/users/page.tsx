@@ -11,34 +11,14 @@ import useSWR from "swr";
 import { SessionProvider, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { TrophyIcon, ArrowTopRightOnSquareIcon, PencilSquareIcon } from "@heroicons/react/24/outline";
+import type { RoleOption, User, PageResponse } from "@/types";
 
 type LimitParam = number;
 
-interface RoleOption {
-  roleID: string;
-  name: string;
-}
-
-interface User {
-  userID?: string;
-  id?: string;
-  username: string;
-  email: string;
-  firstName?: string | null;
-  lastName?: string | null;
-  isConfirmed?: boolean;
-  createdAt?: string | Date;
-  role?: { roleID?: string; name?: string };
-  address?: { country?: string | null };
-}
-
-interface PageResponse<T> {
-  data: T[];
-  total: number;
-  page: number;
-  limit: number;
-  totalPages: number;
-}
+// [moved-to-src/types] Original inline types now live in src/types.
+// interface RoleOption { ... }
+// interface User { ... }
+// interface PageResponse<T> { ... }
 
 const API_BASE = (process.env.NEXT_PUBLIC_BACKEND_URL || "").replace(/\/$/, "");
 

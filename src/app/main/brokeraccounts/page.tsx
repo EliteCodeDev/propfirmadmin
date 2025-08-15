@@ -7,28 +7,14 @@ import React, { useEffect, useMemo, useState } from "react";
 import useSWR from "swr";
 import { SessionProvider, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import type { BrokerAccount, PageResponse } from "@/types";
 
 type LimitParam = number;
 type UsedFilter = "all" | "used" | "free";
 
-interface BrokerAccount {
-  brokerAccountID: string;
-  login: string;
-  server?: string | null;
-  serverIp?: string | null;
-  platform?: string | null;
-  isUsed: boolean;
-  investorPass?: string | null;
-  innitialBalance?: number | null;
-}
-
-interface PageResponse<T> {
-  data: T[];
-  total: number;
-  page: number;
-  limit: number;
-  totalPages: number;
-}
+// [moved-to-src/types] Original inline types now live in src/types.
+// interface BrokerAccount { ... }
+// interface PageResponse<T> { ... }
 
 const API_BASE = (process.env.NEXT_PUBLIC_BACKEND_URL || "").replace(/\/$/, "");
 

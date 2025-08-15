@@ -8,32 +8,16 @@ import { SessionProvider, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import PaginatedCardTable from "@/components/common/PaginatedCardTable";
 import type { ColumnConfig } from "@/components/common/tableComponent";
+import type { Withdrawal, WithdrawalStatus, PageResponse } from "@/types";
 // Removed ClipboardIcon import as Withdrawal ID column is removed
 
-type WithdrawalStatus = "pending" | "approved" | "rejected";
 type LimitParam = number;
 type Scope = "mine" | "all";
 
-interface Withdrawal {
-  withdrawalID: string;
-  userID: string;
-  wallet: string;
-  amount: number;
-  observation?: string | null;
-  status: WithdrawalStatus | string;
-  createdAt: string;
-  challengeID?: string | null;
-  user?: { firstName?: string; lastName?: string; email?: string };
-  challenge?: { name?: string; accountLogin?: string };
-}
-
-interface PageResponse<T> {
-  data: T[];
-  total: number;
-  page: number;
-  limit: number;
-  totalPages: number;
-}
+// [moved-to-src/types] Original inline types now live in src/types.
+// type WithdrawalStatus = ...
+// interface Withdrawal { ... }
+// interface PageResponse<T> { ... }
 
 const API_BASE = (process.env.NEXT_PUBLIC_BACKEND_URL || "").replace(/\/$/, "");
 
