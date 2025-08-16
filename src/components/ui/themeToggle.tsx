@@ -1,13 +1,7 @@
 "use client";
 import { SunIcon, MoonIcon } from "@heroicons/react/24/outline";
 import { useTheme } from "../../hooks/useTheme";
-
-interface ThemeToggleProps {
-  variant?: 'default' | 'minimal' | 'button';
-  size?: 'sm' | 'md' | 'lg';
-  className?: string;
-  showLabel?: boolean;
-}
+import type { ThemeToggleProps } from "@/types";
 
 export function ThemeToggle({ 
   variant = 'default', 

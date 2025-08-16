@@ -17,9 +17,7 @@ import { toast } from "sonner";
 import { Loader2, RefreshCw } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-interface TemplateVisualizerProps {
-  pageSize?: number;
-}
+import type { TemplateVisualizerProps } from "@/types";
 
 export function TemplateVisualizer({}: TemplateVisualizerProps) {
   // Estado de datos

@@ -2,7 +2,7 @@
 
 import CardComponent from "@/components/user/cardComponent";
 import PaginatedCardTable from "@/components/common/PaginatedCardTable";
-import type { ColumnConfig } from "@/components/common/tableComponent";
+import type { ColumnConfig } from "@/types";
 import { UserIcon, ClockIcon, ExclamationTriangleIcon } from "@heroicons/react/24/outline";
 import { useState } from "react";
 import MainLayout from "@/components/layouts/MainLayout";

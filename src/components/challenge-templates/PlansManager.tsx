@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import PaginatedCardTable from "@/components/common/PaginatedCardTable";
-import type { ColumnConfig } from "@/components/common/tableComponent";
+import type { ColumnConfig } from "@/types";
 import {
   challengeTemplatesApi,
   type ChallengePlan,
@@ -36,11 +36,9 @@ const planSchema = z.object({
 
 type PlanFormData = z.infer<typeof planSchema>;
 
-interface PlansManagerProps {
-  pageSize: number;
-}
+import type { PlansManagerProps } from "@/types";
 
-export function PlansManager({ pageSize }: PlansManagerProps) {
+export function PlansManager({ pageSize = 10 }: PlansManagerProps) {
   // Estado
   const [plans, setPlans] = useState<ChallengePlan[]>([]);
   const [openModal, setOpenModal] = useState(false);

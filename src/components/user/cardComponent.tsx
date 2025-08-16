@@ -1,14 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { UserIcon, PencilIcon } from "@heroicons/react/24/outline";
 
-interface ContactCardProps {
-  title?: string;
-  icon?: React.ReactNode;
-  fields?: Array<{
-    label: string;
-    value: string;
-  }>;
-}
+import type { ContactCardProps } from "@/types";
 
 export default function cardComponent({ 
   title = "Contact Information",

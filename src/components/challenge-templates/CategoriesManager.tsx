@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import PaginatedCardTable from "@/components/common/PaginatedCardTable";
-import type { ColumnConfig } from "@/components/common/tableComponent";
+import type { ColumnConfig } from "@/types";
 import {
   challengeTemplatesApi,
   type ChallengeCategory,
@@ -41,11 +41,9 @@ const categorySchema = z.object({
 
 type CategoryFormData = z.infer<typeof categorySchema>;
 
-interface CategoriesManagerProps {
-  pageSize: number;
-}
+import type { CategoriesManagerProps } from "@/types";
 
-export function CategoriesManager({ pageSize }: CategoriesManagerProps) {
+export function CategoriesManager({ pageSize = 10 }: CategoriesManagerProps) {
   // Estado
   const [categories, setCategories] = useState<ChallengeCategory[]>([]);
   const [openModal, setOpenModal] = useState(false);

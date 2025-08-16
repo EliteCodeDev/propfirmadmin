@@ -1,13 +1,6 @@
 import React, { useState, useEffect } from "react";
 
-interface LoadingSpinnerProps {
-  size?: "sm" | "md" | "lg";
-  text?: string;
-  subtitle?: string;
-  className?: string;
-  showProgress?: boolean;
-  steps?: string[];
-}
+import type { LoadingSpinnerProps } from "@/types";
 
 export default function LoadingSpinner({
   size = "md",

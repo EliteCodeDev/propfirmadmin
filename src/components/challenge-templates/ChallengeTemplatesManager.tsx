@@ -7,7 +7,7 @@ import { BalancesManager } from "./BalancesManager";
 import { RelationsManager } from "./RelationsManager";
 import { StagesManager } from "./StagesManager";
 import PaginatedCardTable from "@/components/common/PaginatedCardTable";
-import type { ColumnConfig } from "@/components/common/tableComponent";
+import type { ColumnConfig } from "@/types";
 import { useArrayValidation } from "@/hooks/useArrayValidation";
 import { Settings, PackageIcon, Layers, Link, Eye, Folder } from "lucide-react";
 
@@ -19,9 +19,13 @@ type TabType =
   | "stages"
   | "visualizer";
 
-export function ChallengeTemplatesManager() {
+interface ChallengeTemplatesManagerProps {
+  pageSize?: number;
+}
+
+export function ChallengeTemplatesManager({ pageSize: initialPageSize = 10 }: ChallengeTemplatesManagerProps = {}) {
   const [activeTab, setActiveTab] = useState<TabType>("visualizer");
-  const [pageSize, setPageSize] = useState(10);
+  const [pageSize, setPageSize] = useState(initialPageSize);
   const [page, setPage] = useState(1);
 
   // Datos de ejemplo para la tabla

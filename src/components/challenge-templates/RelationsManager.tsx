@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import PaginatedCardTable from "@/components/common/PaginatedCardTable";
-import type { ColumnConfig } from "@/components/common/tableComponent";
+import type { ColumnConfig } from "@/types";
 import {
   challengeTemplatesApi,
   type ChallengeRelation,
@@ -53,11 +53,9 @@ const relationSchema = z.object({
 
 type RelationFormData = z.infer<typeof relationSchema>;
 
-interface RelationsManagerProps {
-  pageSize: number;
-}
+import type { RelationsManagerProps } from "@/types";
 
-export function RelationsManager({ pageSize }: RelationsManagerProps) {
+export function RelationsManager({ pageSize = 10 }: RelationsManagerProps) {
   // Estado
   const [relations, setRelations] = useState<ChallengeRelation[]>([]);
   const [categories, setCategories] = useState<ChallengeCategory[]>([]);

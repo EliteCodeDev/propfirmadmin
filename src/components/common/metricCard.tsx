@@ -1,11 +1,6 @@
 import { CardContent, Card } from "../ui/card";
 
-interface MetricCardProps {
-  color: string;
-  label: string;
-  icon: React.ReactNode;
-  value: string;
-}
+import type { MetricCardProps } from "@/types";
 
 export default function MetricCard({color, label, icon, value}: MetricCardProps) {
   return (

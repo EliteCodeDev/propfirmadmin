@@ -3,11 +3,7 @@
 import React from 'react';
 import { useArrayValidation } from '@/hooks/useArrayValidation';
 
-interface RowsPerPageProps {
-  pageSize: number;
-  onPageSizeChange: (size: number) => void;
-  options?: number[];
-}
+import type { RowsPerPageProps } from "@/types";
 
 export function RowsPerPage({ 
   pageSize, 

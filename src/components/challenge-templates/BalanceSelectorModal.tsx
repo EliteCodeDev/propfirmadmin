@@ -16,23 +16,7 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Check, Plus, X, ChevronDown, ChevronUp } from "lucide-react";
 import type { ChallengeBalance } from "@/api/challenge-templates";
-
-export interface BalanceSelectorModalProps {
-    open: boolean;
-    onOpenChange: (open: boolean) => void;
-    balances: ChallengeBalance[];
-    initialSelected?: string[]; // balanceIDs
-    onConfirm: (selectedIds: string[]) => void;
-    onConfirmWithDetails?: (
-        items: Array<{
-            balanceID: string;
-            price?: number;
-            isActive?: boolean;
-            hasDiscount?: boolean;
-            discount?: string;
-        }>
-    ) => void;
-}
+import type { BalanceSelectorModalProps } from "@/types";
 
 // Datos temporales/mocks mientras no haya fetch real al backend
 const MOCK_BALANCES: ChallengeBalance[] = [

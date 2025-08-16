@@ -17,7 +17,7 @@ export default async function Dashboard() {
 
   return (
     <MainLayout>
-      <div className="relative w-full h-full p-4">
+      <div className="relative w-full h-full p-6">
         {/* subtle decorative gradients */}
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
           <div className="absolute top-20 right-20 w-32 h-32 bg-gradient-to-br from-blue-100/30 to-indigo-100/30 rounded-full blur-3xl" />
@@ -26,8 +26,6 @@ export default async function Dashboard() {
         </div>
 
         <div className="flex flex-col space-y-8 relative">
-          {/* Sticky breadcrumb is rendered by MainLayout */}
-          {/* Stats grid - merged styles with our essence and reference layout */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6">
             <div className="xl:col-span-2 lg:col-span-1"><StatCard size="sm" label="Total Users" value="140" variant="indigo" delay={0} icon={<UserGroupIcon className="h-6 w-6 text-indigo-600" />} /></div>
             <div className="xl:col-span-2 lg:col-span-1"><StatCard size="sm" label="Total Orders" value="122" variant="blue" delay={100} icon={<ChartBarIcon className="h-6 w-6 text-blue-600" />} /></div>

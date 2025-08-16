@@ -1,6 +1,7 @@
 "use client";
 
-import TableComponent, { type ColumnConfig } from "@/components/common/tableComponent";
+import TableComponent from "@/components/common/tableComponent";
+import type { ColumnConfig } from "@/types";
 import { MagnifyingGlassIcon, TableCellsIcon, ArrowDownTrayIcon } from "@heroicons/react/24/outline";
 import { useState } from "react";
 // import CardComponent from "@/components/user/cardComponent";

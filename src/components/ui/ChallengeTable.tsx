@@ -18,25 +18,7 @@ import {
 } from "lucide-react";
 import { useArrayValidation } from "@/hooks/useArrayValidation";
 
-// 1. Definimos la interfaz de los items
-export interface ChallengeItem {
-  id: number;
-  name: string;
-  originalId?: string;
-  precio?: number;
-  description?: string;
-}
-
-// 2. Definimos las props del componente
-interface ChallengeTableProps {
-  title: string;
-  data: ChallengeItem[];
-  pageSize: number;
-  onCreate: () => void;
-  onEdit: (item: ChallengeItem) => void;
-  showPrice?: boolean;
-  isLoading?: boolean;
-}
+import type { ChallengeItem, ChallengeTableProps } from "@/types";
 
 export const ChallengeTable: React.FC<ChallengeTableProps> = ({
   title,
@@ -94,7 +76,7 @@ export const ChallengeTable: React.FC<ChallengeTableProps> = ({
 
             <Button
               variant="secondary"
-              className="group inline-block rounded bg-[var(--app-secondary)] hover:bg-[var(--app-secondary)]/90 px-3 py-2 text-sm font-medium uppercase leading-normal text-white shadow-md transition duration-150 ease-in-out hover:shadow-lg focus:shadow-lg focus:outline-none focus:ring-0 active:shadow-lg flex items-center gap-2"
+              className="group inline-block rounded bg-[var(--app-secondary)] hover:bg-[var(--app-secondary)]/90 px-3 py-2 text-sm font-medium uppercase leading-normal text-white shadow-md transition duration-150 ease-in-out hover:shadow-lg focus:shadow-lg focus:outline-none focus:ring-0 active:shadow-lg items-center gap-2"
               onClick={onCreate}
             >
               <PlusCircle className="h-4 w-4 group-hover:rotate-90 transition-transform duration-500" />

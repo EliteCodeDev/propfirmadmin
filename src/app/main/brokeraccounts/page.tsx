@@ -2,7 +2,7 @@
 
 import MainLayout from "@/components/layouts/MainLayout";
 import PaginatedCardTable from "@/components/common/PaginatedCardTable";
-import type { ColumnConfig } from "@/components/common/tableComponent";
+import type { ColumnConfig } from "@/types";
 import React, { useEffect, useMemo, useState } from "react";
 import useSWR from "swr";
 import { SessionProvider, useSession } from "next-auth/react";

@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import PaginatedCardTable from "@/components/common/PaginatedCardTable";
-import type { ColumnConfig } from "@/components/common/tableComponent";
+import type { ColumnConfig } from "@/types";
 import {
   challengeTemplatesApi,
   type ChallengeBalance,
@@ -45,11 +45,9 @@ const balanceSchema = z.object({
 
 type BalanceFormData = z.infer<typeof balanceSchema>;
 
-interface BalancesManagerProps {
-  pageSize: number;
-}
+import type { BalancesManagerProps } from "@/types";
 
-export function BalancesManager({ pageSize }: BalancesManagerProps) {
+export function BalancesManager({ pageSize = 10 }: BalancesManagerProps) {
   // Estado
   const [balances, setBalances] = useState<ChallengeBalance[]>([]);
   const [openModal, setOpenModal] = useState(false);

@@ -4,31 +4,7 @@ import React, { useMemo } from "react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import type { ColumnConfig } from "./tableComponent";
-
-export type ActionsRenderer = (row: Record<string, unknown>, index: number) => React.ReactNode;
-
-interface PaginationProps {
-  currentPage: number;
-  totalPages: number;
-  totalItems?: number;
-  pageSize: number;
-  onPageChange: (page: number) => void;
-  onPageSizeChange: (size: number) => void;
-}
-
-interface PaginatedCardTableProps {
-  subtitleBadge?: string;
-  columns: ColumnConfig[];
-  rows: Record<string, unknown>[];
-  isLoading?: boolean;
-  emptyIcon?: React.ReactNode;
-  emptyText?: string;
-  emptyHint?: string;
-  actionsHeader?: string;
-  renderActions?: ActionsRenderer;
-  pagination: PaginationProps;
-}
+import type { ColumnConfig, PaginatedCardTableProps, ActionsRenderer } from "@/types";
 
 function usePageNumbers(currentPage: number, totalPages: number, windowSize = 5) {
   return useMemo(() => {

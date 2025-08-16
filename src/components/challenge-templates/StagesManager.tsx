@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import PaginatedCardTable from "@/components/common/PaginatedCardTable";
-import type { ColumnConfig } from "@/components/common/tableComponent";
+import type { ColumnConfig } from "@/types";
 import { challengeTemplatesApi, type ChallengeStage } from "@/api/challenge-templates";
 import { useArrayValidation } from "@/hooks/useArrayValidation";
 
@@ -38,11 +38,9 @@ const stageSchema = z.object({
 
 type StageFormData = z.infer<typeof stageSchema>;
 
-interface StagesManagerProps {
-  pageSize: number;
-}
+import type { StagesManagerProps } from "@/types";
 
-export function StagesManager({ pageSize }: StagesManagerProps) {
+export function StagesManager({ pageSize = 10 }: StagesManagerProps) {
   // Estado
   const [stages, setStages] = useState<ChallengeStage[]>([]);
   const [openModal, setOpenModal] = useState(false);

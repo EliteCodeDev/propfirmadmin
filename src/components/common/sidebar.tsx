@@ -25,13 +25,7 @@ import { useSession } from "next-auth/react";
 import { useTheme } from "../../hooks/useTheme";
 import { LOGO_APP } from "@/config";
 
-interface NavigationItem {
-  name: string;
-  href: string;
-  icon: React.ComponentType<{ className?: string }>;
-  description: string;
-  badge?: string;
-}
+import type { NavigationItem, SidebarProps } from "@/types";
 
 const navigation: NavigationItem[] = [
   {
@@ -74,11 +68,6 @@ const navigation: NavigationItem[] = [
 
 function classNames(...classes: string[]) {
   return classes.filter(Boolean).join(" ");
-}
-
-interface SidebarProps {
-  collapsed?: boolean;
-  onToggle?: () => void;
 }
 
 export default function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
