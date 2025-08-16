@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import type { ApiError } from "@/types";
 import { useRouter } from "next/navigation";
 import { register } from "@/api/auth";
 import { toast, Toaster } from "sonner";
@@ -24,20 +25,9 @@ export default function RegisterPage() {
       );
       // Redirect to login page after a short delay
       setTimeout(() => {
-        router.push("/login");
+        router.push("/auth/login");
       }, 3000);
     } catch (error) {
-      // Definimos un tipo para el objeto de error que esperamos de Strapi/Axios
-      type ApiError = {
-        response?: {
-          data?: {
-            error?: {
-              message?: string;
-            };
-          };
-        };
-      };
-
       const apiError = error as ApiError;
       const errorMsg =
         apiError.response?.data?.error?.message ||
@@ -115,7 +105,7 @@ export default function RegisterPage() {
 
         <p className="mt-6 text-sm text-center">
           ¿Ya tienes cuenta?{" "}
-          <Link href="/login" className="text-blue-600 hover:underline">
+          <Link href="/auth/login" className="text-blue-600 hover:underline">
             Inicia sesión
           </Link>
         </p>

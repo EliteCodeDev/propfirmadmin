@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useMemo } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import type { ColumnConfig } from "./tableComponent";
@@ -34,8 +34,8 @@ function usePageNumbers(currentPage: number, totalPages: number, windowSize = 5)
   return useMemo(() => {
     const maxToShow = Math.max(3, windowSize);
     const half = Math.floor(maxToShow / 2);
-    let startPage = Math.max(1, currentPage - half);
-    let endPage = Math.min(totalPages, startPage + maxToShow - 1);
+  let startPage = Math.max(1, currentPage - half);
+  const endPage = Math.min(totalPages, startPage + maxToShow - 1);
     if (endPage - startPage + 1 < maxToShow) {
       startPage = Math.max(1, endPage - maxToShow + 1);
     }
@@ -103,13 +103,14 @@ export default function PaginatedCardTable(props: PaginatedCardTableProps) {
     pagination,
   } = props;
 
-  const { currentPage, totalPages, totalItems, pageSize, onPageChange, onPageSizeChange } = pagination;
-  const startRecord = (currentPage - 1) * pageSize + 1;
-  const endRecord = typeof totalItems === "number"
-    ? Math.min(currentPage * pageSize, totalItems)
-    : currentPage * pageSize;
+  const { currentPage, totalPages, pageSize, onPageChange, onPageSizeChange } = pagination;
+  // Records range UI not displayed currently; can be re-enabled if needed
+  // const startRecord = (currentPage - 1) * pageSize + 1;
+  // const endRecord = typeof totalItems === "number"
+  //   ? Math.min(currentPage * pageSize, totalItems)
+  //   : currentPage * pageSize;
 
-  const { pageNumbers, startPage, endPage } = usePageNumbers(currentPage, totalPages);
+  const { pageNumbers, startPage } = usePageNumbers(currentPage, totalPages);
 
   const colCount = columns.length + (renderActions ? 1 : 0);
 
@@ -153,13 +154,13 @@ export default function PaginatedCardTable(props: PaginatedCardTableProps) {
       )}
       <CardContent className="p-0">
         <div className="overflow-x-auto">
-          <Table className="w-full">
+          <Table className="w-full mx-auto text-center">
             <TableHeader>
               <TableRow className="bg-gray-50 dark:bg-gray-700/30 backdrop-blur-sm border-gray-200 dark:border-gray-600/50">
                 {columns.map((c) => (
                   <TableHead 
                     key={c.key} 
-                    className={`px-3 py-3 text-left text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-gray-700 dark:text-gray-300 whitespace-nowrap ${getColumnWidth(c)}`}
+                    className={`pl-6 pr-4 py-3  text-center text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-gray-700 dark:text-gray-300 whitespace-nowrap ${getColumnWidth(c)}`}
                   >
                     {c.label}
                   </TableHead>
@@ -174,7 +175,7 @@ export default function PaginatedCardTable(props: PaginatedCardTableProps) {
             <TableBody>
               {isLoading ? (
                 <TableRow>
-                  <TableCell colSpan={colCount} className="px-3 py-8 text-center bg-gray-50/50 dark:bg-gray-800/20">
+                  <TableCell colSpan={colCount} className="pl-6 pr-4 py-8 text-center bg-gray-50/50 dark:bg-gray-800/20">
                     <div className="flex flex-col items-center justify-center">
                       <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mb-3"></div>
                       <p className="text-gray-600 dark:text-gray-300 font-medium text-sm">Cargando datos...</p>
@@ -183,7 +184,7 @@ export default function PaginatedCardTable(props: PaginatedCardTableProps) {
                 </TableRow>
               ) : rows.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={colCount} className="px-3 py-12 bg-gray-50/50 dark:bg-gray-800/20">
+                  <TableCell colSpan={colCount} className="pl-6 pr-4 py-12 bg-gray-50/50 dark:bg-gray-800/20">
                     <div className="flex flex-col items-center justify-center">
                       {emptyIcon}
                       <span className="text-gray-500 dark:text-gray-400 text-base font-medium">{emptyText}</span>
@@ -199,7 +200,7 @@ export default function PaginatedCardTable(props: PaginatedCardTableProps) {
                     {columns.map((c) => (
                       <TableCell 
                         key={c.key} 
-                        className={`px-3 py-3 align-middle whitespace-nowrap text-xs text-gray-900 dark:text-gray-200 ${getColumnWidth(c)}`}
+                        className={`pl-6 pr-4 py-3 align-middle whitespace-nowrap text-xs text-gray-900 dark:text-gray-200 ${getColumnWidth(c)}`}
                       >
                         <div className="truncate" title={String(row[c.key] || "")}>
                           {renderCell(c, row)}
@@ -262,12 +263,12 @@ export default function PaginatedCardTable(props: PaginatedCardTableProps) {
                     </button>
                   ))}
 
-                  {endPage < totalPages && (
+          {pageNumbers.length && pageNumbers[pageNumbers.length - 1] < totalPages ? (
                     <>
-                      {endPage < totalPages - 1 && <span className="px-1 text-gray-400 dark:text-gray-500 text-xs">...</span>}
+            {pageNumbers[pageNumbers.length - 1] < totalPages - 1 && <span className="px-1 text-gray-400 dark:text-gray-500 text-xs">...</span>}
                       <button onClick={() => onPageChange(totalPages)} className="px-2.5 py-1 rounded-md text-xs text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600/30 transition-colors">{totalPages}</button>
                     </>
-                  )}
+          ) : null}
                 </div>
 
                 <div className="flex sm:hidden items-center gap-1">

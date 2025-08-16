@@ -10,37 +10,18 @@ import React, { useMemo, useState, useEffect } from "react";
 import useSWR from "swr";
 import { SessionProvider, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { TrophyIcon, ArrowTopRightOnSquareIcon, PencilSquareIcon } from "@heroicons/react/24/outline";
+import { ArrowTopRightOnSquareIcon, PencilSquareIcon } from "@heroicons/react/24/outline";
+import type { RoleOption, User, PageResponse } from "@/types";
+import { apiBaseUrl } from "@/config";
 
 type LimitParam = number;
 
-interface RoleOption {
-  roleID: string;
-  name: string;
-}
+// [moved-to-src/types] Original inline types now live in src/types.
+// interface RoleOption { ... }
+// interface User { ... }
+// interface PageResponse<T> { ... }
 
-interface User {
-  userID?: string;
-  id?: string;
-  username: string;
-  email: string;
-  firstName?: string | null;
-  lastName?: string | null;
-  isConfirmed?: boolean;
-  createdAt?: string | Date;
-  role?: { roleID?: string; name?: string };
-  address?: { country?: string | null };
-}
-
-interface PageResponse<T> {
-  data: T[];
-  total: number;
-  page: number;
-  limit: number;
-  totalPages: number;
-}
-
-const API_BASE = (process.env.NEXT_PUBLIC_BACKEND_URL || "").replace(/\/$/, "");
+const API_BASE = apiBaseUrl.replace(/\/$/, "");
 
 /* Badge de estado (isConfirmed) */
 function StatusBadge({ confirmed }: { confirmed: boolean }) {
@@ -66,21 +47,25 @@ function unwrapPage<T = Record<string, unknown>>(raw: unknown): {
   limit: number;
   totalPages: number;
 } {
-  const lvl1 = (raw as any)?.data ?? raw;
+  const lvl1 = (raw as { data?: unknown } | unknown & Record<string, unknown>) && (raw as { data?: unknown }).data !== undefined
+    ? (raw as { data?: unknown }).data
+    : raw;
 
   let items: T[] = [];
   if (Array.isArray(lvl1)) items = lvl1 as T[];
   else if (lvl1 && typeof lvl1 === "object") {
-    if (Array.isArray((lvl1 as any).data)) items = (lvl1 as any).data as T[];
-    else if (Array.isArray((lvl1 as any).items)) items = (lvl1 as any).items as T[];
+    const d = (lvl1 as { data?: unknown }).data;
+    const it = (lvl1 as { items?: unknown }).items;
+    if (Array.isArray(d)) items = d as T[];
+    else if (Array.isArray(it)) items = it as T[];
   }
 
-  const total = typeof (lvl1 as any)?.total === "number" ? (lvl1 as any).total : items.length;
-  const page  = typeof (lvl1 as any)?.page === "number" ? (lvl1 as any).page : 1;
-  const limit = typeof (lvl1 as any)?.limit === "number" ? (lvl1 as any).limit : items.length || 10;
+  const total = typeof (lvl1 as { total?: unknown })?.total === "number" ? (lvl1 as { total?: unknown }).total as number : items.length;
+  const page  = typeof (lvl1 as { page?: unknown })?.page === "number" ? (lvl1 as { page?: unknown }).page as number : 1;
+  const limit = typeof (lvl1 as { limit?: unknown })?.limit === "number" ? (lvl1 as { limit?: unknown }).limit as number : items.length || 10;
   const totalPages =
-    typeof (lvl1 as any)?.totalPages === "number"
-      ? (lvl1 as any).totalPages
+    typeof (lvl1 as { totalPages?: unknown })?.totalPages === "number"
+      ? (lvl1 as { totalPages?: unknown }).totalPages as number
       : limit > 0 ? Math.max(1, Math.ceil(total / limit)) : 1;
 
   return { items, total, page, limit, totalPages };
@@ -121,7 +106,7 @@ function UsersInner() {
   const [editOpen, setEditOpen] = useState(false);
   const [editUser, setEditUser] = useState<User | null>(null);
 
-  const accessToken = (session as any)?.accessToken as string | undefined;
+  const accessToken = session?.accessToken as string | undefined;
 
   // Querystring
   const query = useMemo(() => {
@@ -133,8 +118,8 @@ function UsersInner() {
   }, [page, limit, search]);
 
   // Rutas reales del backend
-  const usersPath = "/api/users";
-  const rolesPath = "/api/roles";
+  const usersPath = "/users";
+  const rolesPath = "/roles";
   const bffRolesAssign = `/api/server/roles/assign`;
 
   const usersUrl = `${API_BASE}${usersPath}?${query}`;
@@ -159,7 +144,7 @@ function UsersInner() {
       return r;
     };
 
-    let res = await tryFetch(`${API_BASE}${rolesPath}?page=1&limit=100`);
+  let res = await tryFetch(`${API_BASE}${rolesPath}?page=1&limit=100`);
     if (!res.ok && (res.status === 400 || res.status === 422)) {
       // Reintentar con un límite menor
       res = await tryFetch(`${API_BASE}${rolesPath}?page=1&limit=50`);
@@ -173,7 +158,7 @@ function UsersInner() {
       throw new Error(text || `Error ${res.status}`);
     }
 
-    const json = await res.json();
+  const json: unknown = await res.json();
     // Debug: ayuda a diagnosticar si el backend responde con tupla u objeto
     try {
       console.debug("[roles] raw response", json);
@@ -183,39 +168,42 @@ function UsersInner() {
     // 2) { data: items, meta: { ... } }
     // 2b) { data: { data: items, meta: { ... } } }
     // 3) items[] directo
-    let items: any[] = [];
+    let items: unknown[] = [];
     if (Array.isArray(json)) {
       // Caso [items, total] o items[] directo
       if (Array.isArray(json[0]) && (typeof json[1] === "number" || typeof json[1] === "object")) {
-        items = json[0] as any[];
+        items = json[0] as unknown[];
       } else {
-        items = json as any[];
+        items = json as unknown[];
       }
-    } else if (Array.isArray((json as any)?.data)) {
+    } else if (Array.isArray((json as { data?: unknown })?.data)) {
       // Puede ser data = items[] o data = [items[], total]
-      const d = (json as any).data as any[];
-      if (Array.isArray(d[0]) && (typeof d[1] === "number" || typeof d[1] === "object")) {
-        items = d[0] as any[];
+      const d = (json as { data: unknown[] }).data as unknown[];
+      if (Array.isArray(d[0]) && (typeof (d as unknown[])[1] === "number" || typeof (d as unknown[])[1] === "object")) {
+        items = (d[0] as unknown[]) ?? [];
       } else {
-        items = d as any[];
+        items = d as unknown[];
       }
-    } else if (Array.isArray((json as any)?.items)) {
-      items = (json as any).items as any[];
-    } else if (Array.isArray((json as any)?.roles)) {
-      items = (json as any).roles as any[];
-    } else if (Array.isArray((json as any)?.data?.data)) {
-      items = (json as any).data.data as any[];
-    } else if (Array.isArray((json as any)?.data?.items)) {
-      items = (json as any).data.items as any[];
-    } else if (Array.isArray((json as any)?.data?.roles)) {
-      items = (json as any).data.roles as any[];
-    } else if (Array.isArray((json as any)?.result?.data)) {
-      items = (json as any).result.data as any[];
-    } else if (Array.isArray((json as any)?.payload?.data)) {
-      items = (json as any).payload.data as any[];
+    } else if (Array.isArray((json as { items?: unknown })?.items)) {
+      items = (json as { items: unknown[] }).items as unknown[];
+    } else if (Array.isArray((json as { roles?: unknown })?.roles)) {
+      items = (json as { roles: unknown[] }).roles as unknown[];
+    } else if (Array.isArray((json as { data?: { data?: unknown[] } })?.data?.data)) {
+      items = (json as { data: { data: unknown[] } }).data.data as unknown[];
+    } else if (Array.isArray((json as { data?: { items?: unknown[] } })?.data?.items)) {
+      items = (json as { data: { items: unknown[] } }).data.items as unknown[];
+    } else if (Array.isArray((json as { data?: { roles?: unknown[] } })?.data?.roles)) {
+      items = (json as { data: { roles: unknown[] } }).data.roles as unknown[];
+    } else if (Array.isArray((json as { result?: { data?: unknown[] } })?.result?.data)) {
+      items = (json as { result: { data: unknown[] } }).result.data as unknown[];
+    } else if (Array.isArray((json as { payload?: { data?: unknown[] } })?.payload?.data)) {
+      items = (json as { payload: { data: unknown[] } }).payload.data as unknown[];
     }
-    const result = items
-      .map((x: any) => ({ roleID: String(x.roleID ?? x.id ?? ""), name: String(x.name ?? "") }))
+    const result: RoleOption[] = items
+      .map((x) => {
+        const obj = x as { roleID?: unknown; id?: unknown; name?: unknown };
+        return { roleID: String(obj.roleID ?? obj.id ?? ""), name: String(obj.name ?? "") };
+      })
       .filter((x: RoleOption) => x.roleID && x.name);
     try {
       console.debug("[roles] parsed count", result.length);
@@ -233,7 +221,7 @@ function UsersInner() {
   // Redirección si no hay sesión
   useEffect(() => {
     if (authStatus === "unauthenticated" || (!accessToken && authStatus !== "loading")) {
-      router.replace("/login");
+      router.replace("/auth/login");
     }
   }, [authStatus, accessToken, router]);
 
@@ -267,12 +255,12 @@ function UsersInner() {
       key: "edit",
       label: "EDIT",
       type: "normal",
-      render: (_: unknown, row: any) => (
+    render: (_: unknown, row: Record<string, unknown>) => (
         <button
           className="p-1.5 rounded-md border hover:bg-gray-50 dark:hover:bg-gray-700"
           title="Edit user"
           aria-label="Edit user"
-          onClick={() => { setEditUser(row.__raw as User); setEditOpen(true); }}
+      onClick={() => { setEditUser(row.__raw as User); setEditOpen(true); }}
         >
           <PencilSquareIcon className="w-4 h-4 text-gray-700 dark:text-gray-300" />
         </button>
@@ -284,7 +272,7 @@ function UsersInner() {
       key: "view",
       label: "VIEW",
       type: "normal",
-      render: (_: unknown, row: any) => {
+      render: (_: unknown, row: Record<string, unknown>) => {
         const u = row.__raw as User;
         const uid = String(u.userID ?? u.id ?? "");
         return (
@@ -304,7 +292,7 @@ function UsersInner() {
       key: "actions",
       label: "ACTIONS",
       type: "normal",
-      render: (_: unknown, row: any) => (
+  render: (_: unknown, row: Record<string, unknown>) => (
     <button
           className="px-2 py-1 text-xs border rounded-md hover:bg-gray-50 dark:hover:bg-gray-700"
           onClick={() => {
@@ -330,7 +318,7 @@ function UsersInner() {
     const roleName = u.role?.name ?? "-";
     const confirmed = Boolean(u.isConfirmed);
     const country = u.address?.country ?? "-";
-    const created = u.createdAt ? new Date(u.createdAt as any).toLocaleDateString() : "-";
+  const created = u.createdAt ? new Date(u.createdAt as string | number | Date).toLocaleDateString() : "-";
     return {
       serial,
       name,
@@ -346,7 +334,15 @@ function UsersInner() {
   // Helpers API
   const getUserId = (u: User) => String(u.userID ?? u.id ?? "");
 
-  const createUser = async (body: any) => {
+  type CreateUserBody = {
+    firstName?: string;
+    lastName?: string;
+    username: string;
+    email: string;
+    password: string;
+    roleId?: string;
+  };
+  const createUser = async (body: CreateUserBody) => {
     const res = await fetch(`${API_BASE}${usersPath}`, {
       method: "POST",
       headers: { "Content-Type": "application/json", ...buildHeaders(accessToken) },
@@ -357,7 +353,17 @@ function UsersInner() {
     return res.json();
   };
 
-  const updateUser = async (userId: string, body: any) => {
+  type UpdateUserBody = Partial<{
+    username: string;
+    email: string;
+    firstName: string | null;
+    lastName: string | null;
+    phone: string | null;
+    isConfirmed: boolean;
+    isBlocked: boolean;
+    isVerified: boolean;
+  }>;
+  const updateUser = async (userId: string, body: UpdateUserBody) => {
     const res = await fetch(`${API_BASE}${usersPath}/${userId}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json", ...buildHeaders(accessToken) },
@@ -400,8 +406,10 @@ function UsersInner() {
       setRoleModalOpen(false);
       setRoleModalUser(null);
       await mutate();
-    } catch (e: any) {
-      setMsg(e?.message || "Error updating role");
+    } catch (e) {
+      const maybe = e as unknown;
+      const message = typeof maybe === "object" && maybe !== null && "message" in maybe ? String((maybe as { message?: unknown }).message || "") : "";
+      setMsg(message || "Error updating role");
     } finally {
       setBusy(false);
     }
@@ -433,8 +441,10 @@ function UsersInner() {
   // Backend ya asigna rol si se envía roleId o por defecto 'user'
   setMsg("User created.");
       await mutate();
-    } catch (e: any) {
-      setMsg(e?.message || "Error creating user");
+    } catch (e) {
+      const maybe = e as unknown;
+      const message = typeof maybe === "object" && maybe !== null && "message" in maybe ? String((maybe as { message?: unknown }).message || "") : "";
+      setMsg(message || "Error creating user");
     } finally {
       setBusy(false);
     }
@@ -667,11 +677,11 @@ function UsersInner() {
       {editOpen && (
         <EditUserModal
           open={editOpen}
-          user={editUser as any}
+          user={editUser as User | null}
           onClose={() => { setEditOpen(false); setEditUser(null); }}
           onSubmit={async (vals, uid) => {
             // Solo enviar campos permitidos por UpdateUserDto
-            const payload: any = {
+            const payload: UpdateUserBody = {
               username: vals.username,
               email: vals.email,
               firstName: vals.firstName,
@@ -682,7 +692,7 @@ function UsersInner() {
               isVerified: vals.isVerified,
             };
             // limpiar undefined para no sobrescribir con undefined
-            Object.keys(payload).forEach((k) => payload[k] === undefined && delete payload[k]);
+            (Object.keys(payload) as (keyof UpdateUserBody)[]).forEach((k) => (payload[k] === undefined) && delete (payload as Record<string, unknown>)[k as string]);
             await updateUser(uid, payload);
             await mutate();
           }}

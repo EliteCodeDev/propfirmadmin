@@ -26,8 +26,8 @@ interface ExtendedJWT extends JWT {
 export const authOptions: NextAuthOptions = {
   secret: NEXTAUTH_SECRET,
   pages: {
-    signIn: "/login",
-    error: "/login",
+    signIn: "/auth/login",
+    error: "/auth/login",
   },
   providers: [
     CredentialsProvider({

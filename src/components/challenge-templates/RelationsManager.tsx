@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { ChallengeTable } from "@/components/ui/ChallengeTable";
+import PaginatedCardTable from "@/components/common/PaginatedCardTable";
+import type { ColumnConfig } from "@/components/common/tableComponent";
 import {
   challengeTemplatesApi,
   type ChallengeRelation,
@@ -40,6 +41,8 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { toast } from "sonner";
+import { Edit, Plus } from "lucide-react";
+import BalanceSelectorModal from "./BalanceSelectorModal";
 
 // Validación
 const relationSchema = z.object({
@@ -63,6 +66,10 @@ export function RelationsManager({ pageSize }: RelationsManagerProps) {
   const [openModal, setOpenModal] = useState(false);
   const [editItem, setEditItem] = useState<ChallengeRelation | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [openBalanceModal, setOpenBalanceModal] = useState(false);
+  const [selectedBalanceIds, setSelectedBalanceIds] = useState<string[]>([]);
+  const [selectedRelationIdForBalances, setSelectedRelationIdForBalances] = useState<string | null>(null);
 
   // Form
   const form = useForm<RelationFormData>({
@@ -70,7 +77,7 @@ export function RelationsManager({ pageSize }: RelationsManagerProps) {
     defaultValues: {
       categoryID: "",
       planID: "",
-      balanceID: "",
+  balanceID: undefined,
     },
   });
 
@@ -96,6 +103,8 @@ export function RelationsManager({ pageSize }: RelationsManagerProps) {
       setCategories(categoriesData);
       setPlans(plansData);
       setBalances(balancesData);
+  // Cuando creamos una relación nueva, limpiar selección
+  if (!editItem) setSelectedBalanceIds([]);
     } catch (error) {
       console.error("Error al cargar datos:", error);
       toast.error("Error al cargar datos");
@@ -112,9 +121,11 @@ export function RelationsManager({ pageSize }: RelationsManagerProps) {
     form.reset({
       categoryID: "",
       planID: "",
-      balanceID: "",
+  balanceID: undefined,
     });
     setOpenModal(true);
+  setSelectedBalanceIds([]);
+  setSelectedRelationIdForBalances(null);
   }
 
   function handleOpenEdit(item: {
@@ -128,24 +139,34 @@ export function RelationsManager({ pageSize }: RelationsManagerProps) {
       form.reset({
         categoryID: relation.categoryID || "",
         planID: relation.planID || "",
-        balanceID: relation.balanceID || "",
+        balanceID: relation.balanceID || undefined,
       });
+      // Si la relación tiene stages/balances asociados en el backend, podrías mapearlos aquí.
+      setSelectedBalanceIds(relation.balanceID ? [relation.balanceID] : []);
       setOpenModal(true);
+  setSelectedRelationIdForBalances(null);
     }
   }
 
   async function onSubmit(formValues: RelationFormData) {
     try {
+      // No enviar balanceID vacío/"none"
+      const payload = {
+        categoryID: formValues.categoryID,
+        planID: formValues.planID,
+        ...(formValues.balanceID && formValues.balanceID !== "none" && formValues.balanceID.trim() !== ""
+          ? { balanceID: formValues.balanceID }
+          : {}),
+        // Lista de balances seleccionados en el modal (si el backend soporta múltiples, cambia la clave a balancesIDs)
+        // balancesIDs: selectedBalanceIds,
+      };
       if (editItem) {
         // Editar
-        await challengeTemplatesApi.updateRelation(
-          editItem.relationID,
-          formValues
-        );
+        await challengeTemplatesApi.updateRelation(editItem.relationID, payload);
         toast.success("Relación editada exitosamente");
       } else {
         // Crear
-        await challengeTemplatesApi.createRelation(formValues);
+        await challengeTemplatesApi.createRelation(payload);
         toast.success("Relación creada exitosamente");
       }
       setOpenModal(false);
@@ -196,18 +217,128 @@ export function RelationsManager({ pageSize }: RelationsManagerProps) {
     };
   });
 
+  // Columnas para la tabla (solo ID y Nombre)
+  const columns: ColumnConfig[] = [
+    { key: "id", label: "ID", type: "normal" },
+    { key: "name", label: "Nombre", type: "normal" },
+  ];
+
+  // Paginación
+  const totalPages = Math.max(1, Math.ceil(tableData.length / pageSize));
+  const startIndex = (page - 1) * pageSize;
+  const paginatedRows = tableData.slice(startIndex, startIndex + pageSize);
+
+  const renderActions = (row: Record<string, unknown>) => (
+    <div className="flex items-center justify-center gap-2">
+      <Button
+        variant="outline"
+        size="sm"
+        className="h-8 w-8 p-0"
+        onClick={() =>
+          handleOpenEdit({
+            id: Number(row.id),
+            name: String(row.name || ""),
+            originalId: String(row.originalId || ""),
+          })
+        }
+        title="Editar relación"
+      >
+        <Edit className="h-4 w-4" />
+      </Button>
+      <Button
+        variant="outline"
+        size="sm"
+        className="h-8 w-8 p-0"
+        onClick={() => {
+          const rid = String(row.originalId || "");
+          const rel = relations.find(r => r.relationID === rid);
+          setSelectedBalanceIds(rel?.balanceID ? [rel.balanceID] : []);
+          setSelectedRelationIdForBalances(rid);
+          setOpenBalanceModal(true);
+        }}
+        title="Agregar balance"
+      >
+        <Plus className="h-4 w-4" />
+      </Button>
+    </div>
+  );
+        {/* Selector de balances (opcional) */}
+        <div className="flex items-center justify-between">
+          <div className="text-sm text-zinc-700 dark:text-gray-300">Agregar balances (opcional)</div>
+          <Button type="button" variant="outline" size="sm" onClick={() => setOpenBalanceModal(true)}>
+            <Plus className="h-4 w-4 mr-1" /> Seleccionar
+          </Button>
+        </div>
+        {selectedBalanceIds.length > 0 && (
+          <div className="mt-2 flex flex-wrap gap-2">
+            {selectedBalanceIds.map((id) => {
+              const b = balances.find((x) => x.balanceID === id);
+              if (!b) return null;
+              return (
+                <span key={id} className="px-2 py-1 rounded-full text-xs border border-zinc-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/40">
+                  {b.name} {typeof b.balance === "number" ? `- $${b.balance.toLocaleString()}` : ""}
+                </span>
+              );
+            })}
+          </div>
+        )}
+
+
   // --------------------------------------------------
   // 5. Render
   // --------------------------------------------------
   return (
     <div>
-      <ChallengeTable
-        title="Relaciones"
-        data={tableData}
-        pageSize={pageSize}
-        onCreate={handleOpenCreate}
-        onEdit={handleOpenEdit}
+      {/* Encabezado mínimo para mantener botón de creación, sin tocar otros cards/diseños */}
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-2xl font-bold">Relaciones</h2>
+        <Button onClick={handleOpenCreate} className="group">
+          <Plus className="mr-2 h-4 w-4 transition-transform duration-200 group-hover:rotate-90" />
+          Crear relación
+        </Button>
+      </div>
+
+      <PaginatedCardTable
+        columns={columns}
+        rows={paginatedRows}
         isLoading={isLoading}
+        actionsHeader="Acciones"
+        renderActions={renderActions}
+        pagination={{
+          currentPage: page,
+          totalPages,
+          totalItems: tableData.length,
+          pageSize,
+          onPageChange: setPage,
+          onPageSizeChange: () => {},
+        }}
+      />
+
+      {/* Modal selector de balances */}
+      
+      <BalanceSelectorModal
+        open={openBalanceModal}
+        onOpenChange={setOpenBalanceModal}
+        balances={balances}
+        initialSelected={selectedBalanceIds}
+        onConfirm={async (ids) => {
+          setSelectedBalanceIds(ids);
+          if (selectedRelationIdForBalances) {
+            try {
+              if (ids.length === 0) {
+                toast.message("No seleccionaste balances. No se hicieron cambios.");
+              } else {
+                await challengeTemplatesApi.updateRelation(selectedRelationIdForBalances, { balanceID: ids[0] });
+                toast.success("Balance agregado a la relación");
+                await loadAllData();
+              }
+            } catch (e) {
+              toast.error("No se pudo actualizar la relación");
+            } finally {
+              setSelectedRelationIdForBalances(null);
+            }
+          }
+        }}
       />
 
       <Dialog open={openModal} onOpenChange={setOpenModal}>
@@ -295,7 +426,7 @@ export function RelationsManager({ pageSize }: RelationsManagerProps) {
                 )}
               />
 
-              <FormField
+              {/*<FormField
                 control={form.control}
                 name="balanceID"
                 render={({ field }) => (
@@ -330,7 +461,7 @@ export function RelationsManager({ pageSize }: RelationsManagerProps) {
                     <FormMessage className="text-red-600 dark:text-red-400" />
                   </FormItem>
                 )}
-              />
+              />*/}
 
               <DialogFooter className="mt-4">
                 <Button

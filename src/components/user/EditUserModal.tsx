@@ -49,7 +49,8 @@ export default function EditUserModal({ open, user, onClose, onSubmit, title = "
 
   if (!open) return null;
 
-  const update = (k: keyof BasicUser, v: any) => setValues((s) => ({ ...s, [k]: v }));
+  const update = <K extends keyof BasicUser>(k: K, v: BasicUser[K]) =>
+    setValues((s) => ({ ...s, [k]: v }));
 
   const handleSubmit = async () => {
     if (!userId) return;
@@ -58,8 +59,9 @@ export default function EditUserModal({ open, user, onClose, onSubmit, title = "
     try {
       await onSubmit(values, userId);
       onClose();
-    } catch (e: any) {
-      setError(e?.message || "Failed to save changes");
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : "Failed to save changes";
+      setError(msg);
     } finally {
       setBusy(false);
     }

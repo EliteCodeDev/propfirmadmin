@@ -9,58 +9,23 @@ import { useParams, useRouter } from "next/navigation";
 import { SessionProvider, useSession } from "next-auth/react";
 import useSWR from "swr";
 import { useEffect, useMemo, useState } from "react";
+import { apiBaseUrl, PUBLIC_API_KEY } from "@/config";
 import {
   UserIcon,
   ClockIcon,
   ExclamationTriangleIcon,
   ArrowLeftIcon,
 } from "@heroicons/react/24/outline";
+import type { User, Challenge } from "@/types";
 
 /* ========= Config ========= */
-const API_BASE = (process.env.NEXT_PUBLIC_BACKEND_URL || "").replace(/\/$/, "");
-const API_KEY = process.env.NEXT_PUBLIC_API_KEY || "";
+const API_BASE = apiBaseUrl.replace(/\/$/, "");
+const API_KEY = PUBLIC_API_KEY || "";
 
 /* ========= Tipos ========= */
-type Challenge = {
-  challengeID: string;
-  userID?: string;
-  userId?: string;
-  user?: { id?: string; userID?: string } | null;
-  status?: string | null;
-  numPhase?: number | null;
-  startDate?: string | null;
-  createdAt?: string | null;
-  dynamicBalance?: number | string | null;
-  isActive?: boolean | null;
-  brokerAccount?: {
-    login?: string | null;
-    platform?: string | null;
-    initialBalance?: number | null;
-  } | null;
-};
-
-type User = {
-  userID?: string;
-  id?: string;
-  username: string;
-  email: string;
-  firstName?: string | null;
-  lastName?: string | null;
-  phone?: string | null;
-  isVerified?: boolean;
-  isConfirmed?: boolean;
-  createdAt?: string | null;
-  updatedAt?: string | null;
-  couponCode?: string | null;
-  status?: string | null;
-  address?: {
-    address1?: string | null;
-    city?: string | null;
-    state?: string | null;
-    country?: string | null;
-    zipCode?: string | null;
-  } | null;
-};
+// [moved-to-src/types] Original inline types now live in src/types.
+// type Challenge = { ... }
+// type User = { ... }
 
 /* ========= Helpers ========= */
 const buildHeaders = (token?: string): HeadersInit => {
@@ -70,30 +35,35 @@ const buildHeaders = (token?: string): HeadersInit => {
   return h;
 };
 
-const unwrapItems = <T,>(raw: any): T[] => {
+const unwrapItems = <T,>(raw: unknown): T[] => {
   if (!raw) return [];
-  const lvl1 = raw?.data ?? raw?.items ?? raw;
+  const lvl1 = (raw as { data?: unknown; items?: unknown })?.data ?? (raw as { items?: unknown })?.items ?? raw;
 
   if (Array.isArray(lvl1)) return lvl1 as T[];
   if (lvl1 && typeof lvl1 === "object") {
-    if (Array.isArray(lvl1.data)) return lvl1.data as T[];
-    if (Array.isArray(lvl1.items)) return lvl1.items as T[];
-    const lvl2 = (lvl1 as any).data ?? (lvl1 as any).items;
+    const l1d = (lvl1 as { data?: unknown }).data;
+    const l1i = (lvl1 as { items?: unknown }).items;
+    if (Array.isArray(l1d)) return l1d as T[];
+    if (Array.isArray(l1i)) return l1i as T[];
+    const lvl2 = (lvl1 as { data?: unknown; items?: unknown }).data ?? (lvl1 as { items?: unknown }).items;
     if (Array.isArray(lvl2)) return lvl2 as T[];
     if (lvl2 && typeof lvl2 === "object") {
-      if (Array.isArray(lvl2.data)) return lvl2.data as T[];
-      if (Array.isArray(lvl2.items)) return lvl2.items as T[];
+      const l2d = (lvl2 as { data?: unknown }).data;
+      const l2i = (lvl2 as { items?: unknown }).items;
+      if (Array.isArray(l2d)) return l2d as T[];
+      if (Array.isArray(l2i)) return l2i as T[];
     }
   }
   return [];
 };
 
-const unwrapOne = <T,>(raw: any): T | null => {
+const unwrapOne = <T,>(raw: unknown): T | null => {
   if (!raw) return null;
-  const lvl1 = raw?.data ?? raw?.item ?? raw;
+  const lvl1 = (raw as { data?: unknown; item?: unknown })?.data ?? (raw as { item?: unknown })?.item ?? raw;
   if (lvl1 && typeof lvl1 === "object" && !Array.isArray(lvl1)) {
-    if ((lvl1 as any).data && typeof (lvl1 as any).data === "object" && !Array.isArray((lvl1 as any).data)) {
-      return (lvl1 as any).data as T;
+    const inner = (lvl1 as { data?: unknown }).data;
+    if (inner && typeof inner === "object" && !Array.isArray(inner)) {
+      return inner as T;
     }
     return lvl1 as T;
   }
@@ -117,10 +87,10 @@ async function authedFetcher([url, token]: [string, string]) {
 function buildChallengeUrls(userId: string) {
   const uid = encodeURIComponent(userId);
   return [
-    `/api/challenges?userID=${uid}&page=1&limit=1000`,
-    `/api/challenges?userId=${uid}&page=1&limit=1000`,
-    `/api/challenges?user=${uid}&page=1&limit=1000`,
-    `/api/challenges?page=1&limit=1000`,
+    `/challenges?userID=${uid}&page=1&limit=1000`,
+    `/challenges?userId=${uid}&page=1&limit=1000`,
+    `/challenges?user=${uid}&page=1&limit=1000`,
+    `/challenges?page=1&limit=1000`,
   ];
 }
 
@@ -141,7 +111,7 @@ function UserDetailInner() {
   const { id: userId } = useParams<{ id: string }>();
 
   const { data: session, status } = useSession();
-  const token = (session as any)?.accessToken as string | undefined;
+  const token = session?.accessToken as string | undefined;
 
   // Estados de carga unificados
   const isAuthLoading = status === "loading";
@@ -149,7 +119,7 @@ function UserDetailInner() {
   const canFetch = status === "authenticated" && !!token;
 
   useEffect(() => {
-    if (isUnauthenticated) router.replace("/login");
+    if (isUnauthenticated) router.replace("/auth/login");
   }, [isUnauthenticated, router]);
 
   /* ---- Usuario ---- */
@@ -223,7 +193,7 @@ function UserDetailInner() {
 
   const accountFields = [
     { label: "Username", value: user?.username ?? "-" },
-    { label: "Coupon Code", value: (user as any)?.couponCode ?? "-" },
+    { label: "Coupon Code", value: user?.couponCode ?? "-" },
     {
       label: "Status",
       value: user?.status ?? (user?.isConfirmed ? "active" : "unconfirmed"),
@@ -273,7 +243,11 @@ function UserDetailInner() {
             ? parseFloat(String(sizeRaw))
             : null;
 
-        const when = (c as any).startDate || (c as any).createdAt || null;
+        const whenRaw = (c as { startDate?: unknown; createdAt?: unknown }).startDate ?? (c as { createdAt?: unknown }).createdAt ?? null;
+        const whenDate =
+          typeof whenRaw === "string" || typeof whenRaw === "number" || whenRaw instanceof Date
+            ? new Date(whenRaw)
+            : null;
 
         return {
           accountNumber: login || `${c.challengeID.slice(0, 8)}...`,
@@ -282,7 +256,7 @@ function UserDetailInner() {
           balance: sizeNum != null ? `$${sizeNum.toLocaleString()}` : "-",
           platform,
           status: c?.status ?? (c?.isActive ? "Active" : "Inactive"),
-          dateReceived: when ? new Date(when).toLocaleDateString() : "-",
+          dateReceived: whenDate ? whenDate.toLocaleDateString() : "-",
         };
       }),
     [challenges]

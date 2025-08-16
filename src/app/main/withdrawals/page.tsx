@@ -7,34 +7,19 @@ import { SessionProvider, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import PaginatedCardTable from "@/components/common/PaginatedCardTable";
 import type { ColumnConfig } from "@/components/common/tableComponent";
+import type { Withdrawal, WithdrawalStatus, PageResponse, HttpError } from "@/types";
+import { apiBaseUrl } from "@/config";
 // Removed ClipboardIcon import as Withdrawal ID column is removed
 
-type WithdrawalStatus = "pending" | "approved" | "rejected";
 type LimitParam = number;
 type Scope = "mine" | "all";
 
-interface Withdrawal {
-  withdrawalID: string;
-  userID: string;
-  wallet: string;
-  amount: number;
-  observation?: string | null;
-  status: WithdrawalStatus | string;
-  createdAt: string;
-  challengeID?: string | null;
-  user?: { firstName?: string; lastName?: string; email?: string };
-  challenge?: { name?: string; accountLogin?: string };
-}
+// [moved-to-src/types] Original inline types now live in src/types.
+// type WithdrawalStatus = ...
+// interface Withdrawal { ... }
+// interface PageResponse<T> { ... }
 
-interface PageResponse<T> {
-  data: T[];
-  total: number;
-  page: number;
-  limit: number;
-  totalPages: number;
-}
-
-const API_BASE = (process.env.NEXT_PUBLIC_BACKEND_URL || "").replace(/\/$/, "");
+const API_BASE = apiBaseUrl.replace(/\/$/, "");
 
 function Badge({ status }: { status: WithdrawalStatus | string }) {
   const up = String(status).toUpperCase();
@@ -62,10 +47,6 @@ const money = new Intl.NumberFormat("en-US", {
 });
 
 type UnknownRecord = Record<string, unknown>;
-interface HttpError extends Error {
-  status?: number;
-  body?: string;
-}
 
 function unwrapPage<T = UnknownRecord>(
   raw: unknown
@@ -127,7 +108,7 @@ function WithdrawalsInner() {
   const [scope, setScope] = useState<Scope>("all");
   const [page, setPage] = useState<number>(1);
   const [limit, setLimit] = useState<LimitParam>(10);
-  const [status, setStatus] = useState<"" | WithdrawalStatus>("");
+  const [status] = useState<"" | WithdrawalStatus>("");
 
   const accessToken = session?.accessToken as string | undefined;
 
@@ -141,8 +122,8 @@ function WithdrawalsInner() {
 
   const basePath =
     scope === "all"
-      ? "/api/withdrawals" // requiere rol admin
-      : "/api/withdrawals/my-withdrawals";
+      ? "/withdrawals" // requiere rol admin
+      : "/withdrawals/my-withdrawals";
 
   const url = `${API_BASE}${basePath}?${query}`;
 
@@ -163,7 +144,7 @@ function WithdrawalsInner() {
     return res.json();
   };
 
-  const { data, error, isLoading, mutate } = useSWR<PageResponse<Withdrawal>>(
+  const { data, error, isLoading /*, mutate*/ } = useSWR<PageResponse<Withdrawal>>(
     accessToken ? url : null,
     fetcher
   );
@@ -186,11 +167,8 @@ function WithdrawalsInner() {
 
   // Redirección si no hay sesión
   useEffect(() => {
-    if (
-      authStatus === "unauthenticated" ||
-      (!accessToken && authStatus !== "loading")
-    ) {
-      router.replace("/login");
+    if (authStatus === "unauthenticated" || (!accessToken && authStatus !== "loading")) {
+      router.replace("/auth/login");
     }
   }, [authStatus, accessToken, router]);
 
@@ -217,7 +195,7 @@ function WithdrawalsInner() {
   const withdrawals = pageObj.items;
   const totalPages = pageObj.totalPages;
   const offset = (page - 1) * limit;
-  const isForbidden = httpStatus === 403;
+  // const isForbidden = httpStatus === 403;
   const isServerErr = httpStatus === 500;
 
   return (

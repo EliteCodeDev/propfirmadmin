@@ -1,3 +1,4 @@
+// src/config/index.ts
 type GetEnvOptions = {
   required?: boolean;
   default?: string;
@@ -10,6 +11,8 @@ const isClient = typeof window !== "undefined";
 
 const PUBLIC_ENV = {
   NEXT_PUBLIC_BACKEND_URL: process.env.NEXT_PUBLIC_BACKEND_URL,
+  NEXT_PUBLIC_LOGO_APP: process.env.NEXT_PUBLIC_LOGO_APP,
+  NEXT_PUBLIC_API_KEY: process.env.NEXT_PUBLIC_API_KEY,
 } as const;
 
 export const getEnv = (
@@ -70,6 +73,20 @@ export const backendUrl = getEnv("NEXT_PUBLIC_BACKEND_URL", {
   clientSafe: true, // Esta variable debe estar disponible en el cliente
 }).replace(/\/$/, "");
 
+// Logo público opcional
+export const LOGO_APP = getEnv("NEXT_PUBLIC_LOGO_APP", {
+  default: "",
+  logIfDefault: false,
+  clientSafe: true,
+});
+
+// API key pública opcional (si aplica)
+export const PUBLIC_API_KEY = getEnv("NEXT_PUBLIC_API_KEY", {
+  default: "",
+  logIfDefault: false,
+  clientSafe: true,
+});
+
 // Backend interno (NO exponer). Permite apuntar a red interna / docker network.
 export const internalBackendUrl = getEnv("BACKEND_INTERNAL_URL", {
   default: backendUrl,
@@ -96,6 +113,8 @@ export const env = {
   internalBackendUrl,
   internalApiBaseUrl,
   backendUrlSource: process.env.NEXT_PUBLIC_BACKEND_URL ? "env" : "default",
+  LOGO_APP,
+  PUBLIC_API_KEY,
   // No exponer secretos adicionales aquí si se agregan en el futuro.
 };
 

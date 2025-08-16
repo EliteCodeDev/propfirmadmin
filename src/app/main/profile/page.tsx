@@ -12,7 +12,7 @@ function ProfileInner() {
 
   useEffect(() => {
     if (status === "unauthenticated") {
-      router.replace("/login");
+      router.replace("/auth/login");
     }
   }, [status, router]);
 

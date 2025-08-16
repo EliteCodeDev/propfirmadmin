@@ -12,12 +12,12 @@ export default async function Dashboard() {
   const session = await getServerSession(authOptions);
 
   if (!session) {
-    redirect("/login");
+    redirect("/auth/login");
   }
 
   return (
     <MainLayout>
-      <div className="relative w-full h-full">
+      <div className="relative w-full h-full p-4">
         {/* subtle decorative gradients */}
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
           <div className="absolute top-20 right-20 w-32 h-32 bg-gradient-to-br from-blue-100/30 to-indigo-100/30 rounded-full blur-3xl" />

@@ -180,4 +180,4 @@
 }
 
 /* Prevent layout shift when scrollbars appear */
-html { scrollbar-gutter: stable both-edges; }
+/* html { scrollbar-gutter: stable both-edges; } */

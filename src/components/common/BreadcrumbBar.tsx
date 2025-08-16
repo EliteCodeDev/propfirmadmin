@@ -33,27 +33,34 @@ function humanize(segment: string): string {
 export default function BreadcrumbBar() {
   const pathname = usePathname();
 
-  const items = useMemo(() => {
-    const segments = (pathname ?? "").split("/").filter(Boolean);
+  const crumbs = useMemo((): BreadcrumbItem[] => {
+  const segments = pathname.split("/").filter(Boolean);
     const crumbs: BreadcrumbItem[] = [];
-
-    const onDashboard = segments.length === 0 || segments[0] === "dashboard";
+    
+    // Si estamos en rutas de auth, no mostrar breadcrumbs
+    if (segments[0] === "auth") {
+      return [];
+    }
+    
+    // Filtrar el segmento 'main' si existe
+    const filteredSegments = segments[0] === "main" ? segments.slice(1) : segments;
+    const onDashboard = filteredSegments.length === 0 || filteredSegments[0] === "dashboard";
 
     // Home/Dashboard: solo linkeable si NO estás ya en dashboard
     crumbs.push({
       label: "Dashboard",
-      href: onDashboard ? undefined : "/dashboard", 
+      href: onDashboard ? undefined : "/main/dashboard", 
       icon: (p) => <HomeIcon {...p} />,
       current: onDashboard,
     });
 
-    let acc = "";
-    segments.forEach((seg, idx) => {
+    let acc = "/main";
+    filteredSegments.forEach((seg, idx) => {
       if (seg === "dashboard") return; 
       acc += `/${seg}`;
       const label = LABELS[seg] || humanize(seg);
       const icon = ICONS[seg];
-      const isLast = idx === segments.length - 1;
+      const isLast = idx === filteredSegments.length - 1;
       crumbs.push({ label, href: isLast ? undefined : acc, icon, current: isLast });
     });
 
@@ -61,9 +68,9 @@ export default function BreadcrumbBar() {
   }, [pathname]);
 
   return (
-    <div className="sticky top-0 h-16 z-20 backdrop-blur bg-black  border-gray-700">
+    <div className="sticky top-0 h-16 z-20 bg-gradient-to-r from-slate-900 via-gray-900 to-slate-900 shadow-lg border-b border-gray-700/50">
       <div className="flex items-center h-16 px-4">
-        <Breadcrumbs items={items} />
+        <Breadcrumbs items={crumbs} />
       </div>
     </div>
   );
