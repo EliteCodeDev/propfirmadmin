@@ -12,8 +12,8 @@ export async function login(
   credentials: LoginCredentials
 ): Promise<AuthResponse> {
   console.log("Logging in user:", credentials);
-  const { data } = await authClient.post("/auth/login", credentials);
-
+  const { data } = await authClient.post("/auth/admin/login", credentials);
+  console.log("Login response:", data);
   // Si la respuesta del backend tiene un formato como { success, message, data },
   // y en caso de éxito devuelve los datos del usuario dentro de 'data',
   // y en caso de error no lo hace, debemos manejarlo.
@@ -46,7 +46,10 @@ export async function forgotPassword(email: string): Promise<void> {
 export async function resetPassword(
   data: ResetPasswordData
 ): Promise<AuthResponse> {
-  const { data: response } = await authClient.post("/auth/reset-password", data);
+  const { data: response } = await authClient.post(
+    "/auth/reset-password",
+    data
+  );
   return response;
 }
 
