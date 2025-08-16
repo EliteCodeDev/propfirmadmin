@@ -139,10 +139,8 @@ export function StagesManager({ pageSize }: StagesManagerProps) {
 
   const renderActions = (row: Record<string, unknown>) => (
     <div className="flex items-center justify-center">
-      <Button
-        variant="outline"
-        size="sm"
-        className="h-8 w-8 p-0"
+      <button
+        className="p-1.5 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
         onClick={() =>
           handleOpenEdit({
             id: Number(row.id),
@@ -150,9 +148,10 @@ export function StagesManager({ pageSize }: StagesManagerProps) {
             originalId: String(row.originalId || ""),
           })
         }
+        title="Editar etapa"
       >
         <Edit className="h-4 w-4" />
-      </Button>
+      </button>
     </div>
   );
 
@@ -160,39 +159,56 @@ export function StagesManager({ pageSize }: StagesManagerProps) {
   // 4. Render
   // --------------------------------------------------
   return (
-    <div>
-      {/* Encabezado mínimo para mantener botón de creación, sin tocar otros cards/diseños */}
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-2xl font-bold">Etapas</h2>
-        <Button onClick={handleOpenCreate} className="group">
-          <Plus className="mr-2 h-4 w-4 transition-transform duration-200 group-hover:rotate-90" />
-          Crear etapa
-        </Button>
+    <div className="bg-white dark:bg-gray-800 transition-colors duration-200">
+      {/* Header mejorado */}
+      <div className="flex justify-between items-center mb-6 px-6">
+        <div>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Etapas</h2>
+          <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+            Gestiona las etapas disponibles para los challenges
+          </p>
+        </div>
+        <div className="flex items-center gap-3">
+          <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg px-4 py-2 text-white shadow-sm">
+            <div className="text-xs font-medium">Total Etapas</div>
+            <div className="text-lg font-bold">{tableData.length}</div>
+          </div>
+          <Button 
+            onClick={handleOpenCreate} 
+            className="bg-emerald-600 hover:bg-emerald-700 dark:bg-emerald-600 dark:hover:bg-emerald-700 text-white group shadow-sm"
+          >
+            <Plus className="mr-2 h-4 w-4 transition-transform duration-200 group-hover:rotate-90" />
+            Crear etapa
+          </Button>
+        </div>
       </div>
 
-      <PaginatedCardTable
-        columns={columns}
-        rows={paginatedRows}
-        isLoading={isLoading}
-        actionsHeader="Acciones"
-        renderActions={renderActions}
-        pagination={{
-          currentPage: page,
-          totalPages,
-          totalItems: tableData.length,
-          pageSize,
-          onPageChange: setPage,
-          onPageSizeChange: () => {},
-        }}
-      />
+      <div className="px-6">
+        <PaginatedCardTable
+          columns={columns}
+          rows={paginatedRows}
+          isLoading={isLoading}
+          emptyText="No hay etapas disponibles"
+          actionsHeader="Acciones"
+          renderActions={renderActions}
+          pagination={{
+            currentPage: page,
+            totalPages,
+            totalItems: tableData.length,
+            pageSize,
+            onPageChange: setPage,
+            onPageSizeChange: () => {},
+          }}
+        />
+      </div>
 
       <Dialog open={openModal} onOpenChange={setOpenModal}>
-        <DialogContent className="bg-white dark:bg-black text-zinc-800 dark:text-white border border-[var(--app-secondary)]/70 dark:border-blue-500 max-w-md mx-auto shadow-lg">
+        <DialogContent className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700 max-w-md mx-auto shadow-lg rounded-xl">
           <DialogHeader>
-            <DialogTitle className="text-[var(--app-secondary)] dark:text-blue-400 text-sm sm:text-base md:text-lg font-semibold">
+            <DialogTitle className="text-gray-900 dark:text-white text-sm sm:text-base md:text-lg font-semibold">
               {editItem ? "Editar" : "Crear"} etapa
             </DialogTitle>
-            <DialogDescription className="text-zinc-600 dark:text-gray-300 text-xs sm:text-sm md:text-base">
+            <DialogDescription className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm md:text-base">
               {editItem
                 ? "Modifica los datos y confirma para guardar cambios."
                 : "Ingresa los datos para crear un nuevo registro."}
@@ -209,14 +225,14 @@ export function StagesManager({ pageSize }: StagesManagerProps) {
                 name="name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-[var(--app-secondary)] dark:text-blue-500 text-sm">
+                    <FormLabel className="text-gray-700 dark:text-gray-300 text-sm font-medium">
                       Nombre
                     </FormLabel>
                     <FormControl>
                       <Input
                         {...field}
                         placeholder="Nombre de la etapa"
-                        className="bg-white dark:bg-transparent border border-zinc-300 dark:border-gray-700 text-zinc-800 dark:text-white text-sm focus:border-[var(--app-secondary)] focus:ring-1 focus:ring-[var(--app-secondary)]"
+                        className="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white text-sm placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       />
                     </FormControl>
                     <FormMessage className="text-red-600 dark:text-red-400" />
@@ -224,20 +240,18 @@ export function StagesManager({ pageSize }: StagesManagerProps) {
                 )}
               />
 
-
-
-              <DialogFooter className="mt-4">
+              <DialogFooter className="mt-4 flex gap-2">
                 <Button
                   type="button"
                   variant="outline"
                   onClick={() => setOpenModal(false)}
-                  className="px-3 py-1 text-sm bg-white dark:bg-transparent border border-zinc-300 dark:border-gray-700 text-zinc-800 dark:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                  className="px-3 py-2 text-sm border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600"
                 >
                   Cancelar
                 </Button>
                 <Button
                   type="submit"
-                  className="bg-[var(--app-secondary)] dark:bg-blue-500 text-black hover:bg-[var(--app-secondary)]/90 dark:hover:bg-blue-400 px-3 py-1 text-sm shadow-sm"
+                  className="bg-emerald-600 dark:bg-emerald-600 text-white hover:bg-emerald-700 dark:hover:bg-emerald-700 px-3 py-2 text-sm shadow-sm"
                 >
                   {editItem ? "Guardar" : "Crear"}
                 </Button>

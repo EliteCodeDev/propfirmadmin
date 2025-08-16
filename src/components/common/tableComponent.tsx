@@ -131,7 +131,7 @@ export default function tableComponent({ columns = defaultColumns, data = defaul
         return (
           <a 
             href={url} 
-            className="text-blue-400 hover:text-blue-300 font-medium hover:underline transition-colors"
+            className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium hover:underline transition-colors"
             target="_blank"
             rel="noopener noreferrer"
           >
@@ -144,8 +144,8 @@ export default function tableComponent({ columns = defaultColumns, data = defaul
         return (
           <span className={`px-3 py-1.5 rounded-full text-xs font-semibold ${
             value === 'Successful' 
-              ? 'bg-green-900/30 text-green-400 border border-green-700'
-              : 'bg-red-900/30 text-red-400 border border-red-700'
+              ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/20 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800'
+              : 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400 border border-red-200 dark:border-red-800'
           }`}>
             {value}
           </span>
@@ -159,15 +159,15 @@ export default function tableComponent({ columns = defaultColumns, data = defaul
   };
 
   return (
-    <div className="bg-gray-900 rounded-lg overflow-hidden">
+    <div className="bg-white dark:bg-gray-800 rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700 shadow-sm transition-colors duration-200">
       {/* Use fixed layout and allow wrapping to prevent horizontal overflow */}
       <Table className="table-fixed">
         <TableHeader>
-          <TableRow className="bg-gray-800 border-gray-700">
+          <TableRow className="bg-gray-50 dark:bg-gray-700 border-gray-200 dark:border-gray-700">
             {normalizedColumns.map((column, index) => (
               <TableHead
                 key={index}
-                className="font-medium text-gray-300 text-xs sm:text-sm uppercase tracking-wide py-2 sm:py-4 px-3 sm:px-6 whitespace-normal break-words"
+                className="font-medium text-gray-900 dark:text-gray-300 text-xs sm:text-sm uppercase tracking-wide py-2 sm:py-4 px-3 sm:px-6 whitespace-normal break-words"
               >
                 {column.label}
               </TableHead>
@@ -178,12 +178,12 @@ export default function tableComponent({ columns = defaultColumns, data = defaul
           {data.map((row, index) => (
             <TableRow
               key={index}
-              className="bg-gray-900 border-gray-800 hover:bg-gray-800/50 transition-colors"
+              className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
             >
               {normalizedColumns.map((column, cellIndex) => (
                 <TableCell
                   key={cellIndex}
-                  className="py-2 sm:py-4 px-3 sm:px-6 text-gray-100 whitespace-normal break-words"
+                  className="py-2 sm:py-4 px-3 sm:px-6 text-gray-900 dark:text-gray-100 whitespace-normal break-words"
                 >
                   {renderCell(column, row)}
                 </TableCell>

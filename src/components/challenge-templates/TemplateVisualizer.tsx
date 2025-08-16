@@ -169,8 +169,8 @@ export function TemplateVisualizer({}: TemplateVisualizerProps) {
       <div className="min-h-screen p-6 bg-gradient-to-b from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 text-gray-800 dark:text-gray-100">
         <div className="flex items-center justify-center h-32">
           <div className="flex flex-col items-center">
-            <Loader2 className="animate-spin h-10 w-10 text-blue-500 mb-3" />
-            <p className="text-blue-500">Cargando datos...</p>
+            <Loader2 className="animate-spin h-10 w-10 text-app-secondary mb-3" />
+            <p className="text-app-secondary">Cargando datos...</p>
           </div>
         </div>
       </div>
@@ -188,7 +188,7 @@ export function TemplateVisualizer({}: TemplateVisualizerProps) {
             <p className="text-gray-600 dark:text-gray-400 mb-4">{error}</p>
             <Button
               onClick={loadAllData}
-              className="bg-blue-500 hover:bg-blue-600"
+              className="bg-app-secondary hover:bg-app-secondary/90"
             >
               <RefreshCw className="w-4 h-4 mr-2" />
               Reintentar
@@ -202,7 +202,7 @@ export function TemplateVisualizer({}: TemplateVisualizerProps) {
   return (
     <div className="min-h-screen p-6 bg-gradient-to-b from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 text-gray-800 dark:text-gray-100">
       <div className="max-w-7xl mx-auto space-y-8">
-        <h2 className="text-2xl font-bold text-center text-gray-800 dark:text-gray-100 border-b-2 border-blue-500 pb-2 w-fit mx-auto">
+        <h2 className="text-2xl font-bold text-center text-gray-800 dark:text-gray-100 border-b-2 border-app-secondary pb-2 w-fit mx-auto">
           Categoría → Relación → Plan & Balance & Etapas
         </h2>
 
@@ -226,7 +226,7 @@ export function TemplateVisualizer({}: TemplateVisualizerProps) {
                   className={cn(
                     "px-4 py-2 rounded-lg transition shadow-sm",
                     selectedCategoryIndex === index
-                      ? "bg-blue-500 text-white"
+                      ? "bg-app-secondary text-white"
                       : "bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700"
                   )}
                 >
@@ -258,7 +258,7 @@ export function TemplateVisualizer({}: TemplateVisualizerProps) {
                     className={cn(
                       "px-4 py-2 rounded-lg transition shadow-sm",
                       selectedRelationIndex === index
-                        ? "bg-blue-500 text-white"
+                        ? "bg-app-secondary text-white"
                         : "bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700"
                     )}
                   >
@@ -277,7 +277,7 @@ export function TemplateVisualizer({}: TemplateVisualizerProps) {
             {/* PLAN */}
             <Card className="bg-white dark:bg-gray-900 rounded-lg shadow-md p-4 text-gray-800 dark:text-gray-100 border border-gray-200 dark:border-gray-700 flex-1">
               <CardHeader>
-                <CardTitle className="text-blue-500 dark:text-blue-400">
+                <CardTitle className="text-app-secondary dark:text-app-secondary">
                   Plan Relacionado
                 </CardTitle>
               </CardHeader>
@@ -285,13 +285,13 @@ export function TemplateVisualizer({}: TemplateVisualizerProps) {
                 {selectedRelation?.plan ? (
                   <div className="space-y-2 text-sm">
                     <div>
-                      <span className="font-medium text-blue-500/90 dark:text-blue-300">
+                      <span className="font-medium text-app-secondary/90 dark:text-app-secondary">
                         Nombre:{" "}
                       </span>
                       {selectedRelation.plan.name || 'Sin nombre'}
                     </div>
                     {/* <div>
-                      <span className="font-medium text-blue-500/90 dark:text-blue-300">
+                      <span className="font-medium text-app-secondary/90 dark:text-app-secondary">
                         Creado:{" "}
                       </span>
                       {formatDate(selectedRelation.plan.createdAt)}
@@ -308,7 +308,7 @@ export function TemplateVisualizer({}: TemplateVisualizerProps) {
             {/* BALANCE */}
             <Card className="bg-white dark:bg-gray-900 rounded-lg shadow-md p-4 text-gray-800 dark:text-gray-100 border border-gray-200 dark:border-gray-700 flex-1">
               <CardHeader>
-                <CardTitle className="text-blue-500 dark:text-blue-400">
+                <CardTitle className="text-app-secondary dark:text-app-secondary">
                   Balance Relacionado
                 </CardTitle>
               </CardHeader>
@@ -316,19 +316,19 @@ export function TemplateVisualizer({}: TemplateVisualizerProps) {
                 {selectedRelation?.balance ? (
                   <div className="space-y-2 text-sm">
                     <div>
-                      <span className="font-medium text-blue-500/90 dark:text-blue-300">
+                      <span className="font-medium text-app-secondary/90 dark:text-app-secondary">
                         Nombre:{" "}
                       </span>
                       {selectedRelation.balance.name || 'Sin nombre'}
                     </div>
                     {/* <div>
-                      <span className="font-medium text-blue-500/90 dark:text-blue-300">
+                      <span className="font-medium text-app-secondary/90 dark:text-app-secondary">
                         Descripción:{" "}
                       </span>
                       {selectedRelation.balance.description || "—"}
                     </div> */}
                     {/* <div>
-                      <span className="font-medium text-blue-500/90 dark:text-blue-300">
+                      <span className="font-medium text-app-secondary/90 dark:text-app-secondary">
                         Creado:{" "}
                       </span>
                       {formatDate(selectedRelation.balance.createdAt)}
@@ -352,7 +352,7 @@ export function TemplateVisualizer({}: TemplateVisualizerProps) {
                 <div className="w-full md:w-1/2">
                   <Card className="bg-white dark:bg-gray-900 rounded-lg shadow-md p-4 text-gray-800 dark:text-gray-100 border border-gray-200 dark:border-gray-700 w-full">
                     <CardHeader>
-                      <CardTitle className="text-blue-500 dark:text-blue-400">
+                      <CardTitle className="text-app-secondary dark:text-app-secondary">
                         Etapa{" "}
                         {selectedRelation.stages[0]?.relationStage?.numPhase || 'N/A'}:{" "}
                         {selectedRelation.stages[0]?.stage?.name || 'Sin nombre'}
@@ -361,20 +361,20 @@ export function TemplateVisualizer({}: TemplateVisualizerProps) {
                     <CardContent>
                       <div className="space-y-2 text-sm">
                         <div>
-                          <span className="font-medium text-blue-500/90 dark:text-blue-300">
+                          <span className="font-medium text-app-secondary/90 dark:text-app-secondary">
                             Fase:{" "}
                           </span>
                           {selectedRelation.stages[0]?.relationStage?.numPhase ??
                             "—"}
                         </div>
                         {/* <div>
-                          <span className="font-medium text-blue-500/90 dark:text-blue-300">
+                          <span className="font-medium text-app-secondary/90 dark:text-app-secondary">
                             Descripción:{" "}
                           </span>
                           {selectedRelation.stages[0].stage?.description || "—"}
                         </div>
                         <div>
-                          <span className="font-medium text-blue-500/90 dark:text-blue-300">
+                          <span className="font-medium text-app-secondary/90 dark:text-app-secondary">
                             Creado:{" "}
                           </span>
                           {formatDate(
@@ -399,7 +399,7 @@ export function TemplateVisualizer({}: TemplateVisualizerProps) {
                       className="bg-white dark:bg-gray-900 rounded-lg shadow-md p-4 text-gray-800 dark:text-gray-100 border border-gray-200 dark:border-gray-700 w-full"
                     >
                       <CardHeader>
-                        <CardTitle className="text-blue-500 dark:text-blue-400">
+                        <CardTitle className="text-app-secondary dark:text-app-secondary">
                           Etapa {stageObj.relationStage?.numPhase || 'N/A'}:{" "}
                           {stageObj.stage?.name || 'Sin nombre'}
                         </CardTitle>
@@ -407,19 +407,19 @@ export function TemplateVisualizer({}: TemplateVisualizerProps) {
                       <CardContent>
                         <div className="space-y-2 text-sm">
                           <div>
-                            <span className="font-medium text-blue-500/90 dark:text-blue-300">
+                            <span className="font-medium text-app-secondary/90 dark:text-app-secondary">
                               Fase:{" "}
                             </span>
                             {stageObj.relationStage?.numPhase ?? "—"}
                           </div>
                         {/* <div>
-                          <span className="font-medium text-blue-500/90 dark:text-blue-300">
+                          <span className="font-medium text-app-secondary/90 dark:text-app-secondary">
                             Descripción:{" "}
                           </span>
                           {stageObj.stage?.description || "—"}
                         </div>
                         <div>
-                          <span className="font-medium text-blue-500/90 dark:text-blue-300">
+                          <span className="font-medium text-app-secondary/90 dark:text-app-secondary">
                             Creado:{" "}
                           </span>
                           {formatDate(stageObj.relationStage.createdAt)}
@@ -443,7 +443,7 @@ export function TemplateVisualizer({}: TemplateVisualizerProps) {
                       className="bg-white dark:bg-gray-900 rounded-lg shadow-md p-4 text-gray-800 dark:text-gray-100 border border-gray-200 dark:border-gray-700 w-full"
                     >
                       <CardHeader>
-                        <CardTitle className="text-blue-500 dark:text-blue-400">
+                        <CardTitle className="text-app-secondary dark:text-app-secondary">
                           Etapa {stageObj.relationStage?.numPhase || 'N/A'}:{" "}
                           {stageObj.stage?.name || 'Sin nombre'}
                         </CardTitle>
@@ -451,19 +451,19 @@ export function TemplateVisualizer({}: TemplateVisualizerProps) {
                       <CardContent>
                         <div className="space-y-2 text-sm">
                           <div>
-                            <span className="font-medium text-blue-500/90 dark:text-blue-300">
+                            <span className="font-medium text-app-secondary/90 dark:text-app-secondary">
                               Fase:{" "}
                             </span>
                             {stageObj.relationStage?.numPhase ?? "—"}
                           </div>
                           {/* <div>
-                            <span className="font-medium text-blue-500/90 dark:text-blue-300">
+                            <span className="font-medium text-app-secondary/90 dark:text-app-secondary">
                               Descripción:{" "}
                             </span>
                             {stageObj.stage?.description || "—"}
                           </div>
                           <div>
-                            <span className="font-medium text-blue-500/90 dark:text-blue-300">
+                            <span className="font-medium text-app-secondary/90 dark:text-app-secondary">
                               Creado:{" "}
                             </span>
                             {formatDate(stageObj.relationStage.createdAt)}

@@ -2,6 +2,7 @@
 
 import MainLayout from "@/components/layouts/MainLayout";
 import LoadingSpinner from "@/components/common/LoadingSpinner";
+
 import PaginatedCardTable from "@/components/common/PaginatedCardTable";
 import type { ColumnConfig } from "@/components/common/tableComponent";
 import EditUserModal from "@/components/user/EditUserModal";

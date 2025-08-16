@@ -60,6 +60,7 @@ export default function BalanceSelectorModal({
     const [selected, setSelected] = useState<string[]>(initialSelected);
     const [detailsOpen, setDetailsOpen] = useState<Record<string, boolean>>({});
     const [configs, setConfigs] = useState<Record<string, { price?: number; isActive?: boolean; hasDiscount?: boolean; discount?: string }>>({});
+    
     // Usar datos mock si no vienen balances o vienen vacíos
     const sourceBalances = balances && balances.length > 0 ? balances : MOCK_BALANCES;
 
@@ -122,47 +123,47 @@ export default function BalanceSelectorModal({
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="w-[50vw] max-w-[40vw] sm:!max-w-6xl lg:!max-w-7xl bg-white dark:bg-black text-zinc-800 dark:text-white border border-[var(--app-secondary)]/70 dark:border-blue-500 shadow-lg">
+            <DialogContent className="w-[50vw] max-w-[40vw] sm:!max-w-6xl lg:!max-w-7xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700 shadow-lg rounded-xl">
                 <DialogHeader>
-                    <DialogTitle className="text-[var(--app-secondary)] dark:text-blue-400 text-base md:text-lg font-semibold">
+                    <DialogTitle className="text-gray-900 dark:text-white text-base md:text-lg font-semibold">
                         Seleccionar balances
                     </DialogTitle>
-                    <DialogDescription className="text-zinc-600 dark:text-gray-300 text-xs sm:text-sm">
+                    <DialogDescription className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm">
                         Elige balances disponibles y muévelos a la lista de agregados. Puedes buscar por nombre o monto.
                     </DialogDescription>
                 </DialogHeader>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
                     {/* Columna izquierda: disponibles */}
-                    <div className="rounded-lg border border-zinc-200 dark:border-gray-700 overflow-hidden">
-                        <div className="px-3 py-2 bg-gray-50 dark:bg-gray-800/40 border-b border-zinc-200 dark:border-gray-700 flex items-center justify-between">
-                            <span className="text-sm font-medium">Disponibles</span>
-                            <span className="text-xs text-gray-500">{available.length}</span>
+                    <div className="rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden bg-white dark:bg-gray-800">
+                        <div className="px-3 py-2 bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+                            <span className="text-sm font-medium text-gray-900 dark:text-white">Disponibles</span>
+                            <span className="text-xs text-gray-500 dark:text-gray-400">{available.length}</span>
                         </div>
                         <div className="p-3">
                             <Input
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
                                 placeholder="Buscar balances..."
-                                className="mb-3"
+                                className="mb-3 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                             />
                             <div className="space-y-2 max-h-64 overflow-auto pr-1">
                                 {filteredAvailable.length === 0 ? (
-                                    <div className="text-xs text-gray-500">Sin resultados</div>
+                                    <div className="text-xs text-gray-500 dark:text-gray-400">Sin resultados</div>
                                 ) : (
                                     filteredAvailable.map((b) => (
                                         <div
                                             key={b.balanceID}
-                                            className="flex items-center justify-between px-3 py-2 rounded-md border border-zinc-200 dark:border-gray-700 bg-white dark:bg-transparent"
+                                            className="flex items-center justify-between px-3 py-2 rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                                         >
                                             <div>
-                                                <div className="text-sm font-medium">{b.name}</div>
-                                                <div className="text-xs text-gray-500">{formatAmount(b.balance)}</div>
+                                                <div className="text-sm font-medium text-gray-900 dark:text-white">{b.name}</div>
+                                                <div className="text-xs text-gray-500 dark:text-gray-400">{formatAmount(b.balance)}</div>
                                             </div>
                                             <Button
                                                 variant="outline"
                                                 size="sm"
-                                                className="h-8 px-2"
+                                                className="h-8 px-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600"
                                                 onClick={() => add(b.balanceID)}
                                             >
                                                 <Plus className="h-4 w-4" />
@@ -175,28 +176,28 @@ export default function BalanceSelectorModal({
                     </div>
 
                     {/* Columna derecha: agregados */}
-                    <div className="rounded-lg border border-zinc-200 dark:border-gray-700 overflow-hidden">
-                        <div className="px-3 py-2 bg-gray-50 dark:bg-gray-800/40 border-b border-zinc-200 dark:border-gray-700 flex items-center justify-between">
-                            <span className="text-sm font-medium">Agregados</span>
-                            <span className="text-xs text-gray-500">{selected.length}</span>
+                    <div className="rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden bg-white dark:bg-gray-800">
+                        <div className="px-3 py-2 bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+                            <span className="text-sm font-medium text-gray-900 dark:text-white">Agregados</span>
+                            <span className="text-xs text-gray-500 dark:text-gray-400">{selected.length}</span>
                         </div>
                         <div className="p-3">
                             <div className="space-y-2 max-h-72 overflow-auto pr-1">
                                 {selectedList.length === 0 ? (
-                                    <div className="text-xs text-gray-500">No has agregado balances</div>
+                                    <div className="text-xs text-gray-500 dark:text-gray-400">No has agregado balances</div>
                                 ) : (
                                     selectedList.map((b) => (
-                                        <div key={b.balanceID} className="rounded-md border border-zinc-200 dark:border-gray-700 bg-white dark:bg-transparent">
+                                        <div key={b.balanceID} className="rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
                                             <div className="flex items-center justify-between px-3 py-2">
                                                 <div>
-                                                    <div className="text-sm font-medium">{b.name}</div>
-                                                    <div className="text-xs text-gray-500">{formatAmount(b.balance)}</div>
+                                                    <div className="text-sm font-medium text-gray-900 dark:text-white">{b.name}</div>
+                                                    <div className="text-xs text-gray-500 dark:text-gray-400">{formatAmount(b.balance)}</div>
                                                 </div>
                                                 <div className="flex items-center gap-2">
                                                     <Button
                                                         variant="outline"
                                                         size="sm"
-                                                        className="h-8 px-2"
+                                                        className="h-8 px-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600"
                                                         onClick={() =>
                                                             setDetailsOpen((prev) => ({
                                                                 ...prev,
@@ -214,7 +215,7 @@ export default function BalanceSelectorModal({
                                                     <Button
                                                         variant="outline"
                                                         size="sm"
-                                                        className="h-8 px-2"
+                                                        className="h-8 px-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600"
                                                         onClick={() => remove(b.balanceID)}
                                                         title="Quitar"
                                                     >
@@ -223,10 +224,12 @@ export default function BalanceSelectorModal({
                                                 </div>
                                             </div>
                                             {detailsOpen[b.balanceID] && (
-                                                <div className="px-3 pb-3">
+                                                <div className="px-3 pb-3 border-t border-gray-200 dark:border-gray-700 pt-3 mt-2">
                                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                                         <div>
-                                                            <Label htmlFor={`price-${b.balanceID}`} className="text-xs">Precio</Label>
+                                                            <Label htmlFor={`price-${b.balanceID}`} className="text-xs font-medium text-gray-700 dark:text-gray-300">
+                                                                Precio
+                                                            </Label>
                                                             <Input
                                                                 id={`price-${b.balanceID}`}
                                                                 type="number"
@@ -241,9 +244,10 @@ export default function BalanceSelectorModal({
                                                                         },
                                                                     }))
                                                                 }
+                                                                className="mt-1 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
                                                             />
                                                         </div>
-                                                        <div className="flex items-center gap-2">
+                                                        <div className="flex items-center gap-2 pt-6">
                                                             <Switch
                                                                 id={`active-${b.balanceID}`}
                                                                 checked={!!configs[b.balanceID]?.isActive}
@@ -257,7 +261,9 @@ export default function BalanceSelectorModal({
                                                                     }))
                                                                 }
                                                             />
-                                                            <Label htmlFor={`active-${b.balanceID}`} className="text-xs">Activo</Label>
+                                                            <Label htmlFor={`active-${b.balanceID}`} className="text-xs font-medium text-gray-700 dark:text-gray-300">
+                                                                Activo
+                                                            </Label>
                                                         </div>
                                                         <div className="flex items-center gap-2">
                                                             <Switch
@@ -275,11 +281,15 @@ export default function BalanceSelectorModal({
                                                                     }))
                                                                 }
                                                             />
-                                                            <Label htmlFor={`disc-${b.balanceID}`} className="text-xs">Tiene descuento</Label>
+                                                            <Label htmlFor={`disc-${b.balanceID}`} className="text-xs font-medium text-gray-700 dark:text-gray-300">
+                                                                Tiene descuento
+                                                            </Label>
                                                         </div>
                                                         {configs[b.balanceID]?.hasDiscount && (
                                                             <div>
-                                                                <Label htmlFor={`discount-${b.balanceID}`} className="text-xs">Descuento</Label>
+                                                                <Label htmlFor={`discount-${b.balanceID}`} className="text-xs font-medium text-gray-700 dark:text-gray-300">
+                                                                    Descuento
+                                                                </Label>
                                                                 <Input
                                                                     id={`discount-${b.balanceID}`}
                                                                     value={configs[b.balanceID]?.discount ?? ""}
@@ -293,6 +303,7 @@ export default function BalanceSelectorModal({
                                                                         }))
                                                                     }
                                                                     placeholder="Ej: 10%"
+                                                                    className="mt-1 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500"
                                                                 />
                                                             </div>
                                                         )}
@@ -307,10 +318,14 @@ export default function BalanceSelectorModal({
                     </div>
                 </div>
 
-                <Separator className="my-2" />
+                <Separator className="my-2 bg-gray-200 dark:bg-gray-700" />
 
                 <DialogFooter className="flex items-center justify-end gap-2">
-                    <Button variant="outline" onClick={() => onOpenChange(false)}>
+                    <Button 
+                        variant="outline" 
+                        onClick={() => onOpenChange(false)}
+                        className="border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600"
+                    >
                         Cancelar
                     </Button>
                     <Button
@@ -329,7 +344,7 @@ export default function BalanceSelectorModal({
                             }
                             onOpenChange(false);
                         }}
-                        className="bg-[var(--app-secondary)] dark:bg-blue-500 text-black hover:bg-[var(--app-secondary)]/90 dark:hover:bg-blue-400"
+                        className="bg-emerald-600 text-white hover:bg-emerald-700 dark:bg-emerald-600 dark:hover:bg-emerald-700"
                     >
                         <Check className="h-4 w-4 mr-1" /> Agregar
                     </Button>

@@ -27,7 +27,7 @@ function ProfileInner() {
 
   return (
     <MainLayout>
-      <div className="space-y-6">
+      <div className="space-y-6 p-6">
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-semibold">Perfil</h1>
         </div>
@@ -58,10 +58,13 @@ function ProfileInner() {
                 <span className="text-gray-500">Username</span>
                 <span className="font-medium">{user?.username ?? "-"}</span>
               </div>
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col">
                 <span className="text-gray-500">ID</span>
-                <span className="font-medium">{String((user as unknown as { id?: string | number })?.id ?? "-")}</span>
+                <span className="font-medium">
+                  {String((user as unknown as { id?: string | number })?.id ?? "-")}
+                </span>
               </div>
+
             </div>
           </div>
 
