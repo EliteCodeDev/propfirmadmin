@@ -146,7 +146,7 @@ export function CategoriesManager({ pageSize }: CategoriesManagerProps) {
   // 3. Validación y procesamiento de datos para la tabla
   // --------------------------------------------------
   const categoriesValidation = useArrayValidation(categories);
-  
+
   const tableData = categoriesValidation.safeMap((item, index) => ({
     id: index + 1,
     name: item?.name || "Sin nombre",
@@ -185,34 +185,36 @@ export function CategoriesManager({ pageSize }: CategoriesManagerProps) {
 
       <div className="space-y-4">
         <div className="flex items-center gap-3 justify-between px-6">
-            <Button
-              onClick={handleOpenCreate}
-              className="bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2 group"
-            >
-              <Plus className="w-4 h-4 group-hover:rotate-90 transition-all ease-in-out duration-300" />
-              Crear Categoría
-            </Button>
-            <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg px-4 py-2 text-white shadow-sm">
-              <div className="text-xs font-medium">Total Categorías</div>
-              <div className="text-lg font-bold">{totalItems}</div>
-            </div>
+          <Button
+            onClick={handleOpenCreate}
+            className="bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2 group"
+          >
+            <Plus className="w-4 h-4 group-hover:rotate-90 transition-all ease-in-out duration-300" />
+            Crear Categoría
+          </Button>
+          <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg px-4 py-2 text-white shadow-sm">
+            <div className="text-xs font-medium">Total Categorías</div>
+            <div className="text-lg font-bold">{totalItems}</div>
           </div>
-          <PaginatedCardTable
-            columns={columns}
-            rows={tableData}
-            isLoading={isLoading}
-            emptyText="No hay categorías disponibles"
-            renderActions={renderActions}
-            actionsHeader="Acciones"
-            pagination={{
-              currentPage: page,
-              totalPages: totalPages,
-              totalItems: totalItems,
-              pageSize: pageSize,
-              onPageChange: (p) => setPage(p),
-              onPageSizeChange: (n) => { setPage(1); },
-            }}
-          />
+        </div>
+        <PaginatedCardTable
+          columns={columns}
+          rows={tableData}
+          isLoading={isLoading}
+          emptyText="No hay categorías disponibles"
+          renderActions={renderActions}
+          actionsHeader="Acciones"
+          pagination={{
+            currentPage: page,
+            totalPages: totalPages,
+            totalItems: totalItems,
+            pageSize: pageSize,
+            onPageChange: (p) => setPage(p),
+            onPageSizeChange: (n) => {
+              setPage(1);
+            },
+          }}
+        />
       </div>
 
       <Dialog open={openModal} onOpenChange={setOpenModal}>

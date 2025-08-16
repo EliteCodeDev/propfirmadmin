@@ -69,7 +69,8 @@ export function RelationsManager({ pageSize }: RelationsManagerProps) {
   const [page, setPage] = useState(1);
   const [openBalanceModal, setOpenBalanceModal] = useState(false);
   const [selectedBalanceIds, setSelectedBalanceIds] = useState<string[]>([]);
-  const [selectedRelationIdForBalances, setSelectedRelationIdForBalances] = useState<string | null>(null);
+  const [selectedRelationIdForBalances, setSelectedRelationIdForBalances] =
+    useState<string | null>(null);
 
   // Form
   const form = useForm<RelationFormData>({
@@ -77,7 +78,7 @@ export function RelationsManager({ pageSize }: RelationsManagerProps) {
     defaultValues: {
       categoryID: "",
       planID: "",
-  balanceID: undefined,
+      balanceID: undefined,
     },
   });
 
@@ -86,7 +87,7 @@ export function RelationsManager({ pageSize }: RelationsManagerProps) {
   // --------------------------------------------------
   useEffect(() => {
     loadAllData();
-  }, []);
+  });
 
   const loadAllData = async () => {
     try {
@@ -103,8 +104,8 @@ export function RelationsManager({ pageSize }: RelationsManagerProps) {
       setCategories(categoriesData);
       setPlans(plansData);
       setBalances(balancesData);
-  // Cuando creamos una relación nueva, limpiar selección
-  if (!editItem) setSelectedBalanceIds([]);
+      // Cuando creamos una relación nueva, limpiar selección
+      if (!editItem) setSelectedBalanceIds([]);
     } catch (error) {
       console.error("Error al cargar datos:", error);
       toast.error("Error al cargar datos");
@@ -121,11 +122,11 @@ export function RelationsManager({ pageSize }: RelationsManagerProps) {
     form.reset({
       categoryID: "",
       planID: "",
-  balanceID: undefined,
+      balanceID: undefined,
     });
     setOpenModal(true);
-  setSelectedBalanceIds([]);
-  setSelectedRelationIdForBalances(null);
+    setSelectedBalanceIds([]);
+    setSelectedRelationIdForBalances(null);
   }
 
   function handleOpenEdit(item: {
@@ -133,7 +134,9 @@ export function RelationsManager({ pageSize }: RelationsManagerProps) {
     name: string;
     originalId?: string;
   }) {
-    const relation = relationsValidation.safeFind((r) => r?.relationID === item.originalId);
+    const relation = relationsValidation.safeFind(
+      (r) => r?.relationID === item.originalId
+    );
     if (relation) {
       setEditItem(relation);
       form.reset({
@@ -144,7 +147,7 @@ export function RelationsManager({ pageSize }: RelationsManagerProps) {
       // Si la relación tiene stages/balances asociados en el backend, podrías mapearlos aquí.
       setSelectedBalanceIds(relation.balanceID ? [relation.balanceID] : []);
       setOpenModal(true);
-  setSelectedRelationIdForBalances(null);
+      setSelectedRelationIdForBalances(null);
     }
   }
 
@@ -154,7 +157,9 @@ export function RelationsManager({ pageSize }: RelationsManagerProps) {
       const payload = {
         categoryID: formValues.categoryID,
         planID: formValues.planID,
-        ...(formValues.balanceID && formValues.balanceID !== "none" && formValues.balanceID.trim() !== ""
+        ...(formValues.balanceID &&
+        formValues.balanceID !== "none" &&
+        formValues.balanceID.trim() !== ""
           ? { balanceID: formValues.balanceID }
           : {}),
         // Lista de balances seleccionados en el modal (si el backend soporta múltiples, cambia la clave a balancesIDs)
@@ -162,7 +167,10 @@ export function RelationsManager({ pageSize }: RelationsManagerProps) {
       };
       if (editItem) {
         // Editar
-        await challengeTemplatesApi.updateRelation(editItem.relationID, payload);
+        await challengeTemplatesApi.updateRelation(
+          editItem.relationID,
+          payload
+        );
         toast.success("Relación editada exitosamente");
       } else {
         // Crear
@@ -184,7 +192,7 @@ export function RelationsManager({ pageSize }: RelationsManagerProps) {
   const categoriesValidation = useArrayValidation(categories);
   const plansValidation = useArrayValidation(plans);
   const balancesValidation = useArrayValidation(balances);
-  
+
   const getCategoryName = (id: string) => {
     const category = categoriesValidation.safeFind((c) => c?.categoryID === id);
     return category?.name || "N/A";
@@ -251,7 +259,7 @@ export function RelationsManager({ pageSize }: RelationsManagerProps) {
         className="h-8 w-8 p-0"
         onClick={() => {
           const rid = String(row.originalId || "");
-          const rel = relations.find(r => r.relationID === rid);
+          const rel = relations.find((r) => r.relationID === rid);
           setSelectedBalanceIds(rel?.balanceID ? [rel.balanceID] : []);
           setSelectedRelationIdForBalances(rid);
           setOpenBalanceModal(true);
@@ -262,27 +270,43 @@ export function RelationsManager({ pageSize }: RelationsManagerProps) {
       </Button>
     </div>
   );
-        {/* Selector de balances (opcional) */}
-        <div className="flex items-center justify-between">
-          <div className="text-sm text-zinc-700 dark:text-gray-300">Agregar balances (opcional)</div>
-          <Button type="button" variant="outline" size="sm" onClick={() => setOpenBalanceModal(true)}>
-            <Plus className="h-4 w-4 mr-1" /> Seleccionar
-          </Button>
-        </div>
-        {selectedBalanceIds.length > 0 && (
-          <div className="mt-2 flex flex-wrap gap-2">
-            {selectedBalanceIds.map((id) => {
-              const b = balances.find((x) => x.balanceID === id);
-              if (!b) return null;
-              return (
-                <span key={id} className="px-2 py-1 rounded-full text-xs border border-zinc-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/40">
-                  {b.name} {typeof b.balance === "number" ? `- $${b.balance.toLocaleString()}` : ""}
-                </span>
-              );
-            })}
-          </div>
-        )}
-
+  {
+    /* Selector de balances (opcional) */
+  }
+  <div className="flex items-center justify-between">
+    <div className="text-sm text-zinc-700 dark:text-gray-300">
+      Agregar balances (opcional)
+    </div>
+    <Button
+      type="button"
+      variant="outline"
+      size="sm"
+      onClick={() => setOpenBalanceModal(true)}
+    >
+      <Plus className="h-4 w-4 mr-1" /> Seleccionar
+    </Button>
+  </div>;
+  {
+    selectedBalanceIds.length > 0 && (
+      <div className="mt-2 flex flex-wrap gap-2">
+        {selectedBalanceIds.map((id) => {
+          const b = balances.find((x) => x.balanceID === id);
+          if (!b) return null;
+          return (
+            <span
+              key={id}
+              className="px-2 py-1 rounded-full text-xs border border-zinc-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/40"
+            >
+              {b.name}{" "}
+              {typeof b.balance === "number"
+                ? `- $${b.balance.toLocaleString()}`
+                : ""}
+            </span>
+          );
+        })}
+      </div>
+    );
+  }
 
   // --------------------------------------------------
   // 5. Render
@@ -315,7 +339,7 @@ export function RelationsManager({ pageSize }: RelationsManagerProps) {
       />
 
       {/* Modal selector de balances */}
-      
+
       <BalanceSelectorModal
         open={openBalanceModal}
         onOpenChange={setOpenBalanceModal}
@@ -326,9 +350,14 @@ export function RelationsManager({ pageSize }: RelationsManagerProps) {
           if (selectedRelationIdForBalances) {
             try {
               if (ids.length === 0) {
-                toast.message("No seleccionaste balances. No se hicieron cambios.");
+                toast.message(
+                  "No seleccionaste balances. No se hicieron cambios."
+                );
               } else {
-                await challengeTemplatesApi.updateRelation(selectedRelationIdForBalances, { balanceID: ids[0] });
+                await challengeTemplatesApi.updateRelation(
+                  selectedRelationIdForBalances,
+                  { balanceID: ids[0] }
+                );
                 toast.success("Balance agregado a la relación");
                 await loadAllData();
               }
@@ -377,7 +406,7 @@ export function RelationsManager({ pageSize }: RelationsManagerProps) {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {categoriesValidation.safeMap((category) => 
+                        {categoriesValidation.safeMap((category) =>
                           category?.categoryID ? (
                             <SelectItem
                               key={category.categoryID}
@@ -412,7 +441,7 @@ export function RelationsManager({ pageSize }: RelationsManagerProps) {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {plansValidation.safeMap((plan) => 
+                        {plansValidation.safeMap((plan) =>
                           plan?.planID ? (
                             <SelectItem key={plan.planID} value={plan.planID}>
                               {plan?.name || "Sin nombre"}

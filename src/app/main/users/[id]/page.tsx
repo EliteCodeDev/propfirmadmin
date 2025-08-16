@@ -1,7 +1,7 @@
 "use client";
 
 import MainLayout from "@/components/layouts/MainLayout";
-import LoadingSpinner from "@/components/common/loadingSpinner";
+import LoadingSpinner from "@/components/common/LoadingSpinner";
 import PaginatedCardTable from "@/components/common/PaginatedCardTable";
 import type { ColumnConfig } from "@/components/common/tableComponent";
 
@@ -37,7 +37,10 @@ const buildHeaders = (token?: string): HeadersInit => {
 
 const unwrapItems = <T,>(raw: unknown): T[] => {
   if (!raw) return [];
-  const lvl1 = (raw as { data?: unknown; items?: unknown })?.data ?? (raw as { items?: unknown })?.items ?? raw;
+  const lvl1 =
+    (raw as { data?: unknown; items?: unknown })?.data ??
+    (raw as { items?: unknown })?.items ??
+    raw;
 
   if (Array.isArray(lvl1)) return lvl1 as T[];
   if (lvl1 && typeof lvl1 === "object") {
@@ -45,7 +48,9 @@ const unwrapItems = <T,>(raw: unknown): T[] => {
     const l1i = (lvl1 as { items?: unknown }).items;
     if (Array.isArray(l1d)) return l1d as T[];
     if (Array.isArray(l1i)) return l1i as T[];
-    const lvl2 = (lvl1 as { data?: unknown; items?: unknown }).data ?? (lvl1 as { items?: unknown }).items;
+    const lvl2 =
+      (lvl1 as { data?: unknown; items?: unknown }).data ??
+      (lvl1 as { items?: unknown }).items;
     if (Array.isArray(lvl2)) return lvl2 as T[];
     if (lvl2 && typeof lvl2 === "object") {
       const l2d = (lvl2 as { data?: unknown }).data;
@@ -59,7 +64,10 @@ const unwrapItems = <T,>(raw: unknown): T[] => {
 
 const unwrapOne = <T,>(raw: unknown): T | null => {
   if (!raw) return null;
-  const lvl1 = (raw as { data?: unknown; item?: unknown })?.data ?? (raw as { item?: unknown })?.item ?? raw;
+  const lvl1 =
+    (raw as { data?: unknown; item?: unknown })?.data ??
+    (raw as { item?: unknown })?.item ??
+    raw;
   if (lvl1 && typeof lvl1 === "object" && !Array.isArray(lvl1)) {
     const inner = (lvl1 as { data?: unknown }).data;
     if (inner && typeof inner === "object" && !Array.isArray(inner)) {
@@ -94,10 +102,13 @@ function buildChallengeUrls(userId: string) {
   ];
 }
 
-function filterByUserId<T extends {
-  userID?: unknown; userId?: unknown;
-  user?: { id?: unknown; userID?: unknown } | null;
-}>(list: T[], userId: string) {
+function filterByUserId<
+  T extends {
+    userID?: unknown;
+    userId?: unknown;
+    user?: { id?: unknown; userID?: unknown } | null;
+  }
+>(list: T[], userId: string) {
   const target = String(userId).trim().toLowerCase();
   return list.filter((c) => {
     const cand = c.userID ?? c.userId ?? c.user?.userID ?? c.user?.id ?? "";
@@ -133,11 +144,17 @@ function UserDetailInner() {
     { revalidateOnFocus: false }
   );
 
-  const user = useMemo<User>(() => (unwrapOne<User>(userRaw) ?? {}) as User, [userRaw]);
+  const user = useMemo<User>(
+    () => (unwrapOne<User>(userRaw) ?? {}) as User,
+    [userRaw]
+  );
   const hasUserData = !!(user?.userID || user?.id || user?.username);
 
   /* ---- Challenges del usuario ---- */
-  const urls = useMemo(() => (userId ? buildChallengeUrls(userId) : []), [userId]);
+  const urls = useMemo(
+    () => (userId ? buildChallengeUrls(userId) : []),
+    [userId]
+  );
 
   const {
     data: chRaw,
@@ -173,7 +190,10 @@ function UserDetailInner() {
   const hasErrors = userErr || chErr;
 
   /* ---- Cards ---- */
-  const fullName = `${user?.firstName ?? ""} ${user?.lastName ?? ""}`.trim() || user?.username || "-";
+  const fullName =
+    `${user?.firstName ?? ""} ${user?.lastName ?? ""}`.trim() ||
+    user?.username ||
+    "-";
 
   const contactFields = [
     { label: "Email", value: user?.email ?? "-" },
@@ -181,13 +201,16 @@ function UserDetailInner() {
     { label: "Name", value: fullName },
     {
       label: "Address",
-      value: [
-        user?.address?.address1,
-        user?.address?.city,
-        user?.address?.state,
-        user?.address?.country,
-        user?.address?.zipCode,
-      ].filter(Boolean).join(", ") || "-",
+      value:
+        [
+          user?.address?.address1,
+          user?.address?.city,
+          user?.address?.state,
+          user?.address?.country,
+          user?.address?.zipCode,
+        ]
+          .filter(Boolean)
+          .join(", ") || "-",
     },
   ];
 
@@ -204,11 +227,15 @@ function UserDetailInner() {
   const activityFields = [
     {
       label: "Updated Date",
-      value: user?.updatedAt ? new Date(user.updatedAt).toLocaleDateString() : "-",
+      value: user?.updatedAt
+        ? new Date(user.updatedAt).toLocaleDateString()
+        : "-",
     },
     {
       label: "Registration",
-      value: user?.createdAt ? new Date(user.createdAt).toLocaleDateString() : "-",
+      value: user?.createdAt
+        ? new Date(user.createdAt).toLocaleDateString()
+        : "-",
     },
     { label: "Login Count", value: "-" },
   ];
@@ -232,7 +259,8 @@ function UserDetailInner() {
       (challenges || []).map((c) => {
         const login = c?.brokerAccount?.login ?? "-";
         const platform = c?.brokerAccount?.platform ?? "-";
-        const sizeRaw = c?.brokerAccount?.initialBalance ?? c?.dynamicBalance ?? null;
+        const sizeRaw =
+          c?.brokerAccount?.initialBalance ?? c?.dynamicBalance ?? null;
 
         const sizeNum =
           sizeRaw == null
@@ -243,9 +271,14 @@ function UserDetailInner() {
             ? parseFloat(String(sizeRaw))
             : null;
 
-        const whenRaw = (c as { startDate?: unknown; createdAt?: unknown }).startDate ?? (c as { createdAt?: unknown }).createdAt ?? null;
+        const whenRaw =
+          (c as { startDate?: unknown; createdAt?: unknown }).startDate ??
+          (c as { createdAt?: unknown }).createdAt ??
+          null;
         const whenDate =
-          typeof whenRaw === "string" || typeof whenRaw === "number" || whenRaw instanceof Date
+          typeof whenRaw === "string" ||
+          typeof whenRaw === "number" ||
+          whenRaw instanceof Date
             ? new Date(whenRaw)
             : null;
 
@@ -266,7 +299,11 @@ function UserDetailInner() {
   const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
   const startIdx = (page - 1) * pageSize;
   const rows = useMemo(
-    () => mapped.slice(startIdx, startIdx + pageSize) as unknown as Record<string, unknown>[],
+    () =>
+      mapped.slice(startIdx, startIdx + pageSize) as unknown as Record<
+        string,
+        unknown
+      >[],
     [mapped, startIdx, pageSize]
   );
 
@@ -279,10 +316,10 @@ function UserDetailInner() {
         subtitle="Validando credenciales de usuario..."
         showProgress
         steps={[
-          'Verificando token de sesión...',
-          'Validando permisos de usuario...',
-          'Cargando configuración...',
-          'Preparando dashboard...'
+          "Verificando token de sesión...",
+          "Validando permisos de usuario...",
+          "Cargando configuración...",
+          "Preparando dashboard...",
         ]}
       />
     );
@@ -297,10 +334,10 @@ function UserDetailInner() {
           subtitle="Obteniendo información del usuario..."
           showProgress
           steps={[
-            'Consultando datos del usuario...',
-            'Cargando información de contacto...',
-            'Obteniendo detalles de cuenta...',
-            'Preparando vista de detalles...'
+            "Consultando datos del usuario...",
+            "Cargando información de contacto...",
+            "Obteniendo detalles de cuenta...",
+            "Preparando vista de detalles...",
           ]}
         />
       </MainLayout>
@@ -322,7 +359,9 @@ function UserDetailInner() {
                 Back to Users
               </button>
               <div className="text-right">
-                <div className="text-xs text-gray-500 dark:text-gray-400">User ID</div>
+                <div className="text-xs text-gray-500 dark:text-gray-400">
+                  User ID
+                </div>
                 <div className="text-sm font-mono font-medium text-gray-900 dark:text-gray-100 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded text-center">
                   {userId}
                 </div>
@@ -336,14 +375,21 @@ function UserDetailInner() {
             <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 shadow-sm">
               <div className="flex items-center mb-3">
                 <UserIcon className="w-5 h-5 text-blue-600 dark:text-blue-400 mr-2" />
-                <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">Contact Information</h3>
+                <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+                  Contact Information
+                </h3>
               </div>
               <div className="space-y-2">
                 {contactFields.map((f, i) => (
-                  <div key={i} className="flex justify-between items-center text-xs">
-                    <span className="text-gray-600 dark:text-gray-400 font-medium">{f.label}:</span>
-                    <span 
-                      className="text-gray-900 dark:text-gray-100 font-mono text-right max-w-xs truncate" 
+                  <div
+                    key={i}
+                    className="flex justify-between items-center text-xs"
+                  >
+                    <span className="text-gray-600 dark:text-gray-400 font-medium">
+                      {f.label}:
+                    </span>
+                    <span
+                      className="text-gray-900 dark:text-gray-100 font-mono text-right max-w-xs truncate"
                       title={f.value}
                     >
                       {f.value}
@@ -357,13 +403,23 @@ function UserDetailInner() {
             <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 shadow-sm">
               <div className="flex items-center mb-3">
                 <ClockIcon className="w-5 h-5 text-emerald-600 dark:text-emerald-400 mr-2" />
-                <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">Account Details</h3>
+                <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+                  Account Details
+                </h3>
               </div>
               <div className="space-y-2">
                 {accountFields.map((f, i) => (
-                  <div key={i} className="flex justify-between items-center text-xs">
-                    <span className="text-gray-600 dark:text-gray-400 font-medium">{f.label}:</span>
-                    <span className="text-gray-900 dark:text-gray-100 font-mono text-right max-w-xs truncate" title={f.value}>
+                  <div
+                    key={i}
+                    className="flex justify-between items-center text-xs"
+                  >
+                    <span className="text-gray-600 dark:text-gray-400 font-medium">
+                      {f.label}:
+                    </span>
+                    <span
+                      className="text-gray-900 dark:text-gray-100 font-mono text-right max-w-xs truncate"
+                      title={f.value}
+                    >
                       {f.value === "Yes" || f.value === "active" ? (
                         <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-100 dark:bg-emerald-900/30 text-emerald-800 dark:text-emerald-300">
                           {f.value}
@@ -385,14 +441,21 @@ function UserDetailInner() {
             <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 shadow-sm">
               <div className="flex items-center mb-3">
                 <ExclamationTriangleIcon className="w-5 h-5 text-amber-600 dark:text-amber-400 mr-2" />
-                <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">Recent Activity</h3>
+                <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+                  Recent Activity
+                </h3>
               </div>
               <div className="space-y-2">
                 {activityFields.map((f, i) => (
-                  <div key={i} className="flex justify-between items-center text-xs">
-                    <span className="text-gray-600 dark:text-gray-400 font-medium">{f.label}:</span>
-                    <span 
-                      className="text-gray-900 dark:text-gray-100 font-mono text-right max-w-xs truncate" 
+                  <div
+                    key={i}
+                    className="flex justify-between items-center text-xs"
+                  >
+                    <span className="text-gray-600 dark:text-gray-400 font-medium">
+                      {f.label}:
+                    </span>
+                    <span
+                      className="text-gray-900 dark:text-gray-100 font-mono text-right max-w-xs truncate"
                       title={f.value}
                     >
                       {f.value}
@@ -408,7 +471,9 @@ function UserDetailInner() {
             <div className="p-4 border-b border-gray-200 dark:border-gray-700">
               <div className="flex items-center justify-between">
                 <div>
-                  <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100">Prop Accounts</h2>
+                  <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100">
+                    Prop Accounts
+                  </h2>
                   <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
                     Linked challenges & broker accounts ({totalItems} total)
                   </p>
@@ -428,7 +493,9 @@ function UserDetailInner() {
               isLoading={isChallengesLoading}
               emptyText={
                 hasErrors?.message ||
-                (!isChallengesLoading && mapped.length === 0 ? "This user has no challenges." : undefined)
+                (!isChallengesLoading && mapped.length === 0
+                  ? "This user has no challenges."
+                  : undefined)
               }
               pagination={{
                 currentPage: page,

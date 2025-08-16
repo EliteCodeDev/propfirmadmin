@@ -1,7 +1,7 @@
 "use client";
 
 import MainLayout from "@/components/layouts/MainLayout";
-import LoadingSpinner from "@/components/common/loadingSpinner";
+import LoadingSpinner from "@/components/common/LoadingSpinner";
 import PaginatedCardTable from "@/components/common/PaginatedCardTable";
 import type { ColumnConfig } from "@/components/common/tableComponent";
 import EditUserModal from "@/components/user/EditUserModal";
@@ -10,7 +10,10 @@ import React, { useMemo, useState, useEffect } from "react";
 import useSWR from "swr";
 import { SessionProvider, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { ArrowTopRightOnSquareIcon, PencilSquareIcon } from "@heroicons/react/24/outline";
+import {
+  ArrowTopRightOnSquareIcon,
+  PencilSquareIcon,
+} from "@heroicons/react/24/outline";
 import type { RoleOption, User, PageResponse } from "@/types";
 import { apiBaseUrl } from "@/config";
 
@@ -33,23 +36,31 @@ function StatusBadge({ confirmed }: { confirmed: boolean }) {
           : "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800 dark:bg-amber-900/20 dark:text-amber-300 border border-amber-200 dark:border-amber-800"
       }
     >
-      <span className={`w-1.5 h-1.5 rounded-full mr-1.5 ${confirmed ? "bg-emerald-400" : "bg-amber-400"}`} />
+      <span
+        className={`w-1.5 h-1.5 rounded-full mr-1.5 ${
+          confirmed ? "bg-emerald-400" : "bg-amber-400"
+        }`}
+      />
       {confirmed ? "Active" : "Unconfirmed"}
     </span>
   );
 }
 
 /* Unwrap robusto */
-function unwrapPage<T = Record<string, unknown>>(raw: unknown): {
+function unwrapPage<T = Record<string, unknown>>(
+  raw: unknown
+): {
   items: T[];
   total: number;
   page: number;
   limit: number;
   totalPages: number;
 } {
-  const lvl1 = (raw as { data?: unknown } | unknown & Record<string, unknown>) && (raw as { data?: unknown }).data !== undefined
-    ? (raw as { data?: unknown }).data
-    : raw;
+  const lvl1 =
+    (raw as { data?: unknown } | (unknown & Record<string, unknown>)) &&
+    (raw as { data?: unknown }).data !== undefined
+      ? (raw as { data?: unknown }).data
+      : raw;
 
   let items: T[] = [];
   if (Array.isArray(lvl1)) items = lvl1 as T[];
@@ -60,13 +71,24 @@ function unwrapPage<T = Record<string, unknown>>(raw: unknown): {
     else if (Array.isArray(it)) items = it as T[];
   }
 
-  const total = typeof (lvl1 as { total?: unknown })?.total === "number" ? (lvl1 as { total?: unknown }).total as number : items.length;
-  const page  = typeof (lvl1 as { page?: unknown })?.page === "number" ? (lvl1 as { page?: unknown }).page as number : 1;
-  const limit = typeof (lvl1 as { limit?: unknown })?.limit === "number" ? (lvl1 as { limit?: unknown }).limit as number : items.length || 10;
+  const total =
+    typeof (lvl1 as { total?: unknown })?.total === "number"
+      ? ((lvl1 as { total?: unknown }).total as number)
+      : items.length;
+  const page =
+    typeof (lvl1 as { page?: unknown })?.page === "number"
+      ? ((lvl1 as { page?: unknown }).page as number)
+      : 1;
+  const limit =
+    typeof (lvl1 as { limit?: unknown })?.limit === "number"
+      ? ((lvl1 as { limit?: unknown }).limit as number)
+      : items.length || 10;
   const totalPages =
     typeof (lvl1 as { totalPages?: unknown })?.totalPages === "number"
-      ? (lvl1 as { totalPages?: unknown }).totalPages as number
-      : limit > 0 ? Math.max(1, Math.ceil(total / limit)) : 1;
+      ? ((lvl1 as { totalPages?: unknown }).totalPages as number)
+      : limit > 0
+      ? Math.max(1, Math.ceil(total / limit))
+      : 1;
 
   return { items, total, page, limit, totalPages };
 }
@@ -144,7 +166,7 @@ function UsersInner() {
       return r;
     };
 
-  let res = await tryFetch(`${API_BASE}${rolesPath}?page=1&limit=100`);
+    let res = await tryFetch(`${API_BASE}${rolesPath}?page=1&limit=100`);
     if (!res.ok && (res.status === 400 || res.status === 422)) {
       // Reintentar con un límite menor
       res = await tryFetch(`${API_BASE}${rolesPath}?page=1&limit=50`);
@@ -158,7 +180,7 @@ function UsersInner() {
       throw new Error(text || `Error ${res.status}`);
     }
 
-  const json: unknown = await res.json();
+    const json: unknown = await res.json();
     // Debug: ayuda a diagnosticar si el backend responde con tupla u objeto
     try {
       console.debug("[roles] raw response", json);
@@ -171,7 +193,10 @@ function UsersInner() {
     let items: unknown[] = [];
     if (Array.isArray(json)) {
       // Caso [items, total] o items[] directo
-      if (Array.isArray(json[0]) && (typeof json[1] === "number" || typeof json[1] === "object")) {
+      if (
+        Array.isArray(json[0]) &&
+        (typeof json[1] === "number" || typeof json[1] === "object")
+      ) {
         items = json[0] as unknown[];
       } else {
         items = json as unknown[];
@@ -179,7 +204,11 @@ function UsersInner() {
     } else if (Array.isArray((json as { data?: unknown })?.data)) {
       // Puede ser data = items[] o data = [items[], total]
       const d = (json as { data: unknown[] }).data as unknown[];
-      if (Array.isArray(d[0]) && (typeof (d as unknown[])[1] === "number" || typeof (d as unknown[])[1] === "object")) {
+      if (
+        Array.isArray(d[0]) &&
+        (typeof (d as unknown[])[1] === "number" ||
+          typeof (d as unknown[])[1] === "object")
+      ) {
         items = (d[0] as unknown[]) ?? [];
       } else {
         items = d as unknown[];
@@ -188,21 +217,36 @@ function UsersInner() {
       items = (json as { items: unknown[] }).items as unknown[];
     } else if (Array.isArray((json as { roles?: unknown })?.roles)) {
       items = (json as { roles: unknown[] }).roles as unknown[];
-    } else if (Array.isArray((json as { data?: { data?: unknown[] } })?.data?.data)) {
+    } else if (
+      Array.isArray((json as { data?: { data?: unknown[] } })?.data?.data)
+    ) {
       items = (json as { data: { data: unknown[] } }).data.data as unknown[];
-    } else if (Array.isArray((json as { data?: { items?: unknown[] } })?.data?.items)) {
+    } else if (
+      Array.isArray((json as { data?: { items?: unknown[] } })?.data?.items)
+    ) {
       items = (json as { data: { items: unknown[] } }).data.items as unknown[];
-    } else if (Array.isArray((json as { data?: { roles?: unknown[] } })?.data?.roles)) {
+    } else if (
+      Array.isArray((json as { data?: { roles?: unknown[] } })?.data?.roles)
+    ) {
       items = (json as { data: { roles: unknown[] } }).data.roles as unknown[];
-    } else if (Array.isArray((json as { result?: { data?: unknown[] } })?.result?.data)) {
-      items = (json as { result: { data: unknown[] } }).result.data as unknown[];
-    } else if (Array.isArray((json as { payload?: { data?: unknown[] } })?.payload?.data)) {
-      items = (json as { payload: { data: unknown[] } }).payload.data as unknown[];
+    } else if (
+      Array.isArray((json as { result?: { data?: unknown[] } })?.result?.data)
+    ) {
+      items = (json as { result: { data: unknown[] } }).result
+        .data as unknown[];
+    } else if (
+      Array.isArray((json as { payload?: { data?: unknown[] } })?.payload?.data)
+    ) {
+      items = (json as { payload: { data: unknown[] } }).payload
+        .data as unknown[];
     }
     const result: RoleOption[] = items
       .map((x) => {
         const obj = x as { roleID?: unknown; id?: unknown; name?: unknown };
-        return { roleID: String(obj.roleID ?? obj.id ?? ""), name: String(obj.name ?? "") };
+        return {
+          roleID: String(obj.roleID ?? obj.id ?? ""),
+          name: String(obj.name ?? ""),
+        };
       })
       .filter((x: RoleOption) => x.roleID && x.name);
     try {
@@ -212,27 +256,51 @@ function UsersInner() {
   };
 
   // SWR
-  const { data, error, isLoading, mutate } = useSWR<PageResponse<User>>(accessToken ? usersUrl : null, fetcher);
-  const { data: rolesData, error: rolesError, isLoading: rolesLoading, mutate: mutateRoles } = useSWR<RoleOption[]>(
+  const { data, error, isLoading, mutate } = useSWR<PageResponse<User>>(
+    accessToken ? usersUrl : null,
+    fetcher
+  );
+  const {
+    data: rolesData,
+    error: rolesError,
+    isLoading: rolesLoading,
+    mutate: mutateRoles,
+  } = useSWR<RoleOption[]>(
     accessToken ? ["roles", accessToken] : null,
     ([, token]) => fetchRoles(token as string | undefined)
   );
 
   // Redirección si no hay sesión
   useEffect(() => {
-    if (authStatus === "unauthenticated" || (!accessToken && authStatus !== "loading")) {
+    if (
+      authStatus === "unauthenticated" ||
+      (!accessToken && authStatus !== "loading")
+    ) {
       router.replace("/auth/login");
     }
   }, [authStatus, accessToken, router]);
 
-  if (authStatus === "loading" || (!accessToken && authStatus !== "unauthenticated")) {
+  if (
+    authStatus === "loading" ||
+    (!accessToken && authStatus !== "unauthenticated")
+  ) {
     return (
-      <LoadingSpinner size="md" text="Verificando Sesión" subtitle="Validando credenciales de usuario..." showProgress />
+      <LoadingSpinner
+        size="md"
+        text="Verificando Sesión"
+        subtitle="Validando credenciales de usuario..."
+        showProgress
+      />
     );
   }
   if (!accessToken) {
     return (
-      <LoadingSpinner size="md" text="Redirigiendo" subtitle="Redirigiendo al sistema de login..." showProgress />
+      <LoadingSpinner
+        size="md"
+        text="Redirigiendo"
+        subtitle="Redirigiendo al sistema de login..."
+        showProgress
+      />
     );
   }
 
@@ -248,19 +316,27 @@ function UsersInner() {
     { key: "name", label: "NAME", type: "normal" },
     { key: "email", label: "EMAIL", type: "normal" },
     { key: "role", label: "ROLE", type: "normal" },
-    { key: "status", label: "STATUS", type: "normal", render: (v) => <StatusBadge confirmed={Boolean(v)} /> },
+    {
+      key: "status",
+      label: "STATUS",
+      type: "normal",
+      render: (v) => <StatusBadge confirmed={Boolean(v)} />,
+    },
     { key: "country", label: "COUNTRY", type: "normal" },
     { key: "createdAt", label: "DATE JOINED", type: "normal" },
     {
       key: "edit",
       label: "EDIT",
       type: "normal",
-    render: (_: unknown, row: Record<string, unknown>) => (
+      render: (_: unknown, row: Record<string, unknown>) => (
         <button
           className="p-1.5 rounded-md border hover:bg-gray-50 dark:hover:bg-gray-700"
           title="Edit user"
           aria-label="Edit user"
-      onClick={() => { setEditUser(row.__raw as User); setEditOpen(true); }}
+          onClick={() => {
+            setEditUser(row.__raw as User);
+            setEditOpen(true);
+          }}
         >
           <PencilSquareIcon className="w-4 h-4 text-gray-700 dark:text-gray-300" />
         </button>
@@ -292,15 +368,15 @@ function UsersInner() {
       key: "actions",
       label: "ACTIONS",
       type: "normal",
-  render: (_: unknown, row: Record<string, unknown>) => (
-    <button
+      render: (_: unknown, row: Record<string, unknown>) => (
+        <button
           className="px-2 py-1 text-xs border rounded-md hover:bg-gray-50 dark:hover:bg-gray-700"
           onClick={() => {
             setRoleModalUser(row.__raw as User);
             setSelectedRoleID(String((row.__raw as User)?.role?.roleID ?? ""));
-      // revalidar roles al abrir para evitar estados viejos
-      mutateRoles();
-      setRoleModalOpen(true);
+            // revalidar roles al abrir para evitar estados viejos
+            mutateRoles();
+            setRoleModalOpen(true);
           }}
         >
           Change role
@@ -314,11 +390,15 @@ function UsersInner() {
   // Filas (incluye __raw para acciones)
   const rows = users.map((u, idx) => {
     const serial = offset + idx + 1;
-    const name = `${(u.firstName ?? "").trim()} ${(u.lastName ?? "").trim()}`.trim() || "-";
+    const name =
+      `${(u.firstName ?? "").trim()} ${(u.lastName ?? "").trim()}`.trim() ||
+      "-";
     const roleName = u.role?.name ?? "-";
     const confirmed = Boolean(u.isConfirmed);
     const country = u.address?.country ?? "-";
-  const created = u.createdAt ? new Date(u.createdAt as string | number | Date).toLocaleDateString() : "-";
+    const created = u.createdAt
+      ? new Date(u.createdAt as string | number | Date).toLocaleDateString()
+      : "-";
     return {
       serial,
       name,
@@ -345,7 +425,10 @@ function UsersInner() {
   const createUser = async (body: CreateUserBody) => {
     const res = await fetch(`${API_BASE}${usersPath}`, {
       method: "POST",
-      headers: { "Content-Type": "application/json", ...buildHeaders(accessToken) },
+      headers: {
+        "Content-Type": "application/json",
+        ...buildHeaders(accessToken),
+      },
       credentials: "include",
       body: JSON.stringify(body),
     });
@@ -366,7 +449,10 @@ function UsersInner() {
   const updateUser = async (userId: string, body: UpdateUserBody) => {
     const res = await fetch(`${API_BASE}${usersPath}/${userId}`, {
       method: "PATCH",
-      headers: { "Content-Type": "application/json", ...buildHeaders(accessToken) },
+      headers: {
+        "Content-Type": "application/json",
+        ...buildHeaders(accessToken),
+      },
       credentials: "include",
       body: JSON.stringify(body),
     });
@@ -408,7 +494,10 @@ function UsersInner() {
       await mutate();
     } catch (e) {
       const maybe = e as unknown;
-      const message = typeof maybe === "object" && maybe !== null && "message" in maybe ? String((maybe as { message?: unknown }).message || "") : "";
+      const message =
+        typeof maybe === "object" && maybe !== null && "message" in maybe
+          ? String((maybe as { message?: unknown }).message || "")
+          : "";
       setMsg(message || "Error updating role");
     } finally {
       setBusy(false);
@@ -427,23 +516,35 @@ function UsersInner() {
       const payloadUser = { ...newUser };
       const chosenRoleId = selectedNewRoleID || undefined;
       setCreateUserOpen(false);
-      setNewUser({ firstName: "", lastName: "", username: "", email: "", password: "" });
+      setNewUser({
+        firstName: "",
+        lastName: "",
+        username: "",
+        email: "",
+        password: "",
+      });
       setSelectedNewRoleID("");
 
       setBusy(true);
-      const created = await createUser({ ...payloadUser, roleId: chosenRoleId });
+      const created = await createUser({
+        ...payloadUser,
+        roleId: chosenRoleId,
+      });
       const uid = String(created?.userID ?? created?.id ?? "");
       if (!uid) {
         // No bloquea el cierre del modal; sólo informa
         setMsg("User created, but ID was not returned by API.");
       }
 
-  // Backend ya asigna rol si se envía roleId o por defecto 'user'
-  setMsg("User created.");
+      // Backend ya asigna rol si se envía roleId o por defecto 'user'
+      setMsg("User created.");
       await mutate();
     } catch (e) {
       const maybe = e as unknown;
-      const message = typeof maybe === "object" && maybe !== null && "message" in maybe ? String((maybe as { message?: unknown }).message || "") : "";
+      const message =
+        typeof maybe === "object" && maybe !== null && "message" in maybe
+          ? String((maybe as { message?: unknown }).message || "")
+          : "";
       setMsg(message || "Error creating user");
     } finally {
       setBusy(false);
@@ -458,22 +559,28 @@ function UsersInner() {
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
               <div>
-                <h1 className="text-xl font-bold text-gray-900 dark:text-white">User Management</h1>
-                <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">Manage and monitor all system users</p>
+                <h1 className="text-xl font-bold text-gray-900 dark:text-white">
+                  User Management
+                </h1>
+                <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                  Manage and monitor all system users
+                </p>
               </div>
               <div className="flex items-center gap-3">
                 <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg px-4 py-2 text-white shadow-sm">
                   <div className="text-xs font-medium">Total Users</div>
                   <div className="text-lg font-bold">{pageObj.total}</div>
                 </div>
-        <button
+                <button
                   className="px-3 py-2 text-sm rounded-lg bg-emerald-600 text-white hover:bg-emerald-700"
                   onClick={() => {
                     // Preseleccionar rol "user" por defecto
-                    const userRole = roleOptions.find((r) => r.name.toLowerCase() === "user");
+                    const userRole = roleOptions.find(
+                      (r) => r.name.toLowerCase() === "user"
+                    );
                     setSelectedNewRoleID(userRole?.roleID ?? "");
-          // Refrescar roles al abrir
-          mutateRoles();
+                    // Refrescar roles al abrir
+                    mutateRoles();
                     setCreateUserOpen(true);
                   }}
                 >
@@ -487,17 +594,32 @@ function UsersInner() {
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4">
             <div className="flex flex-col sm:flex-row gap-3">
               <div className="flex-1">
-                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Search Users</label>
+                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Search Users
+                </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    <svg
+                      className="h-5 w-5 text-gray-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                      />
                     </svg>
                   </div>
                   <input
                     type="search"
                     value={search}
-                    onChange={(e) => { setPage(1); setSearch(e.target.value); }}
+                    onChange={(e) => {
+                      setPage(1);
+                      setSearch(e.target.value);
+                    }}
                     placeholder="Search by username, email, or name..."
                     autoComplete="off"
                     name="users-search"
@@ -509,11 +631,17 @@ function UsersInner() {
               </div>
 
               <div className="w-full sm:w-48">
-                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Items per page</label>
+                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Items per page
+                </label>
                 <select
                   className="block w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
                   value={String(limit)}
-                  onChange={(e) => { const n = Number(e.target.value) as LimitParam; setPage(1); setLimit(n); }}
+                  onChange={(e) => {
+                    const n = Number(e.target.value) as LimitParam;
+                    setPage(1);
+                    setLimit(n);
+                  }}
                 >
                   <option value="10">10 items</option>
                   <option value="20">20 items</option>
@@ -523,7 +651,9 @@ function UsersInner() {
               </div>
 
               <div className="w-full sm:w-auto">
-                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Actions</label>
+                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Actions
+                </label>
                 <button
                   onClick={() => mutate()}
                   disabled={isLoading}
@@ -547,11 +677,18 @@ function UsersInner() {
               totalItems: pageObj.total,
               pageSize: limit,
               onPageChange: (p) => setPage(p),
-              onPageSizeChange: (n) => { setPage(1); setLimit(n as LimitParam); },
+              onPageSizeChange: (n) => {
+                setPage(1);
+                setLimit(n as LimitParam);
+              },
             }}
           />
 
-          {msg && <div className="text-sm text-center text-gray-700 dark:text-gray-300">{msg}</div>}
+          {msg && (
+            <div className="text-sm text-center text-gray-700 dark:text-gray-300">
+              {msg}
+            </div>
+          )}
         </div>
       </div>
 
@@ -559,12 +696,16 @@ function UsersInner() {
       {roleModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
           <div className="w-full max-w-md bg-white dark:bg-gray-800 rounded-xl p-5 shadow-lg border border-gray-200 dark:border-gray-700">
-            <h3 className="text-lg font-semibold mb-3 text-gray-900 dark:text-white">Change Role</h3>
+            <h3 className="text-lg font-semibold mb-3 text-gray-900 dark:text-white">
+              Change Role
+            </h3>
             <p className="text-sm text-gray-600 dark:text-gray-300 mb-4 break-words">
               User: <b>{roleModalUser?.email}</b>
             </p>
 
-            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Select role</label>
+            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Select role
+            </label>
             <select
               className="w-full px-3 py-2 text-sm border rounded-lg bg-white dark:bg-gray-700 dark:border-gray-600"
               value={selectedRoleID}
@@ -573,21 +714,31 @@ function UsersInner() {
             >
               {rolesLoading && <option value="">Loading...</option>}
               {!rolesLoading && <option value="">-- Select --</option>}
-              {!rolesLoading && roleOptions.length === 0 && <option value="" disabled>No roles available</option>}
+              {!rolesLoading && roleOptions.length === 0 && (
+                <option value="" disabled>
+                  No roles available
+                </option>
+              )}
               {roleOptions.map((r) => (
-                <option key={r.roleID} value={r.roleID}>{r.name}</option>
+                <option key={r.roleID} value={r.roleID}>
+                  {r.name}
+                </option>
               ))}
             </select>
             {rolesError && (
               <p className="mt-2 text-xs text-red-600 dark:text-red-400 break-words">
-                Failed to load roles. {rolesError instanceof Error ? rolesError.message : ''}
+                Failed to load roles.{" "}
+                {rolesError instanceof Error ? rolesError.message : ""}
               </p>
             )}
 
             <div className="mt-5 flex items-center justify-end gap-2">
               <button
                 className="px-3 py-2 text-sm rounded-lg border"
-                onClick={() => { setRoleModalOpen(false); setRoleModalUser(null); }}
+                onClick={() => {
+                  setRoleModalOpen(false);
+                  setRoleModalUser(null);
+                }}
                 disabled={busy}
               >
                 Cancel
@@ -608,29 +759,62 @@ function UsersInner() {
       {createUserOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
           <div className="w-full max-w-md bg-white dark:bg-gray-800 rounded-xl p-5 shadow-lg border border-gray-200 dark:border-gray-700">
-            <h3 className="text-lg font-semibold mb-3 text-gray-900 dark:text-white">Create User</h3>
+            <h3 className="text-lg font-semibold mb-3 text-gray-900 dark:text-white">
+              Create User
+            </h3>
             <div className="grid grid-cols-1 gap-3">
-              <input className="px-3 py-2 text-sm border rounded-lg bg-white dark:bg-gray-700 dark:border-gray-600"
-                placeholder="First name" value={newUser.firstName}
-                onChange={(e) => setNewUser((s) => ({ ...s, firstName: e.target.value }))} />
-              <input className="px-3 py-2 text-sm border rounded-lg bg-white dark:bg-gray-700 dark:border-gray-600"
-                placeholder="Last name" value={newUser.lastName}
-                onChange={(e) => setNewUser((s) => ({ ...s, lastName: e.target.value }))} />
-              <input className="px-3 py-2 text-sm border rounded-lg bg-white dark:bg-gray-700 dark:border-gray-600"
-                placeholder="Username" value={newUser.username}
-                onChange={(e) => setNewUser((s) => ({ ...s, username: e.target.value }))} />
-              <input className="px-3 py-2 text-sm border rounded-lg bg-white dark:bg-gray-700 dark:border-gray-600"
-                placeholder="Email" type="email" value={newUser.email}
-                autoComplete="off" name="new-user-email"
-                onChange={(e) => setNewUser((s) => ({ ...s, email: e.target.value }))} />
-              <input className="px-3 py-2 text-sm border rounded-lg bg-white dark:bg-gray-700 dark:border-gray-600"
-                placeholder="Password" type="password" value={newUser.password}
-                autoComplete="new-password" name="new-user-password"
-                onChange={(e) => setNewUser((s) => ({ ...s, password: e.target.value }))} />
+              <input
+                className="px-3 py-2 text-sm border rounded-lg bg-white dark:bg-gray-700 dark:border-gray-600"
+                placeholder="First name"
+                value={newUser.firstName}
+                onChange={(e) =>
+                  setNewUser((s) => ({ ...s, firstName: e.target.value }))
+                }
+              />
+              <input
+                className="px-3 py-2 text-sm border rounded-lg bg-white dark:bg-gray-700 dark:border-gray-600"
+                placeholder="Last name"
+                value={newUser.lastName}
+                onChange={(e) =>
+                  setNewUser((s) => ({ ...s, lastName: e.target.value }))
+                }
+              />
+              <input
+                className="px-3 py-2 text-sm border rounded-lg bg-white dark:bg-gray-700 dark:border-gray-600"
+                placeholder="Username"
+                value={newUser.username}
+                onChange={(e) =>
+                  setNewUser((s) => ({ ...s, username: e.target.value }))
+                }
+              />
+              <input
+                className="px-3 py-2 text-sm border rounded-lg bg-white dark:bg-gray-700 dark:border-gray-600"
+                placeholder="Email"
+                type="email"
+                value={newUser.email}
+                autoComplete="off"
+                name="new-user-email"
+                onChange={(e) =>
+                  setNewUser((s) => ({ ...s, email: e.target.value }))
+                }
+              />
+              <input
+                className="px-3 py-2 text-sm border rounded-lg bg-white dark:bg-gray-700 dark:border-gray-600"
+                placeholder="Password"
+                type="password"
+                value={newUser.password}
+                autoComplete="new-password"
+                name="new-user-password"
+                onChange={(e) =>
+                  setNewUser((s) => ({ ...s, password: e.target.value }))
+                }
+              />
 
               {/* Select de Rol */}
               <div>
-                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Role</label>
+                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Role
+                </label>
                 <select
                   className="w-full px-3 py-2 text-sm border rounded-lg bg-white dark:bg-gray-700 dark:border-gray-600"
                   value={selectedNewRoleID}
@@ -639,14 +823,21 @@ function UsersInner() {
                 >
                   {rolesLoading && <option value="">Loading...</option>}
                   {!rolesLoading && <option value="">-- Select --</option>}
-                  {!rolesLoading && roleOptions.length === 0 && <option value="" disabled>No roles available</option>}
+                  {!rolesLoading && roleOptions.length === 0 && (
+                    <option value="" disabled>
+                      No roles available
+                    </option>
+                  )}
                   {roleOptions.map((r) => (
-                    <option key={r.roleID} value={r.roleID}>{r.name}</option>
+                    <option key={r.roleID} value={r.roleID}>
+                      {r.name}
+                    </option>
                   ))}
                 </select>
                 {rolesError && (
                   <p className="mt-2 text-xs text-red-600 dark:text-red-400 break-words">
-                    Failed to load roles. {rolesError instanceof Error ? rolesError.message : ''}
+                    Failed to load roles.{" "}
+                    {rolesError instanceof Error ? rolesError.message : ""}
                   </p>
                 )}
               </div>
@@ -657,15 +848,24 @@ function UsersInner() {
                 className="px-3 py-2 text-sm rounded-lg border"
                 onClick={() => {
                   setCreateUserOpen(false);
-                  setNewUser({ firstName: "", lastName: "", username: "", email: "", password: "" });
+                  setNewUser({
+                    firstName: "",
+                    lastName: "",
+                    username: "",
+                    email: "",
+                    password: "",
+                  });
                   setSelectedNewRoleID("");
                 }}
                 disabled={busy}
               >
                 Cancel
               </button>
-              <button className="px-3 py-2 text-sm rounded-lg bg-emerald-600 text-white disabled:opacity-50"
-                onClick={onCreateUser} disabled={busy}>
+              <button
+                className="px-3 py-2 text-sm rounded-lg bg-emerald-600 text-white disabled:opacity-50"
+                onClick={onCreateUser}
+                disabled={busy}
+              >
                 {busy ? "Creating..." : "Create"}
               </button>
             </div>
@@ -678,7 +878,10 @@ function UsersInner() {
         <EditUserModal
           open={editOpen}
           user={editUser as User | null}
-          onClose={() => { setEditOpen(false); setEditUser(null); }}
+          onClose={() => {
+            setEditOpen(false);
+            setEditUser(null);
+          }}
           onSubmit={async (vals, uid) => {
             // Solo enviar campos permitidos por UpdateUserDto
             const payload: UpdateUserBody = {
@@ -692,7 +895,11 @@ function UsersInner() {
               isVerified: vals.isVerified,
             };
             // limpiar undefined para no sobrescribir con undefined
-            (Object.keys(payload) as (keyof UpdateUserBody)[]).forEach((k) => (payload[k] === undefined) && delete (payload as Record<string, unknown>)[k as string]);
+            (Object.keys(payload) as (keyof UpdateUserBody)[]).forEach(
+              (k) =>
+                payload[k] === undefined &&
+                delete (payload as Record<string, unknown>)[k as string]
+            );
             await updateUser(uid, payload);
             await mutate();
           }}

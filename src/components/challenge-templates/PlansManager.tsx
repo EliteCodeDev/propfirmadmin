@@ -14,7 +14,6 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -95,9 +94,12 @@ export function PlansManager({ pageSize }: PlansManagerProps) {
 
   const handleDelete = async (planId: string) => {
     try {
-      const response = await fetch(`/api/server/challenge-templates/plans/${planId}`, {
-        method: "DELETE",
-      });
+      const response = await fetch(
+        `/api/server/challenge-templates/plans/${planId}`,
+        {
+          method: "DELETE",
+        }
+      );
       if (response.ok) {
         setPlans(plans.filter((plan) => plan.planID !== planId));
         toast.success("Plan eliminado correctamente");
@@ -105,7 +107,7 @@ export function PlansManager({ pageSize }: PlansManagerProps) {
         toast.error("Error al eliminar el plan");
       }
     } catch (error) {
-      toast.error("Error al eliminar el plan");
+      toast.error("Error al eliminar el plan: " + error);
     }
   };
 
@@ -133,17 +135,17 @@ export function PlansManager({ pageSize }: PlansManagerProps) {
   // --------------------------------------------------
   const renderActions = (plan: ChallengePlan) => (
     <div className="flex space-x-2">
-      <Button 
-        variant="outline" 
-        size="sm" 
+      <Button
+        variant="outline"
+        size="sm"
         onClick={() => handleEdit(plan)}
         className="h-8 w-8 p-0"
       >
         <Edit className="h-4 w-4" />
       </Button>
-      <Button 
-        variant="outline" 
-        size="sm" 
+      <Button
+        variant="outline"
+        size="sm"
         onClick={() => handleDelete(plan.planID)}
         className="h-8 w-8 p-0"
       >
@@ -156,7 +158,7 @@ export function PlansManager({ pageSize }: PlansManagerProps) {
   const tableData = plans.map((plan, index) => ({
     id: index + 1, // Número secuencial para la tabla
     name: plan.name,
-    actions: plan
+    actions: plan,
   }));
 
   // Total de páginas para paginación
@@ -190,7 +192,7 @@ export function PlansManager({ pageSize }: PlansManagerProps) {
     <div className="space-y-6">
       <div className="bg-white space-y-6 pt py-4 px-6">
         <div className="flex justify-end items-center pr-2">
-          <Button 
+          <Button
             onClick={() => {
               setEditItem(null);
               form.reset({ name: "", isActive: true });
@@ -214,7 +216,7 @@ export function PlansManager({ pageSize }: PlansManagerProps) {
             totalItems: plans.length,
             pageSize: pageSize,
             onPageChange: setPage,
-            onPageSizeChange: () => {} // No cambio de tamaño de página por ahora
+            onPageSizeChange: () => {}, // No cambio de tamaño de página por ahora
           }}
         />
       </div>
@@ -222,9 +224,7 @@ export function PlansManager({ pageSize }: PlansManagerProps) {
       <Dialog open={openModal} onOpenChange={setOpenModal}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle>
-              {editItem ? "Editar Plan" : "Crear Plan"}
-            </DialogTitle>
+            <DialogTitle>{editItem ? "Editar Plan" : "Crear Plan"}</DialogTitle>
           </DialogHeader>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <div className="space-y-2">
@@ -247,7 +247,8 @@ export function PlansManager({ pageSize }: PlansManagerProps) {
                 id="wooID"
                 type="number"
                 {...form.register("wooID", {
-                  setValueAs: (value) => value === "" ? undefined : Number(value)
+                  setValueAs: (value) =>
+                    value === "" ? undefined : Number(value),
                 })}
                 placeholder="ID del producto en WooCommerce"
               />
@@ -274,7 +275,11 @@ export function PlansManager({ pageSize }: PlansManagerProps) {
             </div>
 
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setOpenModal(false)}>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setOpenModal(false)}
+              >
                 Cancelar
               </Button>
               <Button type="submit">

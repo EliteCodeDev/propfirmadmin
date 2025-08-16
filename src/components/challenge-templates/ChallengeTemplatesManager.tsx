@@ -8,7 +8,6 @@ import { RelationsManager } from "./RelationsManager";
 import { StagesManager } from "./StagesManager";
 import PaginatedCardTable from "@/components/common/PaginatedCardTable";
 import type { ColumnConfig } from "@/components/common/tableComponent";
-import { RowsPerPage } from "@/components/ui/RowsPerPage";
 import { useArrayValidation } from "@/hooks/useArrayValidation";
 import { Settings, PackageIcon, Layers, Link, Eye, Folder } from "lucide-react";
 
@@ -44,26 +43,26 @@ export function ChallengeTemplatesManager() {
       plan: "Starter Plan",
       balance: "$10,000",
       status: "Activo",
-      created: "2025-01-15"
+      created: "2025-01-15",
     },
     {
-      id: "2", 
+      id: "2",
       name: "Template 2",
       category: "Basic",
       plan: "Pro Plan",
       balance: "$25,000",
       status: "Inactivo",
-      created: "2025-01-10"
+      created: "2025-01-10",
     },
     {
       id: "3",
-      name: "Template 3", 
+      name: "Template 3",
       category: "Advanced",
       plan: "Enterprise Plan",
       balance: "$50,000",
       status: "Activo",
-      created: "2025-01-05"
-    }
+      created: "2025-01-05",
+    },
   ];
 
   const totalItems = templateData.length;
@@ -101,7 +100,7 @@ export function ChallengeTemplatesManager() {
       icon: <Layers className="w-4 h-4" />,
     },
   ];
-  
+
   const tabsValidation = useArrayValidation(tabs);
 
   const renderTabContent = () => {
@@ -119,7 +118,10 @@ export function ChallengeTemplatesManager() {
               totalItems: totalItems,
               pageSize: pageSize,
               onPageChange: (p) => setPage(p),
-              onPageSizeChange: (n) => { setPage(1); setPageSize(n); },
+              onPageSizeChange: (n) => {
+                setPage(1);
+                setPageSize(n);
+              },
             }}
           />
         );
@@ -146,7 +148,10 @@ export function ChallengeTemplatesManager() {
               totalItems: totalItems,
               pageSize: pageSize,
               onPageChange: (p) => setPage(p),
-              onPageSizeChange: (n) => { setPage(1); setPageSize(n); },
+              onPageSizeChange: (n) => {
+                setPage(1);
+                setPageSize(n);
+              },
             }}
           />
         );
@@ -164,7 +169,8 @@ export function ChallengeTemplatesManager() {
                 Challenge Templates Manager
               </h1>
               <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                Gestiona plantillas, categorías, planes y configuraciones de challenges
+                Gestiona plantillas, categorías, planes y configuraciones de
+                challenges
               </p>
             </div>
             <div className="flex items-center space-x-2">
@@ -181,22 +187,24 @@ export function ChallengeTemplatesManager() {
             {tabsValidation.safeMap((tab, index) => (
               <button
                 key={tab?.id || `tab-${index}`}
-                onClick={() => setActiveTab(tab?.id || 'visualizer')}
+                onClick={() => setActiveTab(tab?.id || "visualizer")}
                 className={`flex items-center gap-2 px-6 py-4 text-sm font-medium transition-all duration-200 relative ${
                   activeTab === tab?.id
                     ? "bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 border-b-2 border-blue-600"
                     : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700/50"
                 }`}
               >
-                <span className={`${
-                  activeTab === tab?.id 
-                    ? "text-blue-600 dark:text-blue-400" 
-                    : "text-gray-500 dark:text-gray-500"
-                }`}>
+                <span
+                  className={`${
+                    activeTab === tab?.id
+                      ? "text-blue-600 dark:text-blue-400"
+                      : "text-gray-500 dark:text-gray-500"
+                  }`}
+                >
                   {tab?.icon}
                 </span>
-                {tab?.label || 'Tab'}
-                
+                {tab?.label || "Tab"}
+
                 {/* Active indicator */}
                 {activeTab === tab?.id && (
                   <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600 dark:bg-blue-400" />
@@ -222,9 +230,7 @@ export function ChallengeTemplatesManager() {
           )*/}
 
           {/* Tab Content */}
-          <div className=" mt-6">
-            {renderTabContent()}
-          </div>
+          <div className=" mt-6">{renderTabContent()}</div>
         </div>
       </div>
     </div>
