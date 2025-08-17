@@ -2,11 +2,9 @@
 
 import React, { useEffect, useState } from "react";
 import PaginatedCardTable from "@/components/common/PaginatedCardTable";
-import type { ColumnConfig } from "@/types";
-import {
-  challengeTemplatesApi,
-  type ChallengePlan,
-} from "@/api/challenge-templates";
+import { ColumnConfig } from "@/types";
+import { challengeTemplatesApi } from "@/api/challenge-templates";
+import { ChallengePlan } from "@/types";
 
 // shadcn/ui
 import {
@@ -175,8 +173,12 @@ export function PlansManager({ pageSize = 10 }: PlansManagerProps) {
       <div className="space-y-6 bg-white dark:bg-gray-800 p-6 transition-colors duration-200">
         <div className="flex justify-between items-center">
           <div>
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Gestión de Planes</h2>
-            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Cargando planes...</p>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+              Gestión de Planes
+            </h2>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+              Cargando planes...
+            </p>
           </div>
           <Button disabled className="bg-gray-400 text-white">
             <Plus className="mr-2 h-4 w-4" />
@@ -184,7 +186,9 @@ export function PlansManager({ pageSize = 10 }: PlansManagerProps) {
           </Button>
         </div>
         <div className="flex justify-center py-8">
-          <div className="text-gray-500 dark:text-gray-400">Cargando planes...</div>
+          <div className="text-gray-500 dark:text-gray-400">
+            Cargando planes...
+          </div>
         </div>
       </div>
     );
@@ -196,16 +200,18 @@ export function PlansManager({ pageSize = 10 }: PlansManagerProps) {
         {/* Header */}
         <div className="flex justify-between items-center">
           <div>
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Gestión de Planes</h2>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+              Gestión de Planes
+            </h2>
             <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
               Administra los planes disponibles para los challenges
             </p>
           </div>
           <div className="flex items-center gap-3">
-            <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg px-4 py-2 text-white shadow-sm">
+            {/* <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg px-4 py-2 text-white shadow-sm">
               <div className="text-xs font-medium">Total Planes</div>
               <div className="text-lg font-bold">{plans.length}</div>
-            </div>
+            </div> */}
             <Button
               onClick={() => {
                 setEditItem(null);
@@ -252,7 +258,10 @@ export function PlansManager({ pageSize = 10 }: PlansManagerProps) {
           </DialogHeader>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="name" className="text-gray-700 dark:text-gray-300 font-medium">
+              <Label
+                htmlFor="name"
+                className="text-gray-700 dark:text-gray-300 font-medium"
+              >
                 Nombre del Plan
               </Label>
               <Input
@@ -269,7 +278,10 @@ export function PlansManager({ pageSize = 10 }: PlansManagerProps) {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="wooID" className="text-gray-700 dark:text-gray-300 font-medium">
+              <Label
+                htmlFor="wooID"
+                className="text-gray-700 dark:text-gray-300 font-medium"
+              >
                 ID WooCommerce (opcional)
               </Label>
               <Input
@@ -301,7 +313,10 @@ export function PlansManager({ pageSize = 10 }: PlansManagerProps) {
                   />
                 )}
               />
-              <Label htmlFor="isActive" className="text-gray-700 dark:text-gray-300">
+              <Label
+                htmlFor="isActive"
+                className="text-gray-700 dark:text-gray-300"
+              >
                 Plan Activo
               </Label>
             </div>
@@ -315,7 +330,7 @@ export function PlansManager({ pageSize = 10 }: PlansManagerProps) {
               >
                 Cancelar
               </Button>
-              <Button 
+              <Button
                 type="submit"
                 className="bg-emerald-600 dark:bg-emerald-600 text-white hover:bg-emerald-700 dark:hover:bg-emerald-700 shadow-sm"
               >

@@ -3,7 +3,8 @@
 import React, { useEffect, useState } from "react";
 import PaginatedCardTable from "@/components/common/PaginatedCardTable";
 import type { ColumnConfig } from "@/types";
-import { challengeTemplatesApi, type ChallengeStage } from "@/api/challenge-templates";
+import { challengeTemplatesApi } from "@/api/challenge-templates";
+import { ChallengeStage } from "@/types";
 import { useArrayValidation } from "@/hooks/useArrayValidation";
 
 // shadcn/ui
@@ -83,12 +84,18 @@ export function StagesManager({ pageSize = 10 }: StagesManagerProps) {
     setOpenModal(true);
   }
 
-  function handleOpenEdit(item: { id: number; name: string; originalId?: string }) {
-    const stage = stagesValidation.safeFind(s => s?.stageID === item.originalId || s?.name === item.name);
+  function handleOpenEdit(item: {
+    id: number;
+    name: string;
+    originalId?: string;
+  }) {
+    const stage = stagesValidation.safeFind(
+      (s) => s?.stageID === item.originalId || s?.name === item.name
+    );
     if (stage) {
       setEditItem(stage);
-      form.reset({ 
-        name: stage.name || ""
+      form.reset({
+        name: stage.name || "",
       });
       setOpenModal(true);
     }
@@ -117,7 +124,7 @@ export function StagesManager({ pageSize = 10 }: StagesManagerProps) {
   // 3. Validación y procesamiento de datos para la tabla
   // --------------------------------------------------
   const stagesValidation = useArrayValidation(stages);
-  
+
   const tableData = stagesValidation.safeMap((item, index) => ({
     id: index + 1, // Número secuencial para la tabla
     name: item?.name || "Sin nombre",
@@ -161,18 +168,20 @@ export function StagesManager({ pageSize = 10 }: StagesManagerProps) {
       {/* Header mejorado */}
       <div className="flex justify-between items-center mb-6 px-6">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Etapas</h2>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+            Etapas
+          </h2>
           <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
             Gestiona las etapas disponibles para los challenges
           </p>
         </div>
         <div className="flex items-center gap-3">
-          <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg px-4 py-2 text-white shadow-sm">
+          {/* <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg px-4 py-2 text-white shadow-sm">
             <div className="text-xs font-medium">Total Etapas</div>
             <div className="text-lg font-bold">{tableData.length}</div>
-          </div>
-          <Button 
-            onClick={handleOpenCreate} 
+          </div> */}
+          <Button
+            onClick={handleOpenCreate}
             className="bg-emerald-600 hover:bg-emerald-700 dark:bg-emerald-600 dark:hover:bg-emerald-700 text-white group shadow-sm"
           >
             <Plus className="mr-2 h-4 w-4 transition-transform duration-200 group-hover:rotate-90" />

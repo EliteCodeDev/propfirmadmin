@@ -1,20 +1,29 @@
 "use client";
 
 import React, { useEffect, useState, useMemo } from "react";
+import { challengeTemplatesApi } from "@/api/challenge-templates";
 import {
-  challengeTemplatesApi,
-  type ChallengeCategory,
-  type ChallengePlan,
-  type ChallengeBalance,
-  type ChallengeRelation,
-  type ChallengeStage,
-  type RelationStage,
-} from "@/api/challenge-templates";
+  ChallengeCategory,
+  ChallengePlan,
+  ChallengeBalance,
+  ChallengeRelation,
+  ChallengeStage,
+  RelationStage,
+  RelationBalance,
+} from "@/types";
 import { useArrayValidation } from "@/hooks/useArrayValidation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { Loader2, RefreshCw } from "lucide-react";
+import {
+  Loader2,
+  RefreshCw,
+  CheckCircle,
+  DollarSign,
+  Target,
+  Trophy,
+  Zap,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 
 import type { TemplateVisualizerProps } from "@/types";
@@ -31,12 +40,13 @@ export function TemplateVisualizer({}: TemplateVisualizerProps) {
   const [error, setError] = useState<string | null>(null);
 
   // Estados de selección
-  const [selectedCategoryIndex, setSelectedCategoryIndex] = useState<
-    number | null
-  >(null);
-  const [selectedRelationIndex, setSelectedRelationIndex] = useState<
-    number | null
-  >(null);
+  const [selectedPlan, setSelectedPlan] = useState<ChallengePlan | null>(null);
+  const [selectedCategory, setSelectedCategory] =
+    useState<ChallengeCategory | null>(null);
+  const [selectedBalance, setSelectedBalance] =
+    useState<ChallengeBalance | null>(null);
+  const [selectedRelation, setSelectedRelation] =
+    useState<ChallengeRelation | null>(null);
 
   // Cargar todos los datos
   const loadAllData = async (): Promise<void> => {
@@ -86,90 +96,70 @@ export function TemplateVisualizer({}: TemplateVisualizerProps) {
   const stagesValidation = useArrayValidation(stages);
   const relationStagesValidation = useArrayValidation(relationStages);
 
-  // Organizar datos en la estructura solicitada
-  const organizedData = useMemo(() => {
-    return categoriesValidation.safeMap((category) => {
-      const categoryRelations = relationsValidation.safeFilter(
-        (rel) => rel?.categoryID === category?.categoryID
+  // Buscar relación basada en selecciones
+  const currentRelation = useMemo(() => {
+    if (!selectedPlan || !selectedCategory) return null;
+
+    return relationsValidation.safeFind(
+      (rel) =>
+        rel?.planID === selectedPlan.planID &&
+        rel?.categoryID === selectedCategory.categoryID
+    );
+  }, [selectedPlan, selectedCategory, relationsValidation]);
+
+  // Obtener balances disponibles para la relación actual
+  const availableBalances = useMemo(() => {
+    if (!currentRelation?.balances) return [];
+
+    return currentRelation.balances
+      .map((rb) => {
+        const balance = balancesValidation.safeFind(
+          (b) => b?.balanceID === rb.balanceID
+        );
+        return {
+          relationBalance: rb,
+          balance,
+        };
+      })
+      .filter((item) => item.balance);
+  }, [currentRelation, balancesValidation]);
+
+  // Obtener stages para la relación actual
+  const relationStagesData = useMemo(() => {
+    if (!currentRelation) return [];
+
+    const relStages = relationStagesValidation.safeFilter(
+      (rs) => rs?.relationID === currentRelation.relationID
+    );
+
+    return relStages
+      .map((rs) => {
+        const stage = stagesValidation.safeFind(
+          (s) => s?.stageID === rs?.stageID
+        );
+        return {
+          relationStage: rs,
+          stage,
+        };
+      })
+      .filter((stageObj) => stageObj.stage)
+      .sort(
+        (a, b) =>
+          (a.relationStage?.numPhase || 0) - (b.relationStage?.numPhase || 0)
       );
+  }, [currentRelation, relationStagesValidation, stagesValidation]);
 
-      return {
-        category,
-        relations: categoryRelations.map((relation) => {
-          const plan = plansValidation.safeFind((p) => p?.planID === relation?.planID);
-          const balance = relation?.balanceID
-            ? balancesValidation.safeFind((b) => b?.balanceID === relation.balanceID)
-            : null;
-          const relStages = relationStagesValidation.safeFilter(
-            (rs) => rs?.relationID === relation?.relationID
-          );
-
-          return {
-            relation,
-            plan,
-            balance,
-            stages: relStages
-              .map((rs) => {
-                const stage = stagesValidation.safeFind((s) => s?.stageID === rs?.stageID);
-                return {
-                  relationStage: rs,
-                  stage,
-                };
-              })
-              .filter((stageObj) => stageObj.stage)
-              .sort(
-                (a, b) =>
-                  (a.relationStage?.numPhase || 0) -
-                  (b.relationStage?.numPhase || 0)
-              ),
-          };
-        }),
-      };
-    }).filter((cat) => cat.relations.length > 0);
-  }, [
-    categoriesValidation,
-    relationsValidation,
-    plansValidation,
-    balancesValidation,
-    stagesValidation,
-    relationStagesValidation,
-  ]);
-
-  // Seleccionar la primera categoría por defecto cuando los datos estén listos
+  // Actualizar relación seleccionada cuando cambie la relación actual
   useEffect(() => {
-    if (organizedData.length > 0 && selectedCategoryIndex === null) {
-      setSelectedCategoryIndex(0);
-    }
-  }, [organizedData, selectedCategoryIndex]);
-
-  // Reset relación cuando cambie la categoría
-  useEffect(() => {
-    setSelectedRelationIndex(null);
-  }, [selectedCategoryIndex]);
-
-  // Obtener la categoría seleccionada
-  const selectedCategory =
-    selectedCategoryIndex !== null && organizedData.length > selectedCategoryIndex
-      ? organizedData[selectedCategoryIndex]
-      : null;
-
-  // Obtener relaciones de la categoría seleccionada
-  const relationOptions = selectedCategory?.relations || [];
-
-  // Obtener la relación seleccionada
-  const selectedRelation =
-    selectedRelationIndex !== null && relationOptions.length > selectedRelationIndex
-      ? relationOptions[selectedRelationIndex]
-      : null;
+    setSelectedRelation(currentRelation || null);
+  }, [currentRelation]);
 
   if (isLoading) {
     return (
-      <div className="min-h-screen p-6 bg-gradient-to-b from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 text-gray-800 dark:text-gray-100">
-        <div className="flex items-center justify-center h-32">
-          <div className="flex flex-col items-center">
-            <Loader2 className="animate-spin h-10 w-10 text-app-secondary mb-3" />
-            <p className="text-app-secondary">Cargando datos...</p>
-          </div>
+      <div className="flex items-center justify-center h-64">
+        <div className="flex flex-col items-center">
+          <Loader2 className="animate-spin h-10 w-10 text-blue-600 mb-3" />
+          <p className="text-gray-600 dark:text-gray-400">Cargando datos...</p>
         </div>
       </div>
     );
@@ -177,303 +167,262 @@ export function TemplateVisualizer({}: TemplateVisualizerProps) {
 
   if (error) {
     return (
-      <div className="min-h-screen p-6 bg-gradient-to-b from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 text-gray-800 dark:text-gray-100">
-        <div className="flex items-center justify-center h-32">
-          <div className="flex flex-col items-center">
-            <div className="text-red-500 text-lg mb-3">
-              Error al cargar los datos
-            </div>
-            <p className="text-gray-600 dark:text-gray-400 mb-4">{error}</p>
-            <Button
-              onClick={loadAllData}
-              className="bg-app-secondary hover:bg-app-secondary/90"
-            >
-              <RefreshCw className="w-4 h-4 mr-2" />
-              Reintentar
-            </Button>
+      <div className="flex items-center justify-center h-64">
+        <div className="flex flex-col items-center">
+          <div className="text-red-500 text-lg mb-3">
+            Error al cargar los datos
           </div>
+          <p className="text-gray-600 dark:text-gray-400 mb-4">{error}</p>
+          <Button
+            onClick={loadAllData}
+            className="bg-blue-600 hover:bg-blue-700"
+          >
+            <RefreshCw className="w-4 h-4 mr-2" />
+            Reintentar
+          </Button>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen p-6 bg-gradient-to-b from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 text-gray-800 dark:text-gray-100">
-      <div className="max-w-7xl mx-auto space-y-8">
-        <h2 className="text-2xl font-bold text-center text-gray-800 dark:text-gray-100 border-b-2 border-app-secondary pb-2 w-fit mx-auto">
-          Categoría → Relación → Plan & Balance & Etapas
-        </h2>
+    <div className="relative w-full min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50/30 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+      {/* Decorative background elements */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        <div className="absolute top-20 right-20 w-32 h-32 bg-gradient-to-br from-blue-100/20 to-indigo-100/20 dark:from-blue-900/10 dark:to-indigo-900/10 rounded-full blur-3xl" />
+        <div className="absolute bottom-40 left-10 w-24 h-24 bg-gradient-to-tr from-gray-100/30 to-blue-50/30 dark:from-gray-800/20 dark:to-blue-900/10 rounded-full blur-2xl" />
+        <div className="absolute top-1/2 left-1/3 w-16 h-16 bg-gradient-to-bl from-indigo-50/40 to-gray-50/40 dark:from-indigo-900/10 dark:to-gray-800/10 rounded-full blur-xl" />
+      </div>
 
-        {/* 1) CATEGORÍAS */}
-        <div className="flex items-center justify-center gap-4 flex-wrap">
-          {organizedData.length === 0 ? (
-            <span className="text-gray-500 dark:text-gray-400">
-              No hay Categorías
-            </span>
-          ) : (
-            organizedData.map((categoryObj, index) => {
-              // Validar que categoryObj y category existen
-              if (!categoryObj || !categoryObj.category) {
-                return null;
-              }
-              
-              return (
-                <button
-                  key={categoryObj.category.categoryID || index}
-                  onClick={() => setSelectedCategoryIndex(index)}
-                  className={cn(
-                    "px-4 py-2 rounded-lg transition shadow-sm",
-                    selectedCategoryIndex === index
-                      ? "bg-app-secondary text-white"
-                      : "bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700"
-                  )}
-                >
-                  {categoryObj.category.name || 'Sin nombre'} ({categoryObj.relations?.length || 0})
-                </button>
-              );
-            }).filter(Boolean)
+      <div className="relative z-10 p-6 space-y-8">
+        {/* Compact Top Section */}
+        <div className="bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 rounded-3xl p-8 space-y-6">
+          {/* Top Row - Plans, Categories, and Balances */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Challenge Plans */}
+            <div className="space-y-4">
+              <h2 className="text-white text-lg font-semibold text-center">
+                Challenge Plans
+              </h2>
+              <div className="flex gap-2 flex-wrap justify-center">
+                {plansValidation.safeMap((plan, index) => (
+                  <button
+                    key={plan?.planID || index}
+                    onClick={() => setSelectedPlan(plan)}
+                    className={cn(
+                      "px-4 py-2 rounded-lg font-medium transition-all duration-200 border-2 text-sm",
+                      selectedPlan?.planID === plan?.planID
+                        ? "bg-white text-indigo-900 border-white shadow-lg"
+                        : "bg-transparent text-white border-white/30 hover:border-white/60 hover:bg-white/10"
+                    )}
+                  >
+                    {plan?.name || "Sin nombre"}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Challenge Category */}
+            <div className="space-y-4">
+              <h2 className="text-white text-lg font-semibold text-center">
+                Challenge Category
+              </h2>
+              <div className="flex gap-2 flex-wrap justify-center">
+                {categoriesValidation.safeMap((category, index) => (
+                  <button
+                    key={category?.categoryID || index}
+                    onClick={() => setSelectedCategory(category)}
+                    className={cn(
+                      "px-4 py-2 rounded-lg font-medium transition-all duration-200 border-2 text-sm",
+                      selectedCategory?.categoryID === category?.categoryID
+                        ? "bg-blue-500 text-white border-blue-500 shadow-lg"
+                        : "bg-transparent text-white border-white/30 hover:border-white/60 hover:bg-white/10"
+                    )}
+                  >
+                    {category?.name || "Sin nombre"}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* RelationBalances */}
+            <div className="space-y-4">
+              <h2 className="text-white text-lg font-semibold text-center">
+                Balances
+              </h2>
+              <div className="flex gap-2 flex-wrap justify-center">
+                {availableBalances.map((balanceDetail, index) => {
+                  const isSelected =
+                    selectedBalance?.balanceID ===
+                    balanceDetail.balance?.balanceID;
+                  const price = balanceDetail.relationBalance?.price;
+                  const formattedPrice = price
+                    ? `$${price.toLocaleString()}`
+                    : "$0";
+
+                  return (
+                    <button
+                      key={balanceDetail.balance?.balanceID || index}
+                      onClick={() =>
+                        setSelectedBalance(balanceDetail.balance || null)
+                      }
+                      className={cn(
+                        "px-3 py-2 rounded-lg font-medium transition-all duration-200 border-2 text-sm",
+                        isSelected
+                          ? "bg-blue-600 text-white border-blue-600 shadow-lg"
+                          : "bg-transparent text-white border-white/30 hover:border-white/60 hover:bg-white/10"
+                      )}
+                    >
+                      {formattedPrice}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+
+          {/* RelationStages Section */}
+          {relationStagesData.length > 0 && (
+            <div className="bg-blue-600 rounded-2xl p-6 space-y-6">
+              <h2 className="text-white text-lg font-semibold text-center">
+                Stages
+              </h2>
+
+              {/* Stages Header */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                {relationStagesData.slice(0, 2).map((stageData, index) => (
+                  <div
+                    key={stageData.relationStage?.relationStageID || index}
+                    className="text-center"
+                  >
+                    <h3 className="text-white text-2xl font-bold mb-2">
+                      {stageData.stage?.name || "Sin nombre"}
+                    </h3>
+                    <p className="text-blue-200 text-sm">
+                      (
+                      {stageData.relationStage?.numPhase
+                        ? `Phase ${stageData.relationStage.numPhase}`
+                        : "No phase"}
+                      )
+                    </p>
+                  </div>
+                ))}
+              </div>
+
+              {/* Reward Cycles */}
+              <div className="space-y-4">
+                <h4 className="text-white text-center text-lg font-semibold">
+                  Reward Cycles
+                </h4>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  {[
+                    { label: "Tuesday 60%", checked: true },
+                    { label: "Bi-weekly 80%", checked: true },
+                    { label: "On Demand 90%", checked: true },
+                    { label: "Monthly 100%", checked: true },
+                  ].map((cycle, index) => (
+                    <div
+                      key={index}
+                      className="flex items-center gap-2 text-white"
+                    >
+                      <div className="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center">
+                        <CheckCircle className="w-3 h-3 text-white" />
+                      </div>
+                      <span className="text-sm">{cycle.label}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
           )}
         </div>
 
-        {/* 2) RELACIONES */}
-        {selectedCategory && (
-          <div className="flex items-center justify-center gap-4 flex-wrap">
-            {relationOptions.length === 0 ? (
-              <span className="text-gray-500 dark:text-gray-400">
-                No hay Relaciones para esta Categoría
-              </span>
-            ) : (
-              relationOptions.map((relationObj, index) => {
-                // Validar que relationObj y relation existen
-                if (!relationObj || !relationObj.relation) {
-                  return null;
-                }
-                
-                return (
-                  <button
-                    key={relationObj.relation.relationID || index}
-                    onClick={() => setSelectedRelationIndex(index)}
-                    className={cn(
-                      "px-4 py-2 rounded-lg transition shadow-sm",
-                      selectedRelationIndex === index
-                        ? "bg-app-secondary text-white"
-                        : "bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700"
-                    )}
-                  >
-                    Relación {relationObj.relation.relationID || 'N/A'} (
-                    {relationObj.stages?.length || 0} etapas)
-                  </button>
-                );
-              }).filter(Boolean)
-            )}
-          </div>
-        )}
-
-        {/* 3) PLAN & BALANCE */}
-        {selectedRelation && (
-          <div className="flex flex-col md:flex-row gap-6">
-            {/* PLAN */}
-            <Card className="bg-white dark:bg-gray-900 rounded-lg shadow-md p-4 text-gray-800 dark:text-gray-100 border border-gray-200 dark:border-gray-700 flex-1">
-              <CardHeader>
-                <CardTitle className="text-app-secondary dark:text-app-secondary">
-                  Plan Relacionado
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {selectedRelation?.plan ? (
-                  <div className="space-y-2 text-sm">
-                    <div>
-                      <span className="font-medium text-app-secondary/90 dark:text-app-secondary">
-                        Nombre:{" "}
-                      </span>
-                      {selectedRelation.plan.name || 'Sin nombre'}
-                    </div>
-                    {/* <div>
-                      <span className="font-medium text-app-secondary/90 dark:text-app-secondary">
-                        Creado:{" "}
-                      </span>
-                      {formatDate(selectedRelation.plan.createdAt)}
-                    </div> */}
-                  </div>
-                ) : (
-                  <span className="text-gray-500 dark:text-gray-400">
-                    No hay Plan asociado
-                  </span>
-                )}
-              </CardContent>
-            </Card>
-
-            {/* BALANCE */}
-            <Card className="bg-white dark:bg-gray-900 rounded-lg shadow-md p-4 text-gray-800 dark:text-gray-100 border border-gray-200 dark:border-gray-700 flex-1">
-              <CardHeader>
-                <CardTitle className="text-app-secondary dark:text-app-secondary">
-                  Balance Relacionado
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {selectedRelation?.balance ? (
-                  <div className="space-y-2 text-sm">
-                    <div>
-                      <span className="font-medium text-app-secondary/90 dark:text-app-secondary">
-                        Nombre:{" "}
-                      </span>
-                      {selectedRelation.balance.name || 'Sin nombre'}
-                    </div>
-                    {/* <div>
-                      <span className="font-medium text-app-secondary/90 dark:text-app-secondary">
-                        Descripción:{" "}
-                      </span>
-                      {selectedRelation.balance.description || "—"}
-                    </div> */}
-                    {/* <div>
-                      <span className="font-medium text-app-secondary/90 dark:text-app-secondary">
-                        Creado:{" "}
-                      </span>
-                      {formatDate(selectedRelation.balance.createdAt)}
-                    </div> */}
-                  </div>
-                ) : (
-                  <span className="text-gray-500 dark:text-gray-400">
-                    No hay Balance asociado
-                  </span>
-                )}
-              </CardContent>
-            </Card>
-          </div>
-        )}
-
-        {/* 4) ETAPAS */}
-        {selectedRelation && selectedRelation.stages && selectedRelation.stages.length > 0 && (
-          <div className="mt-8 space-y-6">
-            {selectedRelation.stages.length === 1 ? (
-              <div className="flex justify-center">
-                <div className="w-full md:w-1/2">
-                  <Card className="bg-white dark:bg-gray-900 rounded-lg shadow-md p-4 text-gray-800 dark:text-gray-100 border border-gray-200 dark:border-gray-700 w-full">
-                    <CardHeader>
-                      <CardTitle className="text-app-secondary dark:text-app-secondary">
-                        Etapa{" "}
-                        {selectedRelation.stages[0]?.relationStage?.numPhase || 'N/A'}:{" "}
-                        {selectedRelation.stages[0]?.stage?.name || 'Sin nombre'}
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-2 text-sm">
-                        <div>
-                          <span className="font-medium text-app-secondary/90 dark:text-app-secondary">
-                            Fase:{" "}
-                          </span>
-                          {selectedRelation.stages[0]?.relationStage?.numPhase ??
-                            "—"}
-                        </div>
-                        {/* <div>
-                          <span className="font-medium text-app-secondary/90 dark:text-app-secondary">
-                            Descripción:{" "}
-                          </span>
-                          {selectedRelation.stages[0].stage?.description || "—"}
-                        </div>
-                        <div>
-                          <span className="font-medium text-app-secondary/90 dark:text-app-secondary">
-                            Creado:{" "}
-                          </span>
-                          {formatDate(
-                            selectedRelation.stages[0].relationStage.createdAt
-                          )}
-                        </div> */}
-                      </div>
-                    </CardContent>
-                  </Card>
+        {/* Selected Balance Details */}
+        {selectedBalance && (
+          <Card className="border-0 shadow-lg bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm">
+            <CardHeader className="border-b border-gray-100 dark:border-gray-700">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl">
+                  <DollarSign className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                 </div>
+                <CardTitle className="text-xl font-semibold text-gray-900 dark:text-gray-100">
+                  Balance Details: {selectedBalance.name}
+                </CardTitle>
               </div>
-            ) : selectedRelation.stages.length === 2 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {selectedRelation.stages.map((stageObj, index) => {
-                  if (!stageObj || !stageObj.relationStage) {
-                    return null;
-                  }
-                  
-                  return (
-                    <Card
-                      key={stageObj.relationStage.relationStageID || index}
-                      className="bg-white dark:bg-gray-900 rounded-lg shadow-md p-4 text-gray-800 dark:text-gray-100 border border-gray-200 dark:border-gray-700 w-full"
-                    >
-                      <CardHeader>
-                        <CardTitle className="text-app-secondary dark:text-app-secondary">
-                          Etapa {stageObj.relationStage?.numPhase || 'N/A'}:{" "}
-                          {stageObj.stage?.name || 'Sin nombre'}
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="space-y-2 text-sm">
-                          <div>
-                            <span className="font-medium text-app-secondary/90 dark:text-app-secondary">
-                              Fase:{" "}
-                            </span>
-                            {stageObj.relationStage?.numPhase ?? "—"}
-                          </div>
-                        {/* <div>
-                          <span className="font-medium text-app-secondary/90 dark:text-app-secondary">
-                            Descripción:{" "}
-                          </span>
-                          {stageObj.stage?.description || "—"}
-                        </div>
-                        <div>
-                          <span className="font-medium text-app-secondary/90 dark:text-app-secondary">
-                            Creado:{" "}
-                          </span>
-                          {formatDate(stageObj.relationStage.createdAt)}
-                        </div> */}
+            </CardHeader>
+            <CardContent className="pt-6">
+              {availableBalances
+                .filter(
+                  (bd) => bd.balance?.balanceID === selectedBalance.balanceID
+                )
+                .map((balanceDetail, index) => (
+                  <div
+                    key={index}
+                    className="grid grid-cols-1 md:grid-cols-2 gap-6"
+                  >
+                    <div className="space-y-4">
+                      <div className="flex justify-between items-center p-4 bg-gray-50 dark:bg-gray-700 rounded-xl">
+                        <span className="text-gray-600 dark:text-gray-300 font-medium">
+                          Price:
+                        </span>
+                        <span className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                          $
+                          {balanceDetail.relationBalance?.price?.toLocaleString() ||
+                            "0"}
+                        </span>
                       </div>
-                    </CardContent>
-                     </Card>
-                   );
-                 }).filter(Boolean)}
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {selectedRelation.stages.map((stageObj, index) => {
-                  if (!stageObj || !stageObj.relationStage) {
-                    return null;
-                  }
-                  
-                  return (
-                    <Card
-                      key={stageObj.relationStage.relationStageID || index}
-                      className="bg-white dark:bg-gray-900 rounded-lg shadow-md p-4 text-gray-800 dark:text-gray-100 border border-gray-200 dark:border-gray-700 w-full"
-                    >
-                      <CardHeader>
-                        <CardTitle className="text-app-secondary dark:text-app-secondary">
-                          Etapa {stageObj.relationStage?.numPhase || 'N/A'}:{" "}
-                          {stageObj.stage?.name || 'Sin nombre'}
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="space-y-2 text-sm">
-                          <div>
-                            <span className="font-medium text-app-secondary/90 dark:text-app-secondary">
-                              Fase:{" "}
-                            </span>
-                            {stageObj.relationStage?.numPhase ?? "—"}
-                          </div>
-                          {/* <div>
-                            <span className="font-medium text-app-secondary/90 dark:text-app-secondary">
-                              Descripción:{" "}
-                            </span>
-                            {stageObj.stage?.description || "—"}
-                          </div>
-                          <div>
-                            <span className="font-medium text-app-secondary/90 dark:text-app-secondary">
-                              Creado:{" "}
-                            </span>
-                            {formatDate(stageObj.relationStage.createdAt)}
-                          </div> */}
+                      <div className="flex justify-between items-center p-4 bg-gray-50 dark:bg-gray-700 rounded-xl">
+                        <span className="text-gray-600 dark:text-gray-300 font-medium">
+                          Status:
+                        </span>
+                        <span
+                          className={cn(
+                            "px-3 py-1 rounded-full text-sm font-medium flex items-center gap-2",
+                            balanceDetail.relationBalance?.isActive
+                              ? "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400"
+                              : "bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-white"
+                          )}
+                        >
+                          <div
+                            className={cn(
+                              "w-2 h-2 rounded-full",
+                              balanceDetail.relationBalance?.isActive
+                                ? "bg-green-500"
+                                : "bg-red-500"
+                            )}
+                          />
+                          {balanceDetail.relationBalance?.isActive
+                            ? "Active"
+                            : "Inactive"}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="space-y-4">
+                      {balanceDetail.relationBalance?.hasDiscount && (
+                        <div className="flex justify-between items-center p-4 bg-gray-50 dark:bg-gray-700 rounded-xl">
+                          <span className="text-gray-600 dark:text-gray-300 font-medium">
+                            Discount:
+                          </span>
+                          <span className="font-semibold text-gray-900 dark:text-gray-100">
+                            {balanceDetail.relationBalance?.discount || "N/A"}
+                          </span>
                         </div>
-                      </CardContent>
-                    </Card>
-                  );
-                }).filter(Boolean)}
-              </div>
-            )}
-          </div>
+                      )}
+                      {balanceDetail.relationBalance?.wooID && (
+                        <div className="flex justify-between items-center p-4 bg-gray-50 dark:bg-gray-700 rounded-xl">
+                          <span className="text-gray-600 dark:text-gray-300 font-medium">
+                            WooCommerce ID:
+                          </span>
+                          <span className="font-semibold text-gray-900 dark:text-gray-100">
+                            {balanceDetail.relationBalance.wooID}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+            </CardContent>
+          </Card>
         )}
       </div>
     </div>

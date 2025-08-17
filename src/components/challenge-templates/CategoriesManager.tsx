@@ -3,10 +3,9 @@
 import React, { useEffect, useState } from "react";
 import PaginatedCardTable from "@/components/common/PaginatedCardTable";
 import type { ColumnConfig } from "@/types";
-import {
-  challengeTemplatesApi,
-  type ChallengeCategory,
-} from "@/api/challenge-templates";
+import { type ChallengeCategory } from "@/types/challenge-template";
+import { challengeTemplatesApi } from "@/api/challenge-templates";
+
 import { useArrayValidation } from "@/hooks/useArrayValidation";
 
 // shadcn/ui
@@ -189,10 +188,10 @@ export function CategoriesManager({ pageSize = 10 }: CategoriesManagerProps) {
             <Plus className="w-4 h-4 group-hover:rotate-90 transition-all ease-in-out duration-300" />
             Crear Categoría
           </Button>
-          <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg px-4 py-2 text-white shadow-sm">
+          {/* <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg px-4 py-2 text-white shadow-sm">
             <div className="text-xs font-medium">Total Categorías</div>
             <div className="text-lg font-bold">{totalItems}</div>
-          </div>
+          </div> */}
         </div>
         <PaginatedCardTable
           columns={columns}

@@ -4,10 +4,9 @@ import React, { useState } from "react";
 import { CategoriesManager } from "./CategoriesManager";
 import { PlansManager } from "./PlansManager";
 import { BalancesManager } from "./BalancesManager";
-import { RelationsManager } from "./RelationsManager";
+import { RelationsManager } from "./challenge-relations/RelationsManager";
 import { StagesManager } from "./StagesManager";
-import PaginatedCardTable from "@/components/common/PaginatedCardTable";
-import type { ColumnConfig } from "@/types";
+import { TemplateVisualizer } from "./TemplateVisualizer";
 import { useArrayValidation } from "@/hooks/useArrayValidation";
 import { Settings, PackageIcon, Layers, Link, Eye, Folder } from "lucide-react";
 
@@ -23,54 +22,14 @@ interface ChallengeTemplatesManagerProps {
   pageSize?: number;
 }
 
-export function ChallengeTemplatesManager({ pageSize: initialPageSize = 10 }: ChallengeTemplatesManagerProps = {}) {
+export function ChallengeTemplatesManager({
+  pageSize: initialPageSize = 10,
+}: ChallengeTemplatesManagerProps = {}) {
   const [activeTab, setActiveTab] = useState<TabType>("visualizer");
   const [pageSize, setPageSize] = useState(initialPageSize);
   const [page, setPage] = useState(1);
 
-  // Datos de ejemplo para la tabla
-  const templateColumns: ColumnConfig[] = [
-    { key: "id", label: "ID", type: "normal" },
-    { key: "name", label: "Nombre", type: "normal" },
-    { key: "category", label: "Categoría", type: "normal" },
-    { key: "plan", label: "Plan", type: "normal" },
-    { key: "balance", label: "Balance", type: "normal" },
-    { key: "status", label: "Estado", type: "normal" },
-    { key: "created", label: "Creado", type: "normal" },
-  ];
 
-  const templateData = [
-    {
-      id: "1",
-      name: "Template 1",
-      category: "Premium",
-      plan: "Starter Plan",
-      balance: "$10,000",
-      status: "Activo",
-      created: "2025-01-15",
-    },
-    {
-      id: "2",
-      name: "Template 2",
-      category: "Basic",
-      plan: "Pro Plan",
-      balance: "$25,000",
-      status: "Inactivo",
-      created: "2025-01-10",
-    },
-    {
-      id: "3",
-      name: "Template 3",
-      category: "Advanced",
-      plan: "Enterprise Plan",
-      balance: "$50,000",
-      status: "Activo",
-      created: "2025-01-05",
-    },
-  ];
-
-  const totalItems = templateData.length;
-  const totalPages = Math.ceil(totalItems / pageSize);
 
   const tabs = [
     {
@@ -110,25 +69,7 @@ export function ChallengeTemplatesManager({ pageSize: initialPageSize = 10 }: Ch
   const renderTabContent = () => {
     switch (activeTab) {
       case "visualizer":
-        return (
-          <PaginatedCardTable
-            columns={templateColumns}
-            rows={templateData}
-            isLoading={false}
-            emptyText="No hay templates disponibles"
-            pagination={{
-              currentPage: page,
-              totalPages: totalPages,
-              totalItems: totalItems,
-              pageSize: pageSize,
-              onPageChange: (p) => setPage(p),
-              onPageSizeChange: (n) => {
-                setPage(1);
-                setPageSize(n);
-              },
-            }}
-          />
-        );
+        return <TemplateVisualizer />;
       case "categories":
         return <CategoriesManager pageSize={pageSize} />;
       case "plans":
@@ -140,25 +81,7 @@ export function ChallengeTemplatesManager({ pageSize: initialPageSize = 10 }: Ch
       case "stages":
         return <StagesManager pageSize={pageSize} />;
       default:
-        return (
-          <PaginatedCardTable
-            columns={templateColumns}
-            rows={templateData}
-            isLoading={false}
-            emptyText="No hay templates disponibles"
-            pagination={{
-              currentPage: page,
-              totalPages: totalPages,
-              totalItems: totalItems,
-              pageSize: pageSize,
-              onPageChange: (p) => setPage(p),
-              onPageSizeChange: (n) => {
-                setPage(1);
-                setPageSize(n);
-              },
-            }}
-          />
-        );
+        return <TemplateVisualizer />;
     }
   };
 
@@ -232,9 +155,7 @@ export function ChallengeTemplatesManager({ pageSize: initialPageSize = 10 }: Ch
           </div>
 
           {/* Tab Content */}
-          <div className="p-6">
-            {renderTabContent()}
-          </div>
+          <div className="p-6">{renderTabContent()}</div>
         </div>
       </div>
     </div>

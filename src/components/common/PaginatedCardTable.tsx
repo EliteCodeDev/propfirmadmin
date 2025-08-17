@@ -2,16 +2,31 @@
 
 import React, { useMemo } from "react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import type { ColumnConfig, PaginatedCardTableProps, ActionsRenderer } from "@/types";
+import type {
+  ColumnConfig,
+  PaginatedCardTableProps,
+  ActionsRenderer,
+} from "@/types";
 
-function usePageNumbers(currentPage: number, totalPages: number, windowSize = 5) {
+function usePageNumbers(
+  currentPage: number,
+  totalPages: number,
+  windowSize = 5
+) {
   return useMemo(() => {
     const maxToShow = Math.max(3, windowSize);
     const half = Math.floor(maxToShow / 2);
-  let startPage = Math.max(1, currentPage - half);
-  const endPage = Math.min(totalPages, startPage + maxToShow - 1);
+    let startPage = Math.max(1, currentPage - half);
+    const endPage = Math.min(totalPages, startPage + maxToShow - 1);
     if (endPage - startPage + 1 < maxToShow) {
       startPage = Math.max(1, endPage - maxToShow + 1);
     }
@@ -29,7 +44,10 @@ const renderCell = (column: ColumnConfig, row: Record<string, unknown>) => {
 
   switch (column.type) {
     case "link": {
-      const url = typeof column.linkUrl === "function" ? column.linkUrl(value, row) : column.linkUrl || "#";
+      const url =
+        typeof column.linkUrl === "function"
+          ? column.linkUrl(value, row)
+          : column.linkUrl || "#";
       return (
         <a
           href={url}
@@ -79,7 +97,8 @@ export default function PaginatedCardTable(props: PaginatedCardTableProps) {
     pagination,
   } = props;
 
-  const { currentPage, totalPages, pageSize, onPageChange, onPageSizeChange } = pagination;
+  const { currentPage, totalPages, pageSize, onPageChange, onPageSizeChange } =
+    pagination;
   // Records range UI not displayed currently; can be re-enabled if needed
   // const startRecord = (currentPage - 1) * pageSize + 1;
   // const endRecord = typeof totalItems === "number"
@@ -93,33 +112,32 @@ export default function PaginatedCardTable(props: PaginatedCardTableProps) {
   // Función para determinar el ancho de columna basado en el contenido
   const getColumnWidth = (column: ColumnConfig) => {
     switch (column.key) {
-      case 'serial':
-      case 'id':
-        return 'w-16'; // ID muy pequeño
-      case 'status':
-        return 'w-24'; // Status badge
-      case 'role':
-        return 'w-20'; // Role corto
-      case 'country':
-        return 'w-24'; // País
-      case 'createdAt':
-      case 'dateJoined':
-        return 'w-28'; // Fecha
-      case 'email':
-        return 'w-48'; // Email más ancho
-      case 'name':
-        return 'w-32'; // Nombre moderado
+      case "serial":
+      case "id":
+        return "w-16"; // ID muy pequeño
+      case "status":
+        return "w-24"; // Status badge
+      case "role":
+        return "w-20"; // Role corto
+      case "country":
+        return "w-24"; // País
+      case "createdAt":
+      case "dateJoined":
+        return "w-28"; // Fecha
+      case "email":
+        return "w-48"; // Email más ancho
+      case "name":
+        return "w-32"; // Nombre moderado
       default:
-        return 'w-auto'; // Automático para otros
+        return "w-auto"; // Automático para otros
     }
   };
 
   return (
     <Card className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
-      {(subtitleBadge) && (
+      {subtitleBadge && (
         <CardHeader className="px-4 py-3 border-b border-gray-200 dark:border-gray-700/50">
           <div className="flex items-center justify-between">
-            
             {subtitleBadge && (
               <span className="ml-2 px-2 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
                 {subtitleBadge}
@@ -134,9 +152,11 @@ export default function PaginatedCardTable(props: PaginatedCardTableProps) {
             <TableHeader>
               <TableRow className="bg-gray-50 dark:bg-gray-700/30 backdrop-blur-sm border-gray-200 dark:border-gray-600/50">
                 {columns.map((c) => (
-                  <TableHead 
-                    key={c.key} 
-                    className={`pl-6 pr-4 py-3  text-center text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-gray-700 dark:text-gray-300 whitespace-nowrap ${getColumnWidth(c)}`}
+                  <TableHead
+                    key={c.key}
+                    className={`pl-6 pr-4 py-3  text-center text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-gray-700 dark:text-gray-300 whitespace-nowrap ${getColumnWidth(
+                      c
+                    )}`}
                   >
                     {c.label}
                   </TableHead>
@@ -151,34 +171,54 @@ export default function PaginatedCardTable(props: PaginatedCardTableProps) {
             <TableBody>
               {isLoading ? (
                 <TableRow>
-                  <TableCell colSpan={colCount} className="pl-6 pr-4 py-8 text-center bg-gray-50/50 dark:bg-gray-800/20">
+                  <TableCell
+                    colSpan={colCount}
+                    className="pl-6 pr-4 py-8 text-center bg-gray-50/50 dark:bg-gray-800/20"
+                  >
                     <div className="flex flex-col items-center justify-center">
                       <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mb-3"></div>
-                      <p className="text-gray-600 dark:text-gray-300 font-medium text-sm">Cargando datos...</p>
+                      <p className="text-gray-600 dark:text-gray-300 font-medium text-sm">
+                        Cargando datos...
+                      </p>
                     </div>
                   </TableCell>
                 </TableRow>
               ) : rows.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={colCount} className="pl-6 pr-4 py-12 bg-gray-50/50 dark:bg-gray-800/20">
+                  <TableCell
+                    colSpan={colCount}
+                    className="pl-6 pr-4 py-12 bg-gray-50/50 dark:bg-gray-800/20"
+                  >
                     <div className="flex flex-col items-center justify-center">
                       {emptyIcon}
-                      <span className="text-gray-500 dark:text-gray-400 text-base font-medium">{emptyText}</span>
+                      <span className="text-gray-500 dark:text-gray-400 text-base font-medium">
+                        {emptyText}
+                      </span>
                       {emptyHint && (
-                        <span className="text-gray-400 dark:text-gray-500 text-sm mt-1">{emptyHint}</span>
+                        <span className="text-gray-400 dark:text-gray-500 text-sm mt-1">
+                          {emptyHint}
+                        </span>
                       )}
                     </div>
                   </TableCell>
                 </TableRow>
               ) : (
                 rows.map((row, idx) => (
-                  <TableRow key={idx} className="hover:bg-gray-50 dark:hover:bg-gray-700/20 transition-colors border-gray-200 dark:border-gray-700/30">
+                  <TableRow
+                    key={idx}
+                    className="hover:bg-gray-50 dark:hover:bg-gray-700/20 transition-colors border-gray-200 dark:border-gray-700/30"
+                  >
                     {columns.map((c) => (
-                      <TableCell 
-                        key={c.key} 
-                        className={`pl-6 pr-4 py-3 align-middle whitespace-nowrap text-xs text-gray-900 dark:text-gray-200 ${getColumnWidth(c)}`}
+                      <TableCell
+                        key={c.key}
+                        className={`pl-6 pr-4 py-3 align-middle whitespace-nowrap text-xs text-gray-900 dark:text-gray-200 ${getColumnWidth(
+                          c
+                        )}`}
                       >
-                        <div className="truncate" title={String(row[c.key] || "")}>
+                        <div
+                          className="truncate"
+                          title={String(row[c.key] || "")}
+                        >
                           {renderCell(c, row)}
                         </div>
                       </TableCell>
@@ -199,17 +239,25 @@ export default function PaginatedCardTable(props: PaginatedCardTableProps) {
           <div className="bg-gray-50 dark:bg-gray-700/20 backdrop-blur-sm px-4 py-3 border-t border-gray-200 dark:border-gray-600/30">
             <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
               <div className="flex items-center gap-2">
-                <span className="text-xs text-gray-600 dark:text-gray-400">Mostrar</span>
+                <span className="text-xs text-gray-600 dark:text-gray-400">
+                  Gampi
+                </span>
                 <select
                   value={pageSize}
                   onChange={(e) => onPageSizeChange(Number(e.target.value))}
                   className="px-3 py-1 text-xs border border-gray-300 dark:border-gray-600/50 rounded-md bg-white dark:bg-gray-700/50 text-gray-900 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500/50 backdrop-blur-sm"
                 >
-                  {Array.from(new Set([10, 25, 50, 100, pageSize])).sort((a, b) => a - b).map((n) => (
-                    <option key={n} value={n}>{n}</option>
-                  ))}
+                  {Array.from(new Set([10, 25, 50, 100, pageSize]))
+                    .sort((a, b) => a - b)
+                    .map((n) => (
+                      <option key={n} value={n}>
+                        {n}
+                      </option>
+                    ))}
                 </select>
-                <span className="text-xs text-gray-600 dark:text-gray-400">registros</span>
+                <span className="text-xs text-gray-600 dark:text-gray-400">
+                  registros
+                </span>
               </div>
 
               <div className="flex items-center gap-1">
@@ -224,8 +272,17 @@ export default function PaginatedCardTable(props: PaginatedCardTableProps) {
                 <div className="hidden sm:flex items-center gap-1">
                   {startPage > 1 && (
                     <>
-                      <button onClick={() => onPageChange(1)} className="px-2.5 py-1 rounded-md text-xs text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600/30 transition-colors">1</button>
-                      {startPage > 2 && <span className="px-1 text-gray-400 dark:text-gray-500 text-xs">...</span>}
+                      <button
+                        onClick={() => onPageChange(1)}
+                        className="px-2.5 py-1 rounded-md text-xs text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600/30 transition-colors"
+                      >
+                        1
+                      </button>
+                      {startPage > 2 && (
+                        <span className="px-1 text-gray-400 dark:text-gray-500 text-xs">
+                          ...
+                        </span>
+                      )}
                     </>
                   )}
 
@@ -233,18 +290,32 @@ export default function PaginatedCardTable(props: PaginatedCardTableProps) {
                     <button
                       key={p}
                       onClick={() => onPageChange(p)}
-                      className={`px-2.5 py-1 rounded-md text-xs transition-colors ${currentPage === p ? "bg-blue-600 text-white" : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600/30"}`}
+                      className={`px-2.5 py-1 rounded-md text-xs transition-colors ${
+                        currentPage === p
+                          ? "bg-blue-600 text-white"
+                          : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600/30"
+                      }`}
                     >
                       {p}
                     </button>
                   ))}
 
-          {pageNumbers.length && pageNumbers[pageNumbers.length - 1] < totalPages ? (
+                  {pageNumbers.length &&
+                  pageNumbers[pageNumbers.length - 1] < totalPages ? (
                     <>
-            {pageNumbers[pageNumbers.length - 1] < totalPages - 1 && <span className="px-1 text-gray-400 dark:text-gray-500 text-xs">...</span>}
-                      <button onClick={() => onPageChange(totalPages)} className="px-2.5 py-1 rounded-md text-xs text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600/30 transition-colors">{totalPages}</button>
+                      {pageNumbers[pageNumbers.length - 1] < totalPages - 1 && (
+                        <span className="px-1 text-gray-400 dark:text-gray-500 text-xs">
+                          ...
+                        </span>
+                      )}
+                      <button
+                        onClick={() => onPageChange(totalPages)}
+                        className="px-2.5 py-1 rounded-md text-xs text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600/30 transition-colors"
+                      >
+                        {totalPages}
+                      </button>
                     </>
-          ) : null}
+                  ) : null}
                 </div>
 
                 <div className="flex sm:hidden items-center gap-1">
@@ -255,31 +326,62 @@ export default function PaginatedCardTable(props: PaginatedCardTableProps) {
                     } else if (currentPage === 1) {
                       mobilePages.push(1, 2, 3);
                     } else if (currentPage === totalPages) {
-                      mobilePages.push(totalPages - 2, totalPages - 1, totalPages);
+                      mobilePages.push(
+                        totalPages - 2,
+                        totalPages - 1,
+                        totalPages
+                      );
                     } else {
-                      mobilePages.push(currentPage - 1, currentPage, currentPage + 1);
+                      mobilePages.push(
+                        currentPage - 1,
+                        currentPage,
+                        currentPage + 1
+                      );
                     }
                     return (
                       <>
                         {mobilePages[0] > 1 && (
                           <>
-                            <button onClick={() => onPageChange(1)} className="px-2.5 py-1 rounded-md text-xs text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600/30 transition-colors">1</button>
-                            {mobilePages[0] > 2 && <span className="px-1 text-gray-400 dark:text-gray-500 text-xs">...</span>}
+                            <button
+                              onClick={() => onPageChange(1)}
+                              className="px-2.5 py-1 rounded-md text-xs text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600/30 transition-colors"
+                            >
+                              1
+                            </button>
+                            {mobilePages[0] > 2 && (
+                              <span className="px-1 text-gray-400 dark:text-gray-500 text-xs">
+                                ...
+                              </span>
+                            )}
                           </>
                         )}
                         {mobilePages.map((p) => (
                           <button
                             key={p}
                             onClick={() => onPageChange(p)}
-                            className={`px-2.5 py-1 rounded-md text-xs transition-colors ${currentPage === p ? "bg-blue-600 text-white" : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600/30"}`}
+                            className={`px-2.5 py-1 rounded-md text-xs transition-colors ${
+                              currentPage === p
+                                ? "bg-blue-600 text-white"
+                                : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600/30"
+                            }`}
                           >
                             {p}
                           </button>
                         ))}
                         {mobilePages[mobilePages.length - 1] < totalPages && (
                           <>
-                            {mobilePages[mobilePages.length - 1] < totalPages - 1 && <span className="px-1 text-gray-400 dark:text-gray-500 text-xs">...</span>}
-                            <button onClick={() => onPageChange(totalPages)} className="px-2.5 py-1 rounded-md text-xs text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600/30 transition-colors">{totalPages}</button>
+                            {mobilePages[mobilePages.length - 1] <
+                              totalPages - 1 && (
+                              <span className="px-1 text-gray-400 dark:text-gray-500 text-xs">
+                                ...
+                              </span>
+                            )}
+                            <button
+                              onClick={() => onPageChange(totalPages)}
+                              className="px-2.5 py-1 rounded-md text-xs text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600/30 transition-colors"
+                            >
+                              {totalPages}
+                            </button>
                           </>
                         )}
                       </>
@@ -288,7 +390,9 @@ export default function PaginatedCardTable(props: PaginatedCardTableProps) {
                 </div>
 
                 <button
-                  onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
+                  onClick={() =>
+                    onPageChange(Math.min(totalPages, currentPage + 1))
+                  }
                   disabled={currentPage === totalPages}
                   className="flex-shrink-0 p-1.5 rounded-md text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-600/30 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import Sidebar from "@/components/common/sidebar";
+import Sidebar from "@/components/common/Sidebar";
 import BreadcrumbBar from "@/components/common/BreadcrumbBar";
 
 export default function MainLayout({ children }: { children: React.ReactNode }) {

@@ -3,10 +3,8 @@
 import React, { useEffect, useState } from "react";
 import PaginatedCardTable from "@/components/common/PaginatedCardTable";
 import type { ColumnConfig } from "@/types";
-import {
-  challengeTemplatesApi,
-  type ChallengeBalance,
-} from "@/api/challenge-templates";
+import { type ChallengeBalance } from "@/types/challenge-template";
+import { challengeTemplatesApi } from "@/api/challenge-templates";
 import { useArrayValidation } from "@/hooks/useArrayValidation";
 
 // shadcn/ui
@@ -37,7 +35,10 @@ import { Edit, Plus } from "lucide-react";
 // Validación
 const balanceSchema = z.object({
   name: z.string().min(1, "El nombre es requerido"),
-  balance: z.number().min(0, "El balance debe ser mayor o igual a 0").optional(),
+  balance: z
+    .number()
+    .min(0, "El balance debe ser mayor o igual a 0")
+    .optional(),
   isActive: z.boolean().optional(),
   hasDiscount: z.boolean().optional(),
   discount: z.string().optional(),
@@ -58,7 +59,13 @@ export function BalancesManager({ pageSize = 10 }: BalancesManagerProps) {
   // Form
   const form = useForm<BalanceFormData>({
     resolver: zodResolver(balanceSchema),
-    defaultValues: { name: "", balance: 0, isActive: true, hasDiscount: false, discount: "" },
+    defaultValues: {
+      name: "",
+      balance: 0,
+      isActive: true,
+      hasDiscount: false,
+      discount: "",
+    },
   });
 
   // --------------------------------------------------
@@ -86,11 +93,22 @@ export function BalancesManager({ pageSize = 10 }: BalancesManagerProps) {
   // --------------------------------------------------
   function handleOpenCreate() {
     setEditItem(null);
-    form.reset({ name: "", balance: 0, isActive: true, hasDiscount: false, discount: "" });
+    form.reset({
+      name: "",
+      balance: 0,
+      isActive: true,
+      hasDiscount: false,
+      discount: "",
+    });
     setOpenModal(true);
   }
 
-  function handleOpenEdit(item: { id: number; name: string; precio?: number; originalId?: string }) {
+  function handleOpenEdit(item: {
+    id: number;
+    name: string;
+    precio?: number;
+    originalId?: string;
+  }) {
     const balance = balancesValidation.safeFind(
       (b) => b?.balanceID === item.originalId || b?.balance === item.precio
     );
@@ -111,7 +129,10 @@ export function BalancesManager({ pageSize = 10 }: BalancesManagerProps) {
     try {
       if (editItem) {
         // Editar
-        await challengeTemplatesApi.updateBalance(editItem.balanceID, formValues);
+        await challengeTemplatesApi.updateBalance(
+          editItem.balanceID,
+          formValues
+        );
         toast.success("Balance editado exitosamente");
       } else {
         // Crear
@@ -130,7 +151,7 @@ export function BalancesManager({ pageSize = 10 }: BalancesManagerProps) {
   // 3. Validación y procesamiento de datos para la tabla
   // --------------------------------------------------
   const balancesValidation = useArrayValidation(balances);
-  
+
   const tableData = balancesValidation.safeMap((item, index) => ({
     id: index + 1, // Número secuencial para la tabla
     name: item?.name || "Sin nombre", // Mostrar el nombre del balance
@@ -143,7 +164,7 @@ export function BalancesManager({ pageSize = 10 }: BalancesManagerProps) {
     { key: "id", label: "ID", type: "normal" },
     { key: "name", label: "Nombre", type: "normal" },
     { key: "precio", label: "Precio", type: "normal" },
-    { key: "aa", label: "aa", type: "normal" }
+    { key: "aa", label: "aa", type: "normal" },
   ];
 
   // Paginación
@@ -179,18 +200,20 @@ export function BalancesManager({ pageSize = 10 }: BalancesManagerProps) {
       {/* Encabezado mínimo para mantener botón de creación, sin tocar otros cards/diseños */}
       <div className="flex justify-between items-center mb-6 px-6">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Balances</h2>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+            Balances
+          </h2>
           <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
             Gestiona los balances disponibles para los challenges
           </p>
         </div>
         <div className="flex items-center gap-3">
-          <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg px-4 py-2 text-white shadow-sm">
+          {/* <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg px-4 py-2 text-white shadow-sm">
             <div className="text-xs font-medium">Total Balances</div>
             <div className="text-lg font-bold">{tableData.length}</div>
-          </div>
-          <Button 
-            onClick={handleOpenCreate} 
+          </div> */}
+          <Button
+            onClick={handleOpenCreate}
             className="bg-emerald-600 hover:bg-emerald-700 dark:bg-emerald-600 dark:hover:bg-emerald-700 text-white group shadow-sm"
           >
             <Plus className="mr-2 h-4 w-4 transition-transform duration-200 group-hover:rotate-90" />

@@ -1,60 +1,16 @@
 import client from "@/api/client";
 
 // Tipos basados en las entidades del backend
-export interface ChallengeCategory {
-  categoryID: string;
-  name: string;
-}
-
-export interface ChallengePlan {
-  planID: string;
-  name: string;
-  isActive: boolean;
-  wooID?: number;
-}
-
-export interface ChallengeBalance {
-  balanceID: string;
-  name: string;
-  isActive: boolean;
-  hasDiscount: boolean;
-  discount?: string;
-  balance?: number;
-}
-
-export interface ChallengeRelation {
-  relationID: string;
-  categoryID: string;
-  planID: string;
-  balanceID?: string;
-  category?: ChallengeCategory;
-  plan?: ChallengePlan;
-  balance?: ChallengeBalance;
-  stages?: RelationStage[];
-}
-
-export interface ChallengeStage {
-  stageID: string;
-  name: string;
-}
-export interface StageRule {
-  id: string;
-  code: string;
-  description?: string;
-}
-export interface StageParameter {
-  ruleId: string;
-  relationStageId: string;
-  value: string | number;
-}
-export interface RelationStage {
-  relationStageID: string;
-  stageID: string;
-  relationID: string;
-  numPhase?: number;
-  stage?: ChallengeStage;
-  relation?: ChallengeRelation;
-}
+import {
+  ChallengeCategory,
+  ChallengePlan,
+  ChallengeBalance,
+  ChallengeRelation,
+  ChallengeStage,
+  StageRule,
+  StageParameter,
+  RelationStage,
+} from "@/types/challenge-template";
 
 // Payloads genéricos
 
@@ -83,7 +39,6 @@ export type UpdateBalancePayload = Partial<CreateBalancePayload>;
 export interface CreateRelationPayload {
   categoryID: string;
   planID: string;
-  balanceID?: string;
 }
 export type UpdateRelationPayload = Partial<CreateRelationPayload>;
 
@@ -103,7 +58,25 @@ export interface CreateRelationStagePayload {
   numPhase?: number;
 }
 export type UpdateRelationStagePayload = Partial<CreateRelationStagePayload>;
-
+export interface CreateRelationBalancePayload {
+  balanceID: string;
+  relationID: string;
+  price: number;
+  isActive?: boolean;
+  hasDiscount?: boolean;
+  discount?: string;
+  wooID?: number;
+}
+export interface balanceForRelationPayload {
+  balanceID: string;
+  price: number;
+  isActive?: boolean;
+  hasDiscount?: boolean;
+  discount?: number;
+  wooID?: number;
+}
+export type UpdateRelationBalancePayload =
+  Partial<CreateRelationBalancePayload>;
 export const challengeTemplatesApi = {
   // Categories
   createCategory: async (
@@ -217,6 +190,19 @@ export const challengeTemplatesApi = {
   },
   getRelation: async (id: string): Promise<ChallengeRelation> => {
     const { data } = await client.get(`/challenge-templates/relations/${id}`);
+    return data;
+  },
+  createBalancesForRelation: async (
+    relationId: string,
+    payload: balanceForRelationPayload[]
+  ): Promise<ChallengeBalance> => {
+    const { data } = await client.post(
+      `/challenge-templates/relation-balances/create`,
+      {
+        challengeRelationID: relationId,
+        relationBalances: payload,
+      }
+    );
     return data;
   },
   updateRelation: async (

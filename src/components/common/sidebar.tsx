@@ -32,37 +32,37 @@ const navigation: NavigationItem[] = [
     name: "Dashboard",
     href: "/main/dashboard",
     icon: HomeIcon,
-    description: "Panel principal",
+    // description: "Panel principal",
   },
   {
     name: "Challenges",
     href: "/main/challenges",
     icon: TrophyIcon,
-    description: "Gestión de challenges",
+    // description: "Gestión de challenges",
   },
   {
     name: "Challenge Templates",
     href: "/main/challenge-templates",
     icon: DocumentTextIcon,
-    description: "Plantillas de challenges",
+    // description: "Plantillas de challenges",
   },
   {
     name: "Usuarios",
     href: "/main/users",
     icon: UserGroupIcon,
-    description: "Lista de usuarios",
+    // description: "Lista de usuarios",
   },
   {
     name: "Broker Accounts",
     href: "/main/brokeraccounts",
     icon: DocumentTextIcon,
-    description: "Gestión de cuentas de broker",
+    // description: "Gestión de cuentas de broker",
   },
   {
     name: "Retiros",
     href: "/main/withdrawals",
     icon: BanknotesIcon,
-    description: "Gestión de retiros",
+    // description: "Gestión de retiros",
   },
 ];
 
@@ -190,7 +190,7 @@ export default function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
           {!isCollapsed && LOGO_APP && (
             <div className="flex-1 mr-2">
               <div className="relative h-8 w-full">
-                <Image 
+                <Image
                   src={LOGO_APP}
                   alt="Logo"
                   fill
@@ -202,7 +202,7 @@ export default function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
             </div>
           )}
 
-      {!isCollapsed && !LOGO_APP && (
+          {!isCollapsed && !LOGO_APP && (
             <div className="flex items-center space-x-2">
               <div className="w-8 h-8 bg-gradient-to-br from-blue-500 via-purple-500 to-indigo-600 rounded-lg flex items-center justify-center shadow-lg">
                 <span className="text-white font-bold text-sm">PF</span>
@@ -253,9 +253,9 @@ export default function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
                     )}
 
                     {/* Active indicator - Adaptativo para modo claro/oscuro */}
-                    {isActive && (
+                    {/* {isActive && (
                       <div className="absolute left-0 top-2 bottom-2 w-1 bg-gray-800 dark:bg-white rounded-r-full shadow-lg" />
-                    )}
+                    )} */}
 
                     <item.icon
                       className={classNames(

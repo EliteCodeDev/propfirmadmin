@@ -2,15 +2,20 @@
 
 import React, { useEffect, useState } from "react";
 import PaginatedCardTable from "@/components/common/PaginatedCardTable";
-import type { ColumnConfig } from "@/types";
+import type { ColumnConfig, RelationBalance } from "@/types";
 import {
-  challengeTemplatesApi,
-  type ChallengeRelation,
-  type ChallengeCategory,
-  type ChallengePlan,
-  type ChallengeBalance,
-} from "@/api/challenge-templates";
+  ChallengeRelation,
+  ChallengeCategory,
+  ChallengePlan,
+  ChallengeBalance,
+} from "@/types/challenge-template";
+
+import { challengeTemplatesApi } from "@/api/challenge-templates";
 import { useArrayValidation } from "@/hooks/useArrayValidation";
+
+import { toast } from "sonner";
+import { Edit, Plus } from "lucide-react";
+import BalanceSelectorModal from "./RelationBalancesModal";
 
 // shadcn/ui
 import {
@@ -40,15 +45,11 @@ import {
   FormControl,
   FormMessage,
 } from "@/components/ui/form";
-import { toast } from "sonner";
-import { Edit, Plus } from "lucide-react";
-import BalanceSelectorModal from "./BalanceSelectorModal";
 
 // Validación
 const relationSchema = z.object({
   categoryID: z.string().min(1, "La categoría es requerida"),
   planID: z.string().min(1, "El plan es requerido"),
-  balanceID: z.string().optional(),
 });
 
 type RelationFormData = z.infer<typeof relationSchema>;
@@ -76,7 +77,6 @@ export function RelationsManager({ pageSize = 10 }: RelationsManagerProps) {
     defaultValues: {
       categoryID: "",
       planID: "",
-      balanceID: undefined,
     },
   });
 
@@ -120,7 +120,6 @@ export function RelationsManager({ pageSize = 10 }: RelationsManagerProps) {
     form.reset({
       categoryID: "",
       planID: "",
-      balanceID: undefined,
     });
     setOpenModal(true);
     setSelectedBalanceIds([]);
@@ -140,10 +139,11 @@ export function RelationsManager({ pageSize = 10 }: RelationsManagerProps) {
       form.reset({
         categoryID: relation.categoryID || "",
         planID: relation.planID || "",
-        balanceID: relation.balanceID || undefined,
       });
-      // Si la relación tiene stages/balances asociados en el backend, podrías mapearlos aquí.
-      setSelectedBalanceIds(relation.balanceID ? [relation.balanceID] : []);
+      // Mapear los balances existentes de la relación
+      const existingBalanceIds =
+        relation.balances?.map((rb) => rb.balanceID) || [];
+      setSelectedBalanceIds(existingBalanceIds);
       setOpenModal(true);
       setSelectedRelationIdForBalances(null);
     }
@@ -155,14 +155,10 @@ export function RelationsManager({ pageSize = 10 }: RelationsManagerProps) {
       const payload = {
         categoryID: formValues.categoryID,
         planID: formValues.planID,
-        ...(formValues.balanceID &&
-        formValues.balanceID !== "none" &&
-        formValues.balanceID.trim() !== ""
-          ? { balanceID: formValues.balanceID }
-          : {}),
       };
       if (editItem) {
         // Editar
+        console.log("Editando relación:", editItem.relationID, payload);
         await challengeTemplatesApi.updateRelation(
           editItem.relationID,
           payload
@@ -210,13 +206,12 @@ export function RelationsManager({ pageSize = 10 }: RelationsManagerProps) {
   const tableData = relationsValidation.safeMap((item, index) => {
     const categoryName = getCategoryName(item?.categoryID || "");
     const planName = getPlanName(item?.planID || "");
-    const balanceAmount = getBalanceAmount(item?.balanceID || "");
+    const balanceCount = item?.balances?.length || 0;
+    const balanceText = balanceCount > 0 ? ` (${balanceCount} balances)` : "";
 
     return {
       id: index + 1,
-      name: `${categoryName} - ${planName}${
-        balanceAmount !== "N/A" ? ` - ${balanceAmount}` : ""
-      }`,
+      name: `${categoryName} - ${planName}${balanceText}`,
       originalId: item?.relationID || "",
     };
   });
@@ -252,7 +247,9 @@ export function RelationsManager({ pageSize = 10 }: RelationsManagerProps) {
         onClick={() => {
           const rid = String(row.originalId || "");
           const rel = relations.find((r) => r.relationID === rid);
-          setSelectedBalanceIds(rel?.balanceID ? [rel.balanceID] : []);
+          const existingBalanceIds =
+            rel?.balances?.map((rb) => rb.balanceID) || [];
+          setSelectedBalanceIds(existingBalanceIds);
           setSelectedRelationIdForBalances(rid);
           setOpenBalanceModal(true);
         }}
@@ -271,18 +268,20 @@ export function RelationsManager({ pageSize = 10 }: RelationsManagerProps) {
       {/* Header mejorado */}
       <div className="flex justify-between items-center mb-6 px-6">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Relaciones</h2>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+            Relaciones
+          </h2>
           <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-            Gestiona las relaciones entre categorías, planes y balances
+            Gestiona las relaciones entre planes, categorias, balances y fases.
           </p>
         </div>
         <div className="flex items-center gap-3">
-          <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg px-4 py-2 text-white shadow-sm">
+          {/* <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg px-4 py-2 text-white shadow-sm">
             <div className="text-xs font-medium">Total Relaciones</div>
             <div className="text-lg font-bold">{tableData.length}</div>
-          </div>
-          <Button 
-            onClick={handleOpenCreate} 
+          </div> */}
+          <Button
+            onClick={handleOpenCreate}
             className="bg-emerald-600 hover:bg-emerald-700 dark:bg-emerald-600 dark:hover:bg-emerald-700 text-white group shadow-sm"
           >
             <Plus className="mr-2 h-4 w-4 transition-transform duration-200 group-hover:rotate-90" />
@@ -316,23 +315,42 @@ export function RelationsManager({ pageSize = 10 }: RelationsManagerProps) {
         onOpenChange={setOpenBalanceModal}
         balances={balances}
         initialSelected={selectedBalanceIds}
-        onConfirm={async (ids) => {
-          setSelectedBalanceIds(ids);
+        initialRelationBalances={
+          selectedRelationIdForBalances
+            ? relations.find(
+                (r) => r.relationID === selectedRelationIdForBalances
+              )?.balances || []
+            : []
+        }
+        onConfirmWithDetails={async (items) => {
+          setSelectedBalanceIds(items.map((item) => item.balanceID));
           if (selectedRelationIdForBalances) {
             try {
-              if (ids.length === 0) {
+              if (items.length === 0) {
                 toast.message(
                   "No seleccionaste balances. No se hicieron cambios."
                 );
               } else {
-                await challengeTemplatesApi.updateRelation(
+                // Crear el payload correcto según el DTO del backend
+                const payload = items.map((item) => ({
+                  balanceID: item.balanceID,
+                  price: item.price || 0,
+                  isActive: item.isActive ?? true,
+                  hasDiscount: item.hasDiscount ?? false,
+                  discount:
+                    item.hasDiscount && item.discount
+                      ? parseFloat(item.discount.replace("%", ""))
+                      : 0,
+                }));
+                await challengeTemplatesApi.createBalancesForRelation(
                   selectedRelationIdForBalances,
-                  { balanceID: ids[0] }
+                  payload
                 );
-                toast.success("Balance agregado a la relación");
+                toast.success("Balances actualizados en la relación");
                 await loadAllData();
               }
             } catch (e) {
+              console.error("Error al actualizar relation balances:", e);
               toast.error("No se pudo actualizar la relación");
             } finally {
               setSelectedRelationIdForBalances(null);
