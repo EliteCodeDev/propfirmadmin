@@ -15,15 +15,7 @@ import { useArrayValidation } from "@/hooks/useArrayValidation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import {
-  Loader2,
-  RefreshCw,
-  CheckCircle,
-  DollarSign,
-  Target,
-  Trophy,
-  Zap,
-} from "lucide-react";
+import { Loader2, RefreshCw, CheckCircle, DollarSign } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 import type { TemplateVisualizerProps } from "@/types";

@@ -30,7 +30,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { toast } from "sonner";
-import { Edit, Plus } from "lucide-react";
+import { Edit } from "lucide-react";
 import { ManagerHeader } from "./ManagerHeader";
 
 // Validación

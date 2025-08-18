@@ -31,7 +31,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { toast } from "sonner";
-import { Edit, Trash2, Plus } from "lucide-react";
+import { Edit, Trash2 } from "lucide-react";
 import { ManagerHeader } from "./ManagerHeader";
 
 // Validación
@@ -201,7 +201,7 @@ export function CategoriesManager({ pageSize = 10 }: CategoriesManagerProps) {
             totalItems: totalItems,
             pageSize: pageSize,
             onPageChange: (p) => setPage(p),
-            onPageSizeChange: (n) => {
+            onPageSizeChange: () => {
               setPage(1);
             },
           }}

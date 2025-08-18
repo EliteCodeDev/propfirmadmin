@@ -16,7 +16,6 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Check, Plus, X, ChevronDown, ChevronUp } from "lucide-react";
 import type { BalanceSelectorModalProps } from "@/types";
-import type { RelationBalance } from "@/types/challenge-template";
 
 function formatAmount(n?: number) {
   if (typeof n !== "number") return "—";
@@ -68,7 +67,9 @@ export default function BalanceSelectorModal({
       selected.forEach((id) => {
         if (!next[id]) {
           // Buscar primero en los RelationBalance existentes
-          const existingRelationBalance = initialRelationBalances.find(rb => rb.balanceID === id);
+          const existingRelationBalance = initialRelationBalances.find(
+            (rb) => rb.balanceID === id
+          );
           if (existingRelationBalance) {
             next[id] = {
               price: existingRelationBalance.price,
