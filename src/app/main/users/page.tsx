@@ -2,7 +2,7 @@
 
 import MainLayout from "@/components/layouts/MainLayout";
 import LoadingSpinner from "@/components/common/LoadingSpinner";
-
+import { ManagerHeader } from "@/components/challenge-templates/ManagerHeader";
 import PaginatedCardTable from "@/components/common/PaginatedCardTable";
 import type { ColumnConfig } from "@/types";
 import EditUserModal from "@/components/user/EditUserModal";
@@ -556,40 +556,23 @@ function UsersInner() {
     <MainLayout>
       <div className="min-h-screen dark:bg-gray-800 transition-colors duration-200">
         <div className="p-4 space-y-4">
-          {/* Header */}
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-              <div>
-                <h1 className="text-xl font-bold text-gray-900 dark:text-white">
-                  User Management
-                </h1>
-                <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
-                  Manage and monitor all system users
-                </p>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg px-4 py-2 text-white shadow-sm">
-                  <div className="text-xs font-medium">Total Users</div>
-                  <div className="text-lg font-bold">{pageObj.total}</div>
-                </div>
-                <button
-                  className="px-3 py-2 text-sm rounded-lg bg-emerald-600 text-white hover:bg-emerald-700"
-                  onClick={() => {
-                    // Preseleccionar rol "user" por defecto
-                    const userRole = roleOptions.find(
-                      (r) => r.name.toLowerCase() === "user"
-                    );
-                    setSelectedNewRoleID(userRole?.roleID ?? "");
-                    // Refrescar roles al abrir
-                    mutateRoles();
-                    setCreateUserOpen(true);
-                  }}
-                >
-                  + Create User
-                </button>
-              </div>
-            </div>
-          </div>
+          <ManagerHeader
+            title="User Management"
+            description="Manage and monitor all system users"
+            buttonText="Create User"
+            onCreateClick={() => {
+              // Preseleccionar rol "user" por defecto
+              const userRole = roleOptions.find(
+                (r) => r.name.toLowerCase() === "user"
+              );
+              setSelectedNewRoleID(userRole?.roleID ?? "");
+              // Refrescar roles al abrir
+              mutateRoles();
+              setCreateUserOpen(true);
+            }}
+            totalCount={pageObj.total}
+            showTotalCount={true}
+          />
 
           {/* Filtros */}
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4">

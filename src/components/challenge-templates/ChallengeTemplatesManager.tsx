@@ -6,9 +6,10 @@ import { PlansManager } from "./PlansManager";
 import { BalancesManager } from "./BalancesManager";
 import { RelationsManager } from "./challenge-relations/RelationsManager";
 import { StagesManager } from "./StagesManager";
+import { RulesManager } from "./RulesManager";
 import { TemplateVisualizer } from "./TemplateVisualizer";
 import { useArrayValidation } from "@/hooks/useArrayValidation";
-import { Settings, PackageIcon, Layers, Link, Eye, Folder } from "lucide-react";
+import { Settings, PackageIcon, Layers, Link, Eye, Folder, FileText } from "lucide-react";
 
 type TabType =
   | "categories"
@@ -16,6 +17,7 @@ type TabType =
   | "balances"
   | "relations"
   | "stages"
+  | "rules"
   | "visualizer";
 
 interface ChallengeTemplatesManagerProps {
@@ -62,6 +64,11 @@ export function ChallengeTemplatesManager({
       label: "Stages",
       icon: <Layers className="w-4 h-4" />,
     },
+    {
+      id: "rules" as TabType,
+      label: "Rules",
+      icon: <FileText className="w-4 h-4" />,
+    },
   ];
 
   const tabsValidation = useArrayValidation(tabs);
@@ -80,6 +87,8 @@ export function ChallengeTemplatesManager({
         return <RelationsManager pageSize={pageSize} />;
       case "stages":
         return <StagesManager pageSize={pageSize} />;
+      case "rules":
+        return <RulesManager pageSize={pageSize} />;
       default:
         return <TemplateVisualizer />;
     }

@@ -2,6 +2,7 @@
 
 import MainLayout from "@/components/layouts/MainLayout";
 import PaginatedCardTable from "@/components/common/PaginatedCardTable";
+import { ManagerHeader } from "@/components/challenge-templates/ManagerHeader";
 import type { ColumnConfig } from "@/types";
 import React, { useMemo, useState, useEffect } from "react";
 import useSWR from "swr";
@@ -162,21 +163,12 @@ function ChallengesInner() {
   return (
     <MainLayout>
       <div className="p-4 space-y-4">
-        {/* Header */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-            <div>
-              <h1 className="text-xl font-bold text-gray-900 dark:text-white">Challenges</h1>
-              <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">Manage and monitor all user challenges</p>
-            </div>
-            <div className="flex items-center gap-3">
-              <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg px-4 py-2 text-white shadow-sm">
-                <div className="text-xs font-medium">Total Challenges</div>
-                <div className="text-lg font-bold">{pageObj.total}</div>
-              </div>
-            </div>
-          </div>
-        </div>
+        <ManagerHeader
+          title="Challenges"
+          description="Manage and monitor all user challenges"
+          totalCount={pageObj.total}
+          showTotalCount={true}
+        />
 
         {/* Filtros */}
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4">

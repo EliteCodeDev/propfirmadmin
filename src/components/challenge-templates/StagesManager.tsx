@@ -31,6 +31,7 @@ import {
 } from "@/components/ui/form";
 import { toast } from "sonner";
 import { Edit, Plus } from "lucide-react";
+import { ManagerHeader } from "./ManagerHeader";
 
 // Validación
 const stageSchema = z.object({
@@ -165,30 +166,14 @@ export function StagesManager({ pageSize = 10 }: StagesManagerProps) {
   // --------------------------------------------------
   return (
     <div className="bg-white dark:bg-gray-800 transition-colors duration-200">
-      {/* Header mejorado */}
-      <div className="flex justify-between items-center mb-6 px-6">
-        <div>
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-            Etapas
-          </h2>
-          <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-            Gestiona las etapas disponibles para los challenges
-          </p>
-        </div>
-        <div className="flex items-center gap-3">
-          {/* <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg px-4 py-2 text-white shadow-sm">
-            <div className="text-xs font-medium">Total Etapas</div>
-            <div className="text-lg font-bold">{tableData.length}</div>
-          </div> */}
-          <Button
-            onClick={handleOpenCreate}
-            className="bg-emerald-600 hover:bg-emerald-700 dark:bg-emerald-600 dark:hover:bg-emerald-700 text-white group shadow-sm"
-          >
-            <Plus className="mr-2 h-4 w-4 transition-transform duration-200 group-hover:rotate-90" />
-            Crear etapa
-          </Button>
-        </div>
-      </div>
+      <ManagerHeader
+        title="Etapas"
+        description="Gestiona las etapas disponibles para los challenges"
+        buttonText="Crear etapa"
+        onCreateClick={handleOpenCreate}
+        totalCount={stages.length}
+        showTotalCount={false}
+      />
 
       <div className="px-6">
         <PaginatedCardTable

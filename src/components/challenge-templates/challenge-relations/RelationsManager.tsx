@@ -14,8 +14,10 @@ import { challengeTemplatesApi } from "@/api/challenge-templates";
 import { useArrayValidation } from "@/hooks/useArrayValidation";
 
 import { toast } from "sonner";
-import { Edit, Plus } from "lucide-react";
+import { Edit, Plus, Settings } from "lucide-react";
 import BalanceSelectorModal from "./RelationBalancesModal";
+import RelationStagesModal from "./RelationStagesModal";
+import { ManagerHeader } from "../ManagerHeader";
 
 // shadcn/ui
 import {
@@ -70,6 +72,14 @@ export function RelationsManager({ pageSize = 10 }: RelationsManagerProps) {
   const [selectedBalanceIds, setSelectedBalanceIds] = useState<string[]>([]);
   const [selectedRelationIdForBalances, setSelectedRelationIdForBalances] =
     useState<string | null>(null);
+  const [openStagesModal, setOpenStagesModal] = useState(false);
+  const [selectedRelationForStages, setSelectedRelationForStages] = useState<{
+    id: string;
+    name: string;
+  }>({
+    id: "",
+    name: "",
+  });
 
   // Form
   const form = useForm<RelationFormData>({
@@ -257,6 +267,18 @@ export function RelationsManager({ pageSize = 10 }: RelationsManagerProps) {
       >
         <Plus className="h-4 w-4" />
       </button>
+      <button
+        className="p-1.5 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-colors"
+        onClick={() => {
+          const rid = String(row.originalId || "");
+          const relationName = String(row.name || "");
+          setSelectedRelationForStages({ id: rid, name: relationName });
+          setOpenStagesModal(true);
+        }}
+        title="Gestionar parámetros de stages"
+      >
+        <Settings className="h-4 w-4" />
+      </button>
     </div>
   );
 
@@ -265,30 +287,14 @@ export function RelationsManager({ pageSize = 10 }: RelationsManagerProps) {
   // --------------------------------------------------
   return (
     <div className="bg-white dark:bg-gray-800 transition-colors duration-200">
-      {/* Header mejorado */}
-      <div className="flex justify-between items-center mb-6 px-6">
-        <div>
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-            Relaciones
-          </h2>
-          <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-            Gestiona las relaciones entre planes, categorias, balances y fases.
-          </p>
-        </div>
-        <div className="flex items-center gap-3">
-          {/* <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg px-4 py-2 text-white shadow-sm">
-            <div className="text-xs font-medium">Total Relaciones</div>
-            <div className="text-lg font-bold">{tableData.length}</div>
-          </div> */}
-          <Button
-            onClick={handleOpenCreate}
-            className="bg-emerald-600 hover:bg-emerald-700 dark:bg-emerald-600 dark:hover:bg-emerald-700 text-white group shadow-sm"
-          >
-            <Plus className="mr-2 h-4 w-4 transition-transform duration-200 group-hover:rotate-90" />
-            Crear relación
-          </Button>
-        </div>
-      </div>
+      <ManagerHeader
+        title="Relaciones"
+        description="Gestiona las relaciones entre planes, categorias, balances y fases."
+        buttonText="Crear relación"
+        onCreateClick={handleOpenCreate}
+        totalCount={relations.length}
+        showTotalCount={false}
+      />
 
       <div className="px-6">
         <PaginatedCardTable
@@ -357,6 +363,14 @@ export function RelationsManager({ pageSize = 10 }: RelationsManagerProps) {
             }
           }
         }}
+      />
+
+      {/* Modal para gestionar parámetros de stages */}
+      <RelationStagesModal
+        open={openStagesModal}
+        onOpenChange={setOpenStagesModal}
+        relationID={selectedRelationForStages?.id}
+        relationName={selectedRelationForStages?.name}
       />
 
       <Dialog open={openModal} onOpenChange={setOpenModal}>

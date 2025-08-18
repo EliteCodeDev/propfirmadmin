@@ -46,11 +46,20 @@ export interface CreateStagePayload {
   name: string;
 }
 export type UpdateStagePayload = Partial<CreateStagePayload>;
-export type CreateRulePayload = Omit<StageRule, "id">;
+export interface CreateRulePayload {
+  ruleType: "number" | "percentage" | "boolean" | "string";
+  ruleName?: string;
+  ruleSlug: string;
+  ruleDescription?: string;
+}
 export type UpdateRulePayload = Partial<CreateRulePayload>;
-export type CreateParameterPayload = Omit<StageParameter, "value"> & {
-  value: string | number;
-};
+
+export interface CreateParameterPayload {
+  ruleID: string;
+  relationStageID: string;
+  ruleValue: number | string | boolean;
+  isActive?: boolean;
+}
 export type UpdateParameterPayload = Partial<CreateParameterPayload>;
 export interface CreateRelationStagePayload {
   stageID: string;
@@ -58,6 +67,24 @@ export interface CreateRelationStagePayload {
   numPhase?: number;
 }
 export type UpdateRelationStagePayload = Partial<CreateRelationStagePayload>;
+
+export interface CreateStageRuleForRelationPayload {
+  ruleID: string;
+  ruleName: string;
+  ruleValue: number | string | boolean;
+}
+
+export interface CreateStageForRelationPayload {
+  stageID: string;
+  stageName: string;
+  // isActive: boolean;
+  rules: CreateStageRuleForRelationPayload[];
+}
+
+export interface CreateRelationStagesPayload {
+  challengeRelationID: string;
+  stages: CreateStageForRelationPayload[];
+}
 export interface CreateRelationBalancePayload {
   balanceID: string;
   relationID: string;
@@ -292,6 +319,14 @@ export const challengeTemplatesApi = {
     const { data } = await client.get("/challenge-templates/parameters");
     return data.data;
   },
+  listParametersByRelationStage: async (
+    relationStageID: string
+  ): Promise<StageParameter[]> => {
+    const { data } = await client.get(
+      `/challenge-templates/parameters/by-relation-stage/${relationStageID}`
+    );
+    return data.data || data;
+  },
   getParameter: async (
     ruleId: string,
     relationStageId: string
@@ -332,9 +367,21 @@ export const challengeTemplatesApi = {
     );
     return data;
   },
-  listRelationStages: async (): Promise<RelationStage[]> => {
-    const { data } = await client.get("/challenge-templates/relation-stages");
-    return data.data;
+  createRelationStages: async (
+    payload: CreateRelationStagesPayload
+  ): Promise<RelationStage[]> => {
+    const { data } = await client.post(
+      "/challenge-templates/relation-stages/create",
+      payload
+    );
+    return data;
+  },
+  listRelationStages: async (relationID?: string): Promise<RelationStage[]> => {
+    const url = relationID
+      ? `/challenge-templates/relation-stages/by-relation/${relationID}`
+      : "/challenge-templates/relation-stages";
+    const { data } = await client.get(url);
+    return data.data || data;
   },
   getRelationStage: async (id: string): Promise<RelationStage> => {
     const { data } = await client.get(

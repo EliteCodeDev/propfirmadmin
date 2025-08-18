@@ -2,6 +2,7 @@
 
 import MainLayout from "@/components/layouts/MainLayout";
 import PaginatedCardTable from "@/components/common/PaginatedCardTable";
+import { ManagerHeader } from "@/components/challenge-templates/ManagerHeader";
 import type { ColumnConfig } from "@/types";
 import React, { useEffect, useMemo, useState } from "react";
 import useSWR from "swr";
@@ -157,16 +158,12 @@ function BrokerAccountsInner() {
   return (
     <MainLayout>
       <div className="p-6 space-y-6 pt-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-semibold">Broker Accounts</h1>
-            <p className="text-sm text-gray-500">List of available and used broker accounts</p>
-          </div>
-          <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg px-4 py-2 text-white shadow-sm">
-            <div className="text-xs font-medium">Total Accounts</div>
-            <div className="text-lg font-bold">{pageObj.total}</div>
-          </div>
-        </div>
+        <ManagerHeader
+          title="Broker Accounts"
+          description="List of available and used broker accounts"
+          totalCount={pageObj.total}
+          showTotalCount={true}
+        />
 
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4">
           <div className="flex flex-col sm:flex-row gap-3 items-end">

@@ -24,6 +24,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { Edit, Trash2, Plus } from "lucide-react";
+import { ManagerHeader } from "./ManagerHeader";
 
 // Validación
 const planSchema = z.object({
@@ -198,33 +199,18 @@ export function PlansManager({ pageSize = 10 }: PlansManagerProps) {
     <div className="space-y-6 bg-white dark:bg-gray-800 transition-colors duration-200">
       <div className="space-y-6 p-6">
         {/* Header */}
-        <div className="flex justify-between items-center">
-          <div>
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-              Gestión de Planes
-            </h2>
-            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-              Administra los planes disponibles para los challenges
-            </p>
-          </div>
-          <div className="flex items-center gap-3">
-            {/* <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg px-4 py-2 text-white shadow-sm">
-              <div className="text-xs font-medium">Total Planes</div>
-              <div className="text-lg font-bold">{plans.length}</div>
-            </div> */}
-            <Button
-              onClick={() => {
-                setEditItem(null);
-                form.reset({ name: "", isActive: true });
-                setOpenModal(true);
-              }}
-              className="bg-emerald-600 hover:bg-emerald-700 dark:bg-emerald-600 dark:hover:bg-emerald-700 text-white group shadow-sm"
-            >
-              <Plus className="mr-2 h-4 w-4 transition-transform duration-200 group-hover:rotate-90" />
-              Crear Plan
-            </Button>
-          </div>
-        </div>
+        <ManagerHeader
+          title="Gestión de Planes"
+          description="Administra los planes disponibles para los challenges"
+          buttonText="Crear Plan"
+          onCreateClick={() => {
+            setEditItem(null);
+            form.reset({ name: "", isActive: true });
+            setOpenModal(true);
+          }}
+          totalCount={plans.length}
+          showTotalCount={false}
+        />
 
         <PaginatedCardTable
           columns={columns}

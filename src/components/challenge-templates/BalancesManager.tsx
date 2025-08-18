@@ -31,6 +31,7 @@ import {
 } from "@/components/ui/form";
 import { toast } from "sonner";
 import { Edit, Plus } from "lucide-react";
+import { ManagerHeader } from "./ManagerHeader";
 
 // Validación
 const balanceSchema = z.object({
@@ -106,11 +107,11 @@ export function BalancesManager({ pageSize = 10 }: BalancesManagerProps) {
   function handleOpenEdit(item: {
     id: number;
     name: string;
-    precio?: number;
+    balance?: number;
     originalId?: string;
   }) {
     const balance = balancesValidation.safeFind(
-      (b) => b?.balanceID === item.originalId || b?.balance === item.precio
+      (b) => b?.balanceID === item.originalId || b?.balance === item.balance
     );
     if (balance) {
       setEditItem(balance);
@@ -155,16 +156,16 @@ export function BalancesManager({ pageSize = 10 }: BalancesManagerProps) {
   const tableData = balancesValidation.safeMap((item, index) => ({
     id: index + 1, // Número secuencial para la tabla
     name: item?.name || "Sin nombre", // Mostrar el nombre del balance
-    precio: item?.balance || 0, // Para mostrar en la columna precio
+    balance: item?.balance || 0, // Para mostrar en la columna balance
     originalId: item?.balanceID || "", // Guardamos el ID real para operaciones
   }));
 
-  // Columnas para la tabla (ID, Nombre, Precio)
+  // Columnas para la tabla (ID, Nombre, balance)
   const columns: ColumnConfig[] = [
     { key: "id", label: "ID", type: "normal" },
     { key: "name", label: "Nombre", type: "normal" },
-    { key: "precio", label: "Precio", type: "normal" },
-    { key: "aa", label: "aa", type: "normal" },
+    { key: "balance", label: "Balance", type: "normal" },
+    // { key: "aa", label: "aa", type: "normal" },
   ];
 
   // Paginación
@@ -182,7 +183,7 @@ export function BalancesManager({ pageSize = 10 }: BalancesManagerProps) {
           handleOpenEdit({
             id: Number(row.id),
             name: String(row.name || ""),
-            precio: Number(row.precio || 0),
+            balance: Number(row.balance || 0),
             originalId: String(row.originalId || ""),
           })
         }
@@ -197,30 +198,14 @@ export function BalancesManager({ pageSize = 10 }: BalancesManagerProps) {
   // --------------------------------------------------
   return (
     <div className="bg-white dark:bg-gray-800 transition-colors duration-200">
-      {/* Encabezado mínimo para mantener botón de creación, sin tocar otros cards/diseños */}
-      <div className="flex justify-between items-center mb-6 px-6">
-        <div>
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-            Balances
-          </h2>
-          <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-            Gestiona los balances disponibles para los challenges
-          </p>
-        </div>
-        <div className="flex items-center gap-3">
-          {/* <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg px-4 py-2 text-white shadow-sm">
-            <div className="text-xs font-medium">Total Balances</div>
-            <div className="text-lg font-bold">{tableData.length}</div>
-          </div> */}
-          <Button
-            onClick={handleOpenCreate}
-            className="bg-emerald-600 hover:bg-emerald-700 dark:bg-emerald-600 dark:hover:bg-emerald-700 text-white group shadow-sm"
-          >
-            <Plus className="mr-2 h-4 w-4 transition-transform duration-200 group-hover:rotate-90" />
-            Crear balance
-          </Button>
-        </div>
-      </div>
+      <ManagerHeader
+        title="Balances"
+        description="Gestiona los balances disponibles para los challenges"
+        buttonText="Crear balance"
+        onCreateClick={handleOpenCreate}
+        totalCount={balances.length}
+        showTotalCount={false}
+      />
 
       <div className="px-6">
         <PaginatedCardTable

@@ -1,6 +1,7 @@
 "use client";
 
 import MainLayout from "@/components/layouts/MainLayout";
+import { ManagerHeader } from "@/components/challenge-templates/ManagerHeader";
 import React, { useMemo, useState, useEffect } from "react";
 import useSWR from "swr";
 import { SessionProvider, useSession } from "next-auth/react";
@@ -201,9 +202,10 @@ function WithdrawalsInner() {
   return (
     <MainLayout>
       <div className="p-6 space-y-6 pt-4">
-        <div className="flex items-center justify-start">
-          <h1 className="text-2xl font-semibold">Retiros</h1>
-        </div>
+        <ManagerHeader
+          title="Retiros"
+          description="Gestión de solicitudes de retiro"
+        />
 
         {/* Mensajes de error claros */}
 

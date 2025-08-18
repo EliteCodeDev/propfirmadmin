@@ -32,6 +32,7 @@ import {
 } from "@/components/ui/form";
 import { toast } from "sonner";
 import { Edit, Trash2, Plus } from "lucide-react";
+import { ManagerHeader } from "./ManagerHeader";
 
 // Validación
 const categorySchema = z.object({
@@ -178,21 +179,15 @@ export function CategoriesManager({ pageSize = 10 }: CategoriesManagerProps) {
   // --------------------------------------------------
   return (
     <div className="space-y-4 bg-white dark:bg-gray-800 transition-colors duration-200">
-      {/* Header con botón de crear */}
+      <ManagerHeader
+        title="Categorías"
+        description="Gestiona las categorías disponibles para los challenges"
+        buttonText="Crear Categoría"
+        onCreateClick={handleOpenCreate}
+        totalCount={totalItems}
+        showTotalCount={false}
+      />
       <div className="space-y-4">
-        <div className="flex items-center gap-3 justify-between px-6">
-          <Button
-            onClick={handleOpenCreate}
-            className="bg-emerald-600 hover:bg-emerald-700 dark:bg-emerald-600 dark:hover:bg-emerald-700 text-white flex items-center gap-2 group shadow-sm"
-          >
-            <Plus className="w-4 h-4 group-hover:rotate-90 transition-all ease-in-out duration-300" />
-            Crear Categoría
-          </Button>
-          {/* <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg px-4 py-2 text-white shadow-sm">
-            <div className="text-xs font-medium">Total Categorías</div>
-            <div className="text-lg font-bold">{totalItems}</div>
-          </div> */}
-        </div>
         <PaginatedCardTable
           columns={columns}
           rows={tableData}

@@ -84,15 +84,13 @@ export interface ChallengeStage {
   name: string;
 }
 export interface StageRule {
-  id: string;
-  slug: string;
-  description?: string;
+  ruleID: string;
+  ruleSlug: string;
+  ruleType: string;
+  ruleName?: string;
+  ruleDescription?: string;
 }
-export interface StageParameter {
-  ruleId: string;
-  relationStageId: string;
-  value: string | number;
-}
+
 export interface RelationStage {
   relationStageID: string;
   stageID: string;
@@ -101,4 +99,11 @@ export interface RelationStage {
   stage?: ChallengeStage;
   relation?: ChallengeRelation;
   parameters?: StageParameter[];
+}
+
+export interface StageParameter {
+  ruleID: string;
+  relationStageID: string;
+  ruleValue: string | number | boolean;
+  isActive?: boolean;
 }

@@ -240,7 +240,7 @@ export default function PaginatedCardTable(props: PaginatedCardTableProps) {
             <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
               <div className="flex items-center gap-2">
                 <span className="text-xs text-gray-600 dark:text-gray-400">
-                  Gampi
+                  Mostrando
                 </span>
                 <select
                   value={pageSize}
