@@ -104,6 +104,6 @@ export interface RelationStage {
 export interface StageParameter {
   ruleID: string;
   relationStageID: string;
-  ruleValue: string | number | boolean;
+  ruleValue: string;
   isActive?: boolean;
 }

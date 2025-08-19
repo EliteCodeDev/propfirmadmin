@@ -71,7 +71,7 @@ export type UpdateRelationStagePayload = Partial<CreateRelationStagePayload>;
 export interface CreateStageRuleForRelationPayload {
   ruleID: string;
   ruleName: string;
-  ruleValue: number | string | boolean;
+  ruleValue: string;
 }
 
 export interface CreateStageForRelationPayload {
