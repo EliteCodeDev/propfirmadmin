@@ -63,6 +63,7 @@ export function RulesManager({ pageSize = 10 }: RulesManagerProps) {
   const [editItem, setEditItem] = useState<StageRule | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [page, setPage] = useState(1);
+  const [pageSizeLocal, setPageSizeLocal] = useState(pageSize);
 
   // Form
   const form = useForm<RuleFormData>({
@@ -191,9 +192,9 @@ export function RulesManager({ pageSize = 10 }: RulesManagerProps) {
   ];
 
   // Paginación
-  const totalPages = Math.max(1, Math.ceil(tableData.length / pageSize));
-  const startIndex = (page - 1) * pageSize;
-  const paginatedRows = tableData.slice(startIndex, startIndex + pageSize);
+  const totalPages = Math.max(1, Math.ceil(tableData.length / pageSizeLocal));
+  const startIndex = (page - 1) * pageSizeLocal;
+  const paginatedRows = tableData.slice(startIndex, startIndex + pageSizeLocal);
 
   const renderActions = (row: Record<string, unknown>) => (
     <div className="flex items-center justify-center gap-2">
@@ -239,9 +240,12 @@ export function RulesManager({ pageSize = 10 }: RulesManagerProps) {
             currentPage: page,
             totalPages,
             totalItems: tableData.length,
-            pageSize,
+            pageSize: pageSizeLocal,
             onPageChange: setPage,
-            onPageSizeChange: () => {},
+            onPageSizeChange: (n) => {
+              setPageSizeLocal(n);
+              setPage(1);
+            },
           }}
         />
       </div>

@@ -520,7 +520,7 @@ export default function RelationStagesModal({
             </div>
 
             {/* Tabla de etapas de relación */}
-            <div className="border border-gray-200 dark:border-gray-700 rounded-lg">
+            <div className="rounded-lg">
               <PaginatedCardTable
                 columns={stageColumns}
                 rows={paginatedStageRows}
@@ -594,7 +594,7 @@ export default function RelationStagesModal({
             </div>
 
             {/* Tabla de parámetros */}
-            <div className="border border-gray-200 dark:border-gray-700 rounded-lg">
+            <div className="rounded-lg">
               <PaginatedCardTable
                 columns={parameterColumns}
                 rows={stageParameterTableData}

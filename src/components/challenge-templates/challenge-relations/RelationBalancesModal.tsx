@@ -317,7 +317,7 @@ export default function BalanceSelectorModal({
                                 htmlFor={`disc-${b.balanceID}`}
                                 className="text-xs font-medium text-gray-700 dark:text-gray-300"
                               >
-                                Tiene descuento
+                                Tiene descuento (%)
                               </Label>
                             </div>
                             {configs[b.balanceID]?.hasDiscount && (
@@ -340,7 +340,7 @@ export default function BalanceSelectorModal({
                                       },
                                     }))
                                   }
-                                  placeholder="Ej: 10%"
+                                  placeholder="Ej: 10"
                                   className="mt-1 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500"
                                 />
                               </div>

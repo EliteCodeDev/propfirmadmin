@@ -6,10 +6,16 @@ import { ChartBarIcon } from "@heroicons/react/24/outline";
 
 type RangeKey = "D" | "W" | "M" | "Y" | "All" | "Custom";
 
+interface DataPoint {
+  date: string;
+  revenues: number;
+  clients: number;
+}
+
 // Simple demo data generator
 function generateData(days = 7) {
   const now = new Date();
-  const arr: { date: string; revenues: number; clients: number }[] = [];
+  const arr: DataPoint[] = [];
   for (let i = days - 1; i >= 0; i--) {
     const d = new Date(now);
     d.setDate(d.getDate() - i);
@@ -50,6 +56,8 @@ export default function PerformanceAnalytics() {
         return generateData(7);
     }
   }, [range, start, end]);
+
+  //console.log(data);
 
   const ranges: RangeKey[] = ["D", "W", "M", "Y", "All"];
 
