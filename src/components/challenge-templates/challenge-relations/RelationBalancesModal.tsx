@@ -42,6 +42,7 @@ export default function BalanceSelectorModal({
         isActive?: boolean;
         hasDiscount?: boolean;
         discount?: string;
+        wooID?: number;
       }
     >
   >({});
@@ -76,6 +77,7 @@ export default function BalanceSelectorModal({
               isActive: existingRelationBalance.isActive,
               hasDiscount: existingRelationBalance.hasDiscount,
               discount: existingRelationBalance.discount,
+              wooID: existingRelationBalance.wooID,
             };
           } else {
             // Si no existe, usar defaults del balance
@@ -345,6 +347,34 @@ export default function BalanceSelectorModal({
                                 />
                               </div>
                             )}
+                            <div>
+                              <Label
+                                htmlFor={`wooID-${b.balanceID}`}
+                                className="text-xs font-medium text-gray-700 dark:text-gray-300"
+                              >
+                                WooCommerce ID (opcional)
+                              </Label>
+                              <Input
+                                id={`wooID-${b.balanceID}`}
+                                type="number"
+                                min={0}
+                                value={configs[b.balanceID]?.wooID ?? ""}
+                                onChange={(e) =>
+                                  setConfigs((prev) => ({
+                                    ...prev,
+                                    [b.balanceID]: {
+                                      ...prev[b.balanceID],
+                                      wooID:
+                                        e.target.value === ""
+                                          ? undefined
+                                          : Number(e.target.value),
+                                    },
+                                  }))
+                                }
+                                placeholder="ID de WooCommerce"
+                                className="mt-1 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500"
+                              />
+                            </div>
                           </div>
                         </div>
                       )}
@@ -375,6 +405,7 @@ export default function BalanceSelectorModal({
                   isActive: configs[id]?.isActive,
                   hasDiscount: configs[id]?.hasDiscount,
                   discount: configs[id]?.discount,
+                  wooID: configs[id]?.wooID,
                 }));
                 onConfirmWithDetails(items);
               } else {

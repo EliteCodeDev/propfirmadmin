@@ -14,6 +14,7 @@ export interface BalanceSelectorModalProps {
     isActive?: boolean;
     hasDiscount?: boolean;
     discount?: string;
+    wooID?: number;
   }>;
   onConfirm?: (selectedIds: string[]) => void;
   onConfirmWithDetails?: (
