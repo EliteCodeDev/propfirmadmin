@@ -681,46 +681,63 @@ export default function RelationStagesModal({
                 )}
               />
 
-              <FormField
-                control={form.control}
-                name="relationStageID"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-gray-700 dark:text-gray-300 text-sm font-medium">
-                      Etapa de Relación
-                    </FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                    >
-                      <FormControl>
-                        <SelectTrigger className="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white">
-                          <SelectValue placeholder="Selecciona una etapa" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
-                        {relationStagesValidation.safeMap((relationStage) => {
-                          if (!relationStage?.relationStageID) return null;
-                          const stage = stagesValidation.safeFind(
-                            (s) => s?.stageID === relationStage.stageID
-                          );
-                          return (
-                            <SelectItem
-                              key={relationStage.relationStageID}
-                              value={relationStage.relationStageID}
-                              className="text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700"
-                            >
-                              {stage?.name || "Sin nombre"} (Fase{" "}
-                              {relationStage.numPhase || "N/A"})
-                            </SelectItem>
-                          );
-                        })}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage className="text-red-600 dark:text-red-400" />
-                  </FormItem>
-                )}
-              />
+              {selectedRelationStage ? (
+                // Mostrar etapa seleccionada como solo lectura
+                <FormItem>
+                  <FormLabel className="text-gray-700 dark:text-gray-300 text-sm font-medium">
+                    Etapa de Relación
+                  </FormLabel>
+                  <FormControl>
+                    <Input
+                      value={`${getStageName(selectedRelationStage.relationStageID)} (Fase ${selectedRelationStage.numPhase || "N/A"})`}
+                      readOnly
+                      className="bg-gray-100 dark:bg-gray-600 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 cursor-not-allowed"
+                    />
+                  </FormControl>
+                </FormItem>
+              ) : (
+                // Selector normal cuando no hay etapa predefinida
+                <FormField
+                  control={form.control}
+                  name="relationStageID"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-gray-700 dark:text-gray-300 text-sm font-medium">
+                        Etapa de Relación
+                      </FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger className="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white">
+                            <SelectValue placeholder="Selecciona una etapa" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+                          {relationStagesValidation.safeMap((relationStage) => {
+                            if (!relationStage?.relationStageID) return null;
+                            const stage = stagesValidation.safeFind(
+                              (s) => s?.stageID === relationStage.stageID
+                            );
+                            return (
+                              <SelectItem
+                                key={relationStage.relationStageID}
+                                value={relationStage.relationStageID}
+                                className="text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700"
+                              >
+                                {stage?.name || "Sin nombre"} (Fase{" "}
+                                {relationStage.numPhase || "N/A"})
+                              </SelectItem>
+                            );
+                          })}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage className="text-red-600 dark:text-red-400" />
+                    </FormItem>
+                  )}
+                />
+              )}
 
               <FormField
                 control={form.control}
