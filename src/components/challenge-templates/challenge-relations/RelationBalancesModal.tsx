@@ -46,6 +46,7 @@ export default function BalanceSelectorModal({
       }
     >
   >({});
+  const [isLoading, setIsLoading] = useState(false);
 
   // Usar datos mock si no vienen balances o vienen vacíos
   const sourceBalances = balances;
@@ -69,7 +70,7 @@ export default function BalanceSelectorModal({
         if (!next[id]) {
           // Buscar primero en los RelationBalance existentes
           const existingRelationBalance = initialRelationBalances.find(
-            (rb) => rb.balanceID === id
+            (rb) => rb.challengeBalanceID === id
           );
           if (existingRelationBalance) {
             next[id] = {
@@ -397,91 +398,99 @@ export default function BalanceSelectorModal({
             Cancelar
           </Button>
           <Button
-            onClick={() => {
-              if (onConfirmWithDetails) {
-                const items = selected.map((id) => ({
-                  balanceID: id,
-                  price: configs[id]?.price,
-                  isActive: configs[id]?.isActive,
-                  hasDiscount: configs[id]?.hasDiscount,
-                  discount: configs[id]?.discount,
-                  wooID: configs[id]?.wooID,
-                }));
-                
-                // Verificar si hay cambios reales
-                const hasChanges = (() => {
-                  // Comparar selección actual vs inicial
+            onClick={async () => {
+              if (isLoading) return;
+              
+              setIsLoading(true);
+              try {
+                if (onConfirmWithDetails) {
+                  const items = selected.map((id) => ({
+                    challengeBalanceID: id,
+                    price: configs[id]?.price,
+                    isActive: configs[id]?.isActive,
+                    hasDiscount: configs[id]?.hasDiscount,
+                    discount: configs[id]?.discount,
+                    wooID: configs[id]?.wooID,
+                  }));
+                  
+                  // Verificar si hay cambios reales
+                  const hasChanges = (() => {
+                    // Comparar selección actual vs inicial
+                    const initialSelectedSet = new Set(initialSelected);
+                    const currentSelectedSet = new Set(selected);
+                    
+                    // Si cambió la cantidad o los IDs seleccionados
+                    if (initialSelectedSet.size !== currentSelectedSet.size) return true;
+                    for (const id of selected) {
+                      if (!initialSelectedSet.has(id)) return true;
+                    }
+                    
+                    // Comparar configuraciones de cada item seleccionado
+                    for (const id of selected) {
+                      const existingRelationBalance = initialRelationBalances.find(
+                        (rb) => rb.challengeBalanceID === id
+                      );
+                      const currentConfig = configs[id];
+                      
+                      if (existingRelationBalance) {
+                        // Comparar con datos existentes
+                        if (
+                          existingRelationBalance.price !== currentConfig?.price ||
+                          existingRelationBalance.isActive !== currentConfig?.isActive ||
+                          existingRelationBalance.hasDiscount !== currentConfig?.hasDiscount ||
+                          existingRelationBalance.discount !== currentConfig?.discount ||
+                          existingRelationBalance.wooID !== currentConfig?.wooID
+                        ) {
+                          return true;
+                        }
+                      } else {
+                        // Es un nuevo balance, verificar si tiene configuración diferente a los defaults
+                        const sourceBalance = sourceBalances.find((b) => b.balanceID === id);
+                        const defaultPrice = sourceBalance?.balance;
+                        const defaultIsActive = sourceBalance?.isActive ?? true;
+                        const defaultHasDiscount = sourceBalance?.hasDiscount ?? false;
+                        const defaultDiscount = sourceBalance?.discount;
+                        
+                        if (
+                          currentConfig?.price !== defaultPrice ||
+                          currentConfig?.isActive !== defaultIsActive ||
+                          currentConfig?.hasDiscount !== defaultHasDiscount ||
+                          currentConfig?.discount !== defaultDiscount ||
+                          currentConfig?.wooID !== undefined
+                        ) {
+                          return true;
+                        }
+                      }
+                    }
+                    
+                    return false;
+                  })();
+                  
+                  if (hasChanges) {
+                    await onConfirmWithDetails(items);
+                  }
+                } else {
+                  // Para onConfirm simple, solo verificar si cambió la selección
                   const initialSelectedSet = new Set(initialSelected);
                   const currentSelectedSet = new Set(selected);
                   
-                  // Si cambió la cantidad o los IDs seleccionados
-                  if (initialSelectedSet.size !== currentSelectedSet.size) return true;
-                  for (const id of selected) {
-                    if (!initialSelectedSet.has(id)) return true;
-                  }
+                  const hasSelectionChanges = 
+                    initialSelectedSet.size !== currentSelectedSet.size ||
+                    selected.some(id => !initialSelectedSet.has(id));
                   
-                  // Comparar configuraciones de cada item seleccionado
-                  for (const id of selected) {
-                    const existingRelationBalance = initialRelationBalances.find(
-                      (rb) => rb.balanceID === id
-                    );
-                    const currentConfig = configs[id];
-                    
-                    if (existingRelationBalance) {
-                      // Comparar con datos existentes
-                      if (
-                        existingRelationBalance.price !== currentConfig?.price ||
-                        existingRelationBalance.isActive !== currentConfig?.isActive ||
-                        existingRelationBalance.hasDiscount !== currentConfig?.hasDiscount ||
-                        existingRelationBalance.discount !== currentConfig?.discount ||
-                        existingRelationBalance.wooID !== currentConfig?.wooID
-                      ) {
-                        return true;
-                      }
-                    } else {
-                      // Es un nuevo balance, verificar si tiene configuración diferente a los defaults
-                      const sourceBalance = sourceBalances.find((b) => b.balanceID === id);
-                      const defaultPrice = sourceBalance?.balance;
-                      const defaultIsActive = sourceBalance?.isActive ?? true;
-                      const defaultHasDiscount = sourceBalance?.hasDiscount ?? false;
-                      const defaultDiscount = sourceBalance?.discount;
-                      
-                      if (
-                        currentConfig?.price !== defaultPrice ||
-                        currentConfig?.isActive !== defaultIsActive ||
-                        currentConfig?.hasDiscount !== defaultHasDiscount ||
-                        currentConfig?.discount !== defaultDiscount ||
-                        currentConfig?.wooID !== undefined
-                      ) {
-                        return true;
-                      }
-                    }
+                  if (hasSelectionChanges) {
+                    await onConfirm(selected);
                   }
-                  
-                  return false;
-                })();
-                
-                if (hasChanges) {
-                  onConfirmWithDetails(items);
                 }
-              } else {
-                // Para onConfirm simple, solo verificar si cambió la selección
-                const initialSelectedSet = new Set(initialSelected);
-                const currentSelectedSet = new Set(selected);
-                
-                const hasSelectionChanges = 
-                  initialSelectedSet.size !== currentSelectedSet.size ||
-                  selected.some(id => !initialSelectedSet.has(id));
-                
-                if (hasSelectionChanges) {
-                  onConfirm(selected);
-                }
+                onOpenChange(false);
+              } finally {
+                setIsLoading(false);
               }
-              onOpenChange(false);
             }}
-            className="bg-emerald-600 text-white hover:bg-emerald-700 dark:bg-emerald-600 dark:hover:bg-emerald-700"
+            disabled={isLoading}
+            className="bg-emerald-600 text-white hover:bg-emerald-700 dark:bg-emerald-600 dark:hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <Check className="h-4 w-4 mr-1" /> Agregar
+            <Check className="h-4 w-4 mr-1" /> {isLoading ? "Guardando..." : "Agregar"}
           </Button>
         </DialogFooter>
       </DialogContent>

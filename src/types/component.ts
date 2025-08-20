@@ -9,7 +9,7 @@ export interface BalanceSelectorModalProps {
   balances: ChallengeBalance[];
   initialSelected?: string[];
   initialRelationBalances?: Array<{
-    balanceID: string;
+    challengeBalanceID: string;
     price?: number;
     isActive?: boolean;
     hasDiscount?: boolean;
@@ -19,11 +19,12 @@ export interface BalanceSelectorModalProps {
   onConfirm?: (selectedIds: string[]) => void;
   onConfirmWithDetails?: (
     items: Array<{
-      balanceID: string;
+      challengeBalanceID: string;
       price?: number;
       isActive?: boolean;
       hasDiscount?: boolean;
       discount?: string;
+      wooID?: number;
     }>
   ) => void;
 }

@@ -95,11 +95,11 @@ export interface CreateRelationBalancePayload {
   wooID?: number;
 }
 export interface balanceForRelationPayload {
-  balanceID: string;
+  challengeBalanceID: string;
   price: number;
   isActive?: boolean;
   hasDiscount?: boolean;
-  discount?: number;
+  discount?: string;
   wooID?: number;
 }
 export type UpdateRelationBalancePayload =

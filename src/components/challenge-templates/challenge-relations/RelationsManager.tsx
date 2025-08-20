@@ -329,11 +329,18 @@ export function RelationsManager({ pageSize = 10 }: RelationsManagerProps) {
           selectedRelationIdForBalances
             ? relations.find(
                 (r) => r.relationID === selectedRelationIdForBalances
-              )?.balances || []
+              )?.balances?.map(balance => ({
+                challengeBalanceID: balance.balanceID,
+                price: balance.price,
+                isActive: balance.isActive,
+                hasDiscount: balance.hasDiscount,
+                discount: balance.discount,
+                wooID: balance.wooID
+              })) || []
             : []
         }
         onConfirmWithDetails={async (items) => {
-          setSelectedBalanceIds(items.map((item) => item.balanceID));
+          setSelectedBalanceIds(items.map((item) => item.challengeBalanceID));
           if (selectedRelationIdForBalances) {
             try {
               if (items.length === 0) {
@@ -343,14 +350,15 @@ export function RelationsManager({ pageSize = 10 }: RelationsManagerProps) {
               } else {
                 // Crear el payload correcto según el DTO del backend
                 const payload = items.map((item) => ({
-                  balanceID: item.balanceID,
+                  challengeBalanceID: item.challengeBalanceID,
                   price: item.price || 0,
                   isActive: item.isActive ?? true,
                   hasDiscount: item.hasDiscount ?? false,
                   discount:
                     item.hasDiscount && item.discount
-                      ? parseFloat(item.discount.replace("%", ""))
-                      : 0,
+                      ? item.discount
+                      : "0",
+                  wooID: item.wooID || undefined,
                 }));
                 await challengeTemplatesApi.createBalancesForRelation(
                   selectedRelationIdForBalances,

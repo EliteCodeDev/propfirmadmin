@@ -9,7 +9,6 @@ import {
   ChallengeRelation,
   ChallengeStage,
   RelationStage,
-  RelationBalance,
 } from "@/types";
 import { useArrayValidation } from "@/hooks/useArrayValidation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -37,8 +36,7 @@ export function TemplateVisualizer({}: TemplateVisualizerProps) {
     useState<ChallengeCategory | null>(null);
   const [selectedBalance, setSelectedBalance] =
     useState<ChallengeBalance | null>(null);
-  const [selectedRelation, setSelectedRelation] =
-    useState<ChallengeRelation | null>(null);
+  // Eliminado selectedRelation: usamos currentRelation directamente-+
 
   // Cargar todos los datos
   const loadAllData = async (): Promise<void> => {
@@ -142,9 +140,7 @@ export function TemplateVisualizer({}: TemplateVisualizerProps) {
   }, [currentRelation, relationStagesValidation, stagesValidation]);
 
   // Actualizar relación seleccionada cuando cambie la relación actual
-  useEffect(() => {
-    setSelectedRelation(currentRelation || null);
-  }, [currentRelation]);
+  // Eliminado: ya no mantenemos selectedRelation en estado
 
   if (isLoading) {
     return (
@@ -199,7 +195,7 @@ export function TemplateVisualizer({}: TemplateVisualizerProps) {
               <div className="flex gap-2 flex-wrap justify-center">
                 {plansValidation.safeMap((plan, index) => (
                   <button
-                    key={plan?.planID || index}
+                    key={`plan-${plan?.planID ?? "unknown"}-${index}`}
                     onClick={() => setSelectedPlan(plan)}
                     className={cn(
                       "px-4 py-2 rounded-lg font-medium transition-all duration-200 border-2 text-sm",
@@ -222,7 +218,9 @@ export function TemplateVisualizer({}: TemplateVisualizerProps) {
               <div className="flex gap-2 flex-wrap justify-center">
                 {categoriesValidation.safeMap((category, index) => (
                   <button
-                    key={category?.categoryID || index}
+                    key={`category-${
+                      category?.categoryID ?? "unknown"
+                    }-${index}`}
                     onClick={() => setSelectedCategory(category)}
                     className={cn(
                       "px-4 py-2 rounded-lg font-medium transition-all duration-200 border-2 text-sm",
@@ -254,7 +252,9 @@ export function TemplateVisualizer({}: TemplateVisualizerProps) {
 
                   return (
                     <button
-                      key={balanceDetail.balance?.balanceID || index}
+                      key={`balance-${currentRelation?.relationID ?? "rel"}-${
+                        balanceDetail.balance?.balanceID ?? "unknown"
+                      }-${index}`}
                       onClick={() =>
                         setSelectedBalance(balanceDetail.balance || null)
                       }
@@ -284,7 +284,9 @@ export function TemplateVisualizer({}: TemplateVisualizerProps) {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 {relationStagesData.slice(0, 2).map((stageData, index) => (
                   <div
-                    key={stageData.relationStage?.relationStageID || index}
+                    key={`relation-stage-${
+                      stageData.relationStage?.relationStageID ?? "unknown"
+                    }-${index}`}
                     className="text-center"
                   >
                     <h3 className="text-white text-2xl font-bold mb-2">
