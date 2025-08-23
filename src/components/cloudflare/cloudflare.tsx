@@ -53,7 +53,7 @@ const Recaptcha = forwardRef<RecaptchaRef, RecaptchaProps>(({ onVerify }, ref) =
                     // Add error handling to the Turnstile render y capturar widgetId
                     const id = (window as any).turnstile.render('#turnstile-container', {
                         sitekey: siteKey,
-                        theme: 'light',
+                        theme: 'auto',
                         language : "en",
                         callback: (token: string) => {
                             onVerify(token);
