@@ -4,7 +4,7 @@ import { getToken } from "next-auth/jwt";
 import { NEXTAUTH_SECRET } from "@/config";
 
 const AUTH_PATHS = ["/auth/login"];
-const PROTECTED_ROOT = "/main/dashboard";
+const PROTECTED_ROOT = "/admin/dashboard";
 
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;

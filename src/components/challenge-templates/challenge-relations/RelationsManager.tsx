@@ -289,7 +289,7 @@ export function RelationsManager({ pageSize = 10 }: RelationsManagerProps) {
   return (
     <div className="bg-white dark:bg-gray-800 transition-colors duration-200">
       <ManagerHeader
-        title="Relaciones"
+        title="Challenges"
         description="Gestiona las relaciones entre planes, categorias, balances y fases."
         buttonText="Crear relación"
         onCreateClick={handleOpenCreate}

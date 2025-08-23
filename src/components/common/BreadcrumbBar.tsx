@@ -42,19 +42,19 @@ export default function BreadcrumbBar() {
       return [];
     }
     
-    // Filtrar el segmento 'main' si existe
-    const filteredSegments = segments[0] === "main" ? segments.slice(1) : segments;
+    // Filtrar el segmento 'admin' si existe
+    const filteredSegments = segments[0] === "admin" ? segments.slice(1) : segments;
     const onDashboard = filteredSegments.length === 0 || filteredSegments[0] === "dashboard";
 
     // Home/Dashboard: solo linkeable si NO estás ya en dashboard
     crumbs.push({
       label: "Dashboard",
-      href: onDashboard ? undefined : "/main/dashboard", 
+      href: onDashboard ? undefined : "/admin/dashboard", 
       icon: (p) => <HomeIcon {...p} />,
       current: onDashboard,
     });
 
-    let acc = "/main";
+    let acc = "/admin";
     filteredSegments.forEach((seg, idx) => {
       if (seg === "dashboard") return; 
       acc += `/${seg}`;

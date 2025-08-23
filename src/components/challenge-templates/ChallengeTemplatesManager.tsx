@@ -23,7 +23,7 @@ type TabType =
   | "categories"
   | "plans"
   | "balances"
-  | "relations"
+  | "challenges"
   | "stages"
   | "rules"
   | "visualizer";
@@ -35,11 +35,16 @@ interface ChallengeTemplatesManagerProps {
 export function ChallengeTemplatesManager({
   pageSize: initialPageSize = 10,
 }: ChallengeTemplatesManagerProps = {}) {
-  const [activeTab, setActiveTab] = useState<TabType>("visualizer");
+  const [activeTab, setActiveTab] = useState<TabType>("challenges");
   const [pageSize, setPageSize] = useState(initialPageSize);
   // const [page, setPage] = useState(1);
 
   const tabs = [
+    {
+      id: "challenges" as TabType,
+      label: "Challenges",
+      icon: <Link className="w-4 h-4" />,
+    },
     {
       id: "visualizer" as TabType,
       label: "Visualizador",
@@ -61,11 +66,6 @@ export function ChallengeTemplatesManager({
       icon: <PackageIcon className="w-4 h-4" />,
     },
     {
-      id: "relations" as TabType,
-      label: "Relaciones",
-      icon: <Link className="w-4 h-4" />,
-    },
-    {
       id: "stages" as TabType,
       label: "Stages",
       icon: <Layers className="w-4 h-4" />,
@@ -81,6 +81,8 @@ export function ChallengeTemplatesManager({
 
   const renderTabContent = () => {
     switch (activeTab) {
+      case "challenges":
+        return <RelationsManager pageSize={pageSize} />;
       case "visualizer":
         return <TemplateVisualizer />;
       case "categories":
@@ -89,14 +91,12 @@ export function ChallengeTemplatesManager({
         return <PlansManager pageSize={pageSize} />;
       case "balances":
         return <BalancesManager pageSize={pageSize} />;
-      case "relations":
-        return <RelationsManager pageSize={pageSize} />;
       case "stages":
         return <StagesManager pageSize={pageSize} />;
       case "rules":
         return <RulesManager pageSize={pageSize} />;
       default:
-        return <TemplateVisualizer />;
+        return <RelationsManager pageSize={pageSize} />;
     }
   };
 
