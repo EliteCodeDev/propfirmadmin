@@ -1,10 +1,9 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
+import { useState, useEffect, Suspense, useRef } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { toast, Toaster } from "sonner";
-import Link from "next/link";
 import { 
   EyeIcon, 
   EyeSlashIcon, 
@@ -14,9 +13,10 @@ import {
   LockClosedIcon
 } from "@heroicons/react/24/outline";
 import { sendEmailConfirmation } from "@/api/auth";
+import { HERO_BG, LOGIN_RIGHT_BG } from "@/config";
+import Recaptcha, { RecaptchaRef } from "@/components/cloudflare/cloudflare";
 
 // URL del fondo del hero (lado izquierdo). Define NEXT_PUBLIC_LOGIN_BG para usar una imagen remota o local.
-const HERO_BG = process.env.NEXT_PUBLIC_LOGIN_BG || "";
 
 // URL del fondo del formulario (lado derecho). Define NEXT_PUBLIC_LOGIN_RIGHT_BG para usar una imagen de fondo.
 // Ejemplo: NEXT_PUBLIC_LOGIN_RIGHT_BG=https://tu-imagen.com/background.jpg
@@ -32,6 +32,8 @@ function LoginContent() {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [showConfirmationError, setShowConfirmationError] = useState(false);
   const router = useRouter();
+  const recaptchaRef = useRef<RecaptchaRef>(null);
+  const [isVerifying, setIsVerifying] = useState("");
 
   // Cargar preferencia de tema
   useEffect(() => {
@@ -57,6 +59,12 @@ function LoginContent() {
 
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    if (!isVerifying) {
+      toast.error("Por favor, verifique su recaptcha");
+      return;
+    }
+
     setIsSubmitting(true);
     setShowConfirmationError(false); // Reset on new submission
 
@@ -76,6 +84,11 @@ function LoginContent() {
         setShowConfirmationError(true);
       } else {
         toast.error(res?.error || "Credenciales incorrectas");
+      }
+      // Resetear reCAPTCHA después de un intento fallido
+      if (recaptchaRef.current) {
+        recaptchaRef.current.reset();
+        setIsVerifying(""); // Limpiar el token de verificación
       }
     }
   };
@@ -144,12 +157,12 @@ function LoginContent() {
       </aside>
 
       {/* Lado derecho: formulario con imagen de fondo que responde al tema */}
-  <main className={"flex-1 min-h-screen flex items-center justify-center p-6 relative bg-center bg-cover " + (!process.env.NEXT_PUBLIC_LOGIN_RIGHT_BG ? "bg-white dark:bg-black" : "")} 
+  <main className={"flex-1 min-h-screen flex items-center justify-center p-6 relative bg-center bg-cover " + (!LOGIN_RIGHT_BG ? "bg-white dark:bg-black" : "")} 
             style={{ 
-              backgroundImage: process.env.NEXT_PUBLIC_LOGIN_RIGHT_BG ? `url(${process.env.NEXT_PUBLIC_LOGIN_RIGHT_BG})` : 'none'
+              backgroundImage: LOGIN_RIGHT_BG ? `url(${LOGIN_RIGHT_BG})` : 'none'
             }}>
         {/* Overlay para la imagen de fondo que responde al tema */}
-        {process.env.NEXT_PUBLIC_LOGIN_RIGHT_BG && (
+        {LOGIN_RIGHT_BG && (
           <div className="absolute inset-0 bg-white/65 dark:bg-black/80 backdrop-blur-[1px]" />
         )}
         {/* Header con toggle de tema mejorado que responde al tema */}
@@ -262,7 +275,11 @@ function LoginContent() {
                 </div>
 
                 {/* Captcha removido por solicitud */}
-
+                
+                <div className = "w-full flex justify-center">
+                  <Recaptcha ref={recaptchaRef} onVerify={setIsVerifying} />
+                </div>
+                
                 <button
                   type="submit"
                   disabled={isSubmitting}
