@@ -161,7 +161,7 @@ function WithdrawalsInner() {
   const [scope, setScope] = useState<Scope>("all");
   const [page, setPage] = useState<number>(1);
   const [limit, setLimit] = useState<LimitParam>(10);
-  const [status] = useState<"" | WithdrawalStatus>("");
+  const [status, setStatus] = useState<"" | WithdrawalStatus>("");
   const [email, setEmail] = useState<string>("");
 
   // Modales y estado de acciones
@@ -314,18 +314,24 @@ function WithdrawalsInner() {
 
         {/* Filtros */}
         <div className="flex flex-col sm:flex-row items-center gap-3">
+          {/* Eliminado: selector de Ámbito */}
+
+          {/* Filtro por Estado */}
           <div className="flex items-center gap-2">
-            <label className="text-xs text-gray-600 dark:text-gray-400">Ámbito</label>
+            <label className="text-xs text-gray-600 dark:text-gray-400">Estado</label>
             <select
-              value={scope}
+              value={status}
               onChange={(e) => {
-                setScope(e.target.value as Scope);
+                setStatus(e.target.value as WithdrawalStatus | "");
                 setPage(1);
               }}
               className="px-3 py-1 text-xs border border-gray-300 dark:border-gray-600/50 rounded-md bg-white dark:bg-gray-700/50 text-gray-900 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500/50 backdrop-blur-sm"
             >
-              <option value="all">Todos (admin)</option>
-              <option value="mine">Mis retiros</option>
+              <option value="">Todos</option>
+              <option value="pending">Pendiente</option>
+              <option value="approved">Aprobado</option>
+              <option value="paid">Pagado</option>
+              <option value="rejected">Rechazado</option>
             </select>
           </div>
 
