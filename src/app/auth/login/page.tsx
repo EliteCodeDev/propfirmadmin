@@ -4,17 +4,18 @@ import { useState, useEffect, Suspense, useRef } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { toast, Toaster } from "sonner";
-import { 
-  EyeIcon, 
-  EyeSlashIcon, 
-  SunIcon, 
+import {
+  EyeIcon,
+  EyeSlashIcon,
+  SunIcon,
   MoonIcon,
   EnvelopeIcon,
   LockClosedIcon
 } from "@heroicons/react/24/outline";
 import { sendEmailConfirmation } from "@/api/auth";
-import { HERO_BG, LOGIN_RIGHT_BG } from "@/config";
+import { HERO_BG, LOGIN_RIGHT_BG, IMAGEN_LOGIN } from "@/config";
 import Recaptcha, { RecaptchaRef } from "@/components/cloudflare/cloudflare";
+import Image from "next/image";
 
 // URL del fondo del hero (lado izquierdo). Define NEXT_PUBLIC_LOGIN_BG para usar una imagen remota o local.
 
@@ -126,15 +127,20 @@ function LoginContent() {
           className="absolute inset-0 bg-center bg-cover"
           style={HERO_BG ? { backgroundImage: `url(${HERO_BG})` } : {}}
         />
-  {/* Overlay neutro (sin tonos morados) */}
-  <div className="absolute inset-0 bg-gradient-to-tr from-black/60 via-black/40 to-transparent dark:from-black/80 dark:via-black/50 dark:to-transparent backdrop-blur-sm" />
+        {/* Overlay neutro (sin tonos morados) */}
+        <div className="absolute inset-0 bg-gradient-to-tr from-black/60 via-black/40 to-transparent dark:from-black/80 dark:via-black/50 dark:to-transparent backdrop-blur-sm" />
 
         {/* Contenido visual mejorado que responde al tema */}
         <div className="relative z-10 flex flex-col items-center justify-center w-full p-8 text-white dark:text-slate-100">
-          {/* Logo animado con colores que responden al tema */}
           <div className="relative mb-8">
             <div className="w-32 h-32 rounded-3xl bg-gradient-to-br from-cyan-400 via-blue-500 to-blue-600 dark:from-cyan-300 dark:via-blue-400 dark:to-blue-500 flex items-center justify-center shadow-2xl ring-4 ring-white/20 dark:ring-slate-400/20 backdrop-blur-sm transform hover:scale-105 transition-all duration-500">
-              <span className="text-5xl font-bold text-white drop-shadow-lg">P</span>
+              <Image
+                src={IMAGEN_LOGIN ? IMAGEN_LOGIN : "/images/login-bg.jpg"}
+                alt="Logo"
+                width={200}
+                height={200}
+                className="rounded-3xl bg-gradient-to-br flex items-center justify-center shadow-2xl ring-4 ring-white/20 dark:ring-slate-400/20 backdrop-blur-sm transform hover:scale-105 transition-all duration-500"
+              />
             </div>
             <div className="absolute -inset-2 bg-gradient-to-r from-cyan-400 to-blue-600 dark:from-cyan-300 dark:to-blue-500 rounded-3xl blur opacity-60 dark:opacity-40 -z-10 animate-pulse" />
           </div>
@@ -157,10 +163,10 @@ function LoginContent() {
       </aside>
 
       {/* Lado derecho: formulario con imagen de fondo que responde al tema */}
-  <main className={"flex-1 min-h-screen flex items-center justify-center p-6 relative bg-center bg-cover " + (!LOGIN_RIGHT_BG ? "bg-white dark:bg-black" : "")} 
-            style={{ 
-              backgroundImage: LOGIN_RIGHT_BG ? `url(${LOGIN_RIGHT_BG})` : 'none'
-            }}>
+      <main className={"flex-1 min-h-screen flex items-center justify-center p-6 relative bg-center bg-cover " + (!LOGIN_RIGHT_BG ? "bg-white dark:bg-black" : "")}
+        style={{
+          backgroundImage: LOGIN_RIGHT_BG ? `url(${LOGIN_RIGHT_BG})` : 'none'
+        }}>
         {/* Overlay para la imagen de fondo que responde al tema */}
         {LOGIN_RIGHT_BG && (
           <div className="absolute inset-0 bg-white/65 dark:bg-black/80 backdrop-blur-[1px]" />
@@ -185,7 +191,12 @@ function LoginContent() {
           <div className="text-center mb-6">
             <div className="relative inline-flex items-center justify-center mb-4">
               <div className="w-12 h-12 bg-gradient-to-br from-cyan-400 via-blue-500 to-blue-600 dark:from-cyan-300 dark:via-blue-400 dark:to-blue-500 rounded-2xl shadow-xl flex items-center justify-center transform hover:scale-110 transition-all duration-500 ring-2 ring-white/20 dark:ring-slate-400/20 backdrop-blur-sm">
-                <span className="text-xl font-bold text-white drop-shadow-lg">P</span>
+                <Image
+                  src={IMAGEN_LOGIN ? IMAGEN_LOGIN : "/images/login-bg.jpg"}
+                  alt="Logo"
+                  width={200}
+                  height={200}
+                />
               </div>
               <div className="absolute -inset-1 bg-gradient-to-r from-cyan-400 to-blue-600 dark:from-cyan-300 dark:to-blue-500 rounded-2xl blur opacity-45 dark:opacity-30 -z-10 animate-pulse" />
             </div>
@@ -199,7 +210,7 @@ function LoginContent() {
           <div className="relative">
             {/* Glow effect */}
             <div className="absolute -inset-1 bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 rounded-3xl blur opacity-30 group-hover:opacity-50 transition duration-1000 group-hover:duration-200" />
-            
+
             <div className="relative bg-white/85 dark:bg-slate-800/85 backdrop-blur-xl rounded-2xl shadow-2xl border border-slate-200/60 dark:border-slate-700/30 p-6 sm:p-7 transition-all duration-500 hover:shadow-cyan-500/25 hover:shadow-2xl">
               {/* Botón Google optimizado */}
               <button
@@ -207,7 +218,7 @@ function LoginContent() {
                 onClick={() => signIn("google", { callbackUrl: "/main/dashboard" })}
                 className="group w-full flex items-center justify-center gap-3 py-3 mb-4 rounded-xl border border-slate-300/60 dark:border-slate-600/50 bg-white/70 dark:bg-slate-700/50 backdrop-blur-sm text-slate-800 dark:text-slate-100 hover:bg-white/90 dark:hover:bg-slate-700/80 transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-[1.01] transform"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" className="w-5 h-5 group-hover:scale-110 transition-transform duration-300"><path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12   s5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C33.64,6.053,29.072,4,24,4C12.955,4,4,12.955,4,24s8.955,20,20,20   s20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"/><path fill="#FF3D00" d="M6.306,14.691l6.571,4.819C14.655,16.108,18.961,14,24,14c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657   C33.64,6.053,29.072,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"/><path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.197l-6.19-5.238C29.211,35.091,26.715,36,24,36   c-5.202,0-9.619-3.317-11.276-7.95l-6.55,5.046C9.494,39.556,16.227,44,24,44z"/><path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.793,2.237-2.231,4.166-4.097,5.565   c0.001-0.001,0.002-0.001,0.003-0.002l6.19,5.238C36.983,39.205,44,34,44,24C44,22.659,43.862,21.35,43.611,20.083z"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" className="w-5 h-5 group-hover:scale-110 transition-transform duration-300"><path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12   s5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C33.64,6.053,29.072,4,24,4C12.955,4,4,12.955,4,24s8.955,20,20,20   s20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z" /><path fill="#FF3D00" d="M6.306,14.691l6.571,4.819C14.655,16.108,18.961,14,24,14c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657   C33.64,6.053,29.072,4,24,4C16.318,4,9.656,8.337,6.306,14.691z" /><path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.197l-6.19-5.238C29.211,35.091,26.715,36,24,36   c-5.202,0-9.619-3.317-11.276-7.95l-6.55,5.046C9.494,39.556,16.227,44,24,44z" /><path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.793,2.237-2.231,4.166-4.097,5.565   c0.001-0.001,0.002-0.001,0.003-0.002l6.19,5.238C36.983,39.205,44,34,44,24C44,22.659,43.862,21.35,43.611,20.083z" /></svg>
                 <span className="font-semibold">Continuar con Google</span>
               </button>
 
@@ -275,11 +286,11 @@ function LoginContent() {
                 </div>
 
                 {/* Captcha removido por solicitud */}
-                
-                <div className = "w-full flex justify-center">
+
+                <div className="w-full flex justify-center">
                   <Recaptcha ref={recaptchaRef} onVerify={setIsVerifying} />
                 </div>
-                
+
                 <button
                   type="submit"
                   disabled={isSubmitting}
@@ -287,7 +298,7 @@ function LoginContent() {
                 >
                   {/* Efecto de brillo */}
                   <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 group-hover:animate-shimmer" />
-                  
+
                   {isSubmitting ? (
                     <>
                       <div className="w-5 h-5 border-3 border-white border-t-transparent rounded-full animate-spin"></div>
@@ -304,38 +315,38 @@ function LoginContent() {
                 </button>
               </form>
 
-            {showConfirmationError && (
-              <div className="mt-4 p-4 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 border-2 border-amber-200 dark:border-amber-800 rounded-2xl backdrop-blur-sm">
-                <div className="flex items-start space-x-3">
-                  <div className="flex-shrink-0">
-                    <div className="w-2 h-2 bg-gradient-to-r from-amber-400 to-orange-500 rounded-full mt-2 animate-pulse"></div>
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="text-sm font-bold text-amber-800 dark:text-amber-200 mb-1">Email no confirmado</h3>
-                    <p className="text-xs text-amber-700 dark:text-amber-300 mb-3">Debes confirmar tu email antes de poder iniciar sesión.</p>
-                    <button
-                      onClick={handleResendConfirmation}
-                      disabled={isResending}
-                      className="inline-flex items-center gap-2 px-3 py-1 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 disabled:from-gray-400 disabled:to-gray-500 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl disabled:shadow-none transition-all duration-300 transform hover:scale-105 disabled:scale-100 text-xs"
-                    >
-                      {isResending ? (
-                        <>
-                          <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                          <span>Reenviando...</span>
-                        </>
-                      ) : (
-                        <>
-                          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 7.89a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                          </svg>
-                          <span>Reenviar correo</span>
-                        </>
-                      )}
-                    </button>
+              {showConfirmationError && (
+                <div className="mt-4 p-4 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 border-2 border-amber-200 dark:border-amber-800 rounded-2xl backdrop-blur-sm">
+                  <div className="flex items-start space-x-3">
+                    <div className="flex-shrink-0">
+                      <div className="w-2 h-2 bg-gradient-to-r from-amber-400 to-orange-500 rounded-full mt-2 animate-pulse"></div>
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-sm font-bold text-amber-800 dark:text-amber-200 mb-1">Email no confirmado</h3>
+                      <p className="text-xs text-amber-700 dark:text-amber-300 mb-3">Debes confirmar tu email antes de poder iniciar sesión.</p>
+                      <button
+                        onClick={handleResendConfirmation}
+                        disabled={isResending}
+                        className="inline-flex items-center gap-2 px-3 py-1 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 disabled:from-gray-400 disabled:to-gray-500 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl disabled:shadow-none transition-all duration-300 transform hover:scale-105 disabled:scale-100 text-xs"
+                      >
+                        {isResending ? (
+                          <>
+                            <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                            <span>Reenviando...</span>
+                          </>
+                        ) : (
+                          <>
+                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 7.89a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                            </svg>
+                            <span>Reenviar correo</span>
+                          </>
+                        )}
+                      </button>
+                    </div>
                   </div>
                 </div>
-              </div>
-            )}
+              )}
             </div>
           </div>
 
