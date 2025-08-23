@@ -63,7 +63,7 @@ function LoginContent() {
 
     if (res?.ok) {
       toast.success("¡Bienvenido de vuelta!");
-      router.push("/main/dashboard");
+      router.push("/admin/dashboard");
     } else {
       if (res?.error === "Email not confirmed") {
         setShowConfirmationError(true);
