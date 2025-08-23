@@ -19,11 +19,7 @@ export interface LoginCredentials {
   password: string;
 }
 
-export interface RegisterData {
-  username: string;
-  email: string;
-  password?: string;
-}
+// removed: RegisterData (registro se maneja en el front)
 
 export interface ResetPasswordData {
   code: string;
