@@ -3,7 +3,7 @@ import type { NextRequest } from "next/server";
 import { getToken } from "next-auth/jwt";
 import { NEXTAUTH_SECRET } from "@/config";
 
-const AUTH_PATHS = ["/auth/login", "/auth/register", "/auth/forgot-password", "/auth/reset-password"];
+const AUTH_PATHS = ["/auth/login"];
 const PROTECTED_ROOT = "/main/dashboard";
 
 export async function middleware(req: NextRequest) {

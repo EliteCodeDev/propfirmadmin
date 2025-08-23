@@ -191,16 +191,6 @@ function LoginContent() {
                     )}
                   </button>
                 </div>
-                
-                {/* Enlace ¿Olvidaste tu contraseña? */}
-                <div className="text-right">
-                  <Link
-                    href="/auth/forgot-password"
-                    className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium transition-colors"
-                  >
-                    ¿Olvidaste tu contraseña?
-                  </Link>
-                </div>
               </div>
 
               {/* Botón de envío */}
@@ -245,19 +235,6 @@ function LoginContent() {
                 </div>
               </div>
             )}
-
-            {/* Enlace de registro */}
-            <div className="mt-8 text-center">
-              <p className="text-sm text-slate-600 dark:text-slate-400">
-                ¿No tienes cuenta?{" "}
-                <Link 
-                  href="/auth/register" 
-                  className="font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-colors"
-                >
-                  Regístrate aquí
-                </Link>
-              </p>
-            </div>
           </div>
 
           {/* Footer */}

@@ -2,11 +2,9 @@ import authClient from "@/api/auth-client";
 import {
   AuthResponse,
   LoginCredentials,
-  RegisterData,
-  ResetPasswordData,
   UserData,
 } from "../../types/auth";
-//ivanaloca
+// Registro manejado en el front público. API removida del admin.
 
 export async function login(
   credentials: LoginCredentials
@@ -32,26 +30,9 @@ export async function login(
   return data;
 }
 
-export async function register(userData: RegisterData): Promise<AuthResponse> {
-  console.log("Registering user:", userData);
-  const { data } = await authClient.post("/auth/register", userData);
-  // El backend envuelve la respuesta en {success, message, data}
-  return data.data || data;
-}
+// Recuperación de contraseña gestionada en el front público.
 
-export async function forgotPassword(email: string): Promise<void> {
-  await authClient.post("/auth/reset-password", { email });
-}
-
-export async function resetPassword(
-  data: ResetPasswordData
-): Promise<AuthResponse> {
-  const { data: response } = await authClient.post(
-    "/auth/reset-password",
-    data
-  );
-  return response;
-}
+// Endpoint de reseteo de contraseña removido del admin.
 
 export async function sendEmailConfirmation(email: string): Promise<void> {
   await authClient.post("/auth/resend-confirmation", { email });
