@@ -31,7 +31,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { toast } from "sonner";
-import { Edit, Trash2, Plus } from "lucide-react";
+import { Edit, Trash2 } from "lucide-react";
 import { ManagerHeader } from "./ManagerHeader";
 
 // Validación
@@ -50,6 +50,7 @@ export function CategoriesManager({ pageSize = 10 }: CategoriesManagerProps) {
   const [editItem, setEditItem] = useState<ChallengeCategory | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [page, setPage] = useState(1);
+  const [pageSizeLocal, setPageSizeLocal] = useState(pageSize);
 
   // Form
   const form = useForm<CategoryFormData>({
@@ -152,7 +153,7 @@ export function CategoriesManager({ pageSize = 10 }: CategoriesManagerProps) {
   }));
 
   const totalItems = tableData.length;
-  const totalPages = Math.ceil(totalItems / pageSize);
+  const totalPages = Math.ceil(totalItems / pageSizeLocal);
 
   // Función para renderizar acciones
   const renderActions = (row: Record<string, unknown>) => (
@@ -199,9 +200,10 @@ export function CategoriesManager({ pageSize = 10 }: CategoriesManagerProps) {
             currentPage: page,
             totalPages: totalPages,
             totalItems: totalItems,
-            pageSize: pageSize,
+            pageSize: pageSizeLocal,
             onPageChange: (p) => setPage(p),
             onPageSizeChange: (n) => {
+              setPageSizeLocal(n);
               setPage(1);
             },
           }}

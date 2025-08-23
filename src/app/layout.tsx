@@ -7,8 +7,8 @@ import { AuthProvider } from './providers';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'FundedHero Dashboard',
-  description: 'Sistema de gestión de trading y retiros',
+  title: 'FundedHero - Admin',
+  description: 'CRM FundedHero',
 };
 
 export default function RootLayout({

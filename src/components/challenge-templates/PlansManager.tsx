@@ -44,6 +44,7 @@ export function PlansManager({ pageSize = 10 }: PlansManagerProps) {
   const [editItem, setEditItem] = useState<ChallengePlan | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [page, setPage] = useState(1);
+  const [pageSizeLocal, setPageSizeLocal] = useState(pageSize);
 
   // Form
   const form = useForm<PlanFormData>({
@@ -160,11 +161,11 @@ export function PlansManager({ pageSize = 10 }: PlansManagerProps) {
   }));
 
   // Total de páginas para paginación
-  const totalPages = Math.ceil(plans.length / pageSize);
+  const totalPages = Math.ceil(plans.length / pageSizeLocal);
 
   // Paginación de datos
-  const startIndex = (page - 1) * pageSize;
-  const paginatedData = tableData.slice(startIndex, startIndex + pageSize);
+  const startIndex = (page - 1) * pageSizeLocal;
+  const paginatedData = tableData.slice(startIndex, startIndex + pageSizeLocal);
 
   // --------------------------------------------------
   // 4. Render
@@ -223,9 +224,12 @@ export function PlansManager({ pageSize = 10 }: PlansManagerProps) {
             currentPage: page,
             totalPages: totalPages,
             totalItems: plans.length,
-            pageSize: pageSize,
+            pageSize: pageSizeLocal,
             onPageChange: setPage,
-            onPageSizeChange: () => {}, // No cambio de tamaño de página por ahora
+            onPageSizeChange: (n) => {
+              setPageSizeLocal(n);
+              setPage(1);
+            },
           }}
         />
       </div>

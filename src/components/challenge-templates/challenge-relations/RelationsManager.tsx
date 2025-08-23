@@ -68,6 +68,7 @@ export function RelationsManager({ pageSize = 10 }: RelationsManagerProps) {
   const [editItem, setEditItem] = useState<ChallengeRelation | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [page, setPage] = useState(1);
+  const [pageSizeLocal, setPageSizeLocal] = useState(pageSize);
   const [openBalanceModal, setOpenBalanceModal] = useState(false);
   const [selectedBalanceIds, setSelectedBalanceIds] = useState<string[]>([]);
   const [selectedRelationIdForBalances, setSelectedRelationIdForBalances] =
@@ -233,9 +234,9 @@ export function RelationsManager({ pageSize = 10 }: RelationsManagerProps) {
   ];
 
   // Paginación
-  const totalPages = Math.max(1, Math.ceil(tableData.length / pageSize));
-  const startIndex = (page - 1) * pageSize;
-  const paginatedRows = tableData.slice(startIndex, startIndex + pageSize);
+  const totalPages = Math.max(1, Math.ceil(tableData.length / pageSizeLocal));
+  const startIndex = (page - 1) * pageSizeLocal;
+  const paginatedRows = tableData.slice(startIndex, startIndex + pageSizeLocal);
 
   const renderActions = (row: Record<string, unknown>) => (
     <div className="flex items-center justify-center gap-2">
@@ -308,9 +309,12 @@ export function RelationsManager({ pageSize = 10 }: RelationsManagerProps) {
             currentPage: page,
             totalPages,
             totalItems: tableData.length,
-            pageSize,
+            pageSize: pageSizeLocal,
             onPageChange: setPage,
-            onPageSizeChange: () => {},
+            onPageSizeChange: (n) => {
+              setPageSizeLocal(n);
+              setPage(1);
+            },
           }}
         />
       </div>
@@ -325,11 +329,18 @@ export function RelationsManager({ pageSize = 10 }: RelationsManagerProps) {
           selectedRelationIdForBalances
             ? relations.find(
                 (r) => r.relationID === selectedRelationIdForBalances
-              )?.balances || []
+              )?.balances?.map(balance => ({
+                challengeBalanceID: balance.balanceID,
+                price: balance.price,
+                isActive: balance.isActive,
+                hasDiscount: balance.hasDiscount,
+                discount: balance.discount,
+                wooID: balance.wooID
+              })) || []
             : []
         }
         onConfirmWithDetails={async (items) => {
-          setSelectedBalanceIds(items.map((item) => item.balanceID));
+          setSelectedBalanceIds(items.map((item) => item.challengeBalanceID));
           if (selectedRelationIdForBalances) {
             try {
               if (items.length === 0) {
@@ -339,14 +350,15 @@ export function RelationsManager({ pageSize = 10 }: RelationsManagerProps) {
               } else {
                 // Crear el payload correcto según el DTO del backend
                 const payload = items.map((item) => ({
-                  balanceID: item.balanceID,
+                  challengeBalanceID: item.challengeBalanceID,
                   price: item.price || 0,
                   isActive: item.isActive ?? true,
                   hasDiscount: item.hasDiscount ?? false,
                   discount:
                     item.hasDiscount && item.discount
-                      ? parseFloat(item.discount.replace("%", ""))
-                      : 0,
+                      ? item.discount
+                      : "0",
+                  wooID: item.wooID || undefined,
                 }));
                 await challengeTemplatesApi.createBalancesForRelation(
                   selectedRelationIdForBalances,

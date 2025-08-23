@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import {
   Table,
@@ -99,6 +99,12 @@ export default function PaginatedCardTable(props: PaginatedCardTableProps) {
 
   const { currentPage, totalPages, pageSize, onPageChange, onPageSizeChange } =
     pagination;
+  // Estado interno para que el selector refleje el cambio al instante,
+  // incluso si el padre no actualiza inmediatamente el prop pageSize
+  const [selectedPageSize, setSelectedPageSize] = useState<number>(pageSize);
+  useEffect(() => {
+    setSelectedPageSize(pageSize);
+  }, [pageSize]);
   // Records range UI not displayed currently; can be re-enabled if needed
   // const startRecord = (currentPage - 1) * pageSize + 1;
   // const endRecord = typeof totalItems === "number"
@@ -243,11 +249,15 @@ export default function PaginatedCardTable(props: PaginatedCardTableProps) {
                   Mostrando
                 </span>
                 <select
-                  value={pageSize}
-                  onChange={(e) => onPageSizeChange(Number(e.target.value))}
+                  value={selectedPageSize}
+                  onChange={(e) => {
+                    const n = Number(e.target.value);
+                    setSelectedPageSize(n);
+                    onPageSizeChange(n);
+                  }}
                   className="px-3 py-1 text-xs border border-gray-300 dark:border-gray-600/50 rounded-md bg-white dark:bg-gray-700/50 text-gray-900 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500/50 backdrop-blur-sm"
                 >
-                  {Array.from(new Set([10, 25, 50, 100, pageSize]))
+                  {Array.from(new Set([10, 25, 50, 100, selectedPageSize]))
                     .sort((a, b) => a - b)
                     .map((n) => (
                       <option key={n} value={n}>

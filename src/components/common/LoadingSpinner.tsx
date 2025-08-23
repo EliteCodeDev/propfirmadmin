@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 
-import type { LoadingSpinnerProps } from "@/types";
+import { LoadingSpinnerProps } from "@/types";
 
 export default function LoadingSpinner({
   size = "md",

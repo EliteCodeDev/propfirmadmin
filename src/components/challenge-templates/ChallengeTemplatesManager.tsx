@@ -9,7 +9,15 @@ import { StagesManager } from "./StagesManager";
 import { RulesManager } from "./RulesManager";
 import { TemplateVisualizer } from "./TemplateVisualizer";
 import { useArrayValidation } from "@/hooks/useArrayValidation";
-import { Settings, PackageIcon, Layers, Link, Eye, Folder, FileText } from "lucide-react";
+import {
+  Settings,
+  PackageIcon,
+  Layers,
+  Link,
+  Eye,
+  Folder,
+  FileText,
+} from "lucide-react";
 
 type TabType =
   | "categories"
@@ -29,9 +37,7 @@ export function ChallengeTemplatesManager({
 }: ChallengeTemplatesManagerProps = {}) {
   const [activeTab, setActiveTab] = useState<TabType>("visualizer");
   const [pageSize, setPageSize] = useState(initialPageSize);
-  const [page, setPage] = useState(1);
-
-
+  // const [page, setPage] = useState(1);
 
   const tabs = [
     {
