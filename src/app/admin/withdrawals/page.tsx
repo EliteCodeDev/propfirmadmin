@@ -4,16 +4,22 @@ import MainLayout from "@/components/layouts/MainLayout";
 import { ManagerHeader } from "@/components/challenge-templates/ManagerHeader";
 import React, { useMemo, useState, useEffect } from "react";
 import useSWR from "swr";
-import { SessionProvider, useSession } from "next-auth/react";
+import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import PaginatedCardTable from "@/components/common/PaginatedCardTable";
 import type { ColumnConfig } from "@/types";
 import type { Withdrawal, WithdrawalStatus, PageResponse, HttpError } from "@/types";
 import { apiBaseUrl } from "@/config";
 import { withdrawalsApi } from "@/api/withdrawals";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
-
-// Removed ClipboardIcon import as Withdrawal ID column is removed
+import { ClipboardDocumentIcon, CheckIcon } from '@heroicons/react/24/outline';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
 
 type LimitParam = number;
 type Scope = "mine" | "all";
@@ -27,6 +33,8 @@ function Badge({ status }: { status: WithdrawalStatus | string }) {
       ? "bg-yellow-100 text-yellow-800"
       : up === "APPROVED"
       ? "bg-green-100 text-green-800"
+      : up === "PAID"
+      ? "bg-blue-100 text-blue-800"
       : up === "REJECTED"
       ? "bg-red-100 text-red-800"
       : "bg-gray-100 text-gray-800";
@@ -39,6 +47,64 @@ function Badge({ status }: { status: WithdrawalStatus | string }) {
   );
 }
 
+// 🔹 Componente para mostrar wallet truncada con tooltip y botón de copia
+function WalletCell({ wallet }: { wallet: string }) {
+  const [showFull, setShowFull] = useState(false);
+  const [copied, setCopied] = useState(false);
+  
+  if (!wallet || wallet === "-") {
+    return <span className="text-gray-500">-</span>;
+  }
+
+  const truncated = wallet.length > 12 
+    ? `${wallet.slice(0, 6)}...${wallet.slice(-6)}` 
+    : wallet;
+
+  const handleCopy = async (e: React.MouseEvent) => {
+    e.stopPropagation(); // Evitar que se active el onClick del span
+    try {
+      await navigator.clipboard.writeText(wallet);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000); // Resetear después de 2 segundos
+    } catch (err) {
+      console.error('Error al copiar:', err);
+    }
+  };
+
+  return (
+    <div className="relative group flex items-center gap-2">
+      <span 
+        className="cursor-pointer hover:text-blue-600 transition-colors"
+        onClick={() => setShowFull(!showFull)}
+        title="Click para ver completa"
+      >
+        {showFull ? wallet : truncated}
+      </span>
+      
+      {/* Botón de copia */}
+      <button
+        onClick={handleCopy}
+        className={`opacity-0 group-hover:opacity-100 transition-opacity duration-200 p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700 ${
+          copied ? 'text-green-600' : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
+        }`}
+        title={copied ? "¡Copiado!" : "Copiar wallet"}
+      >
+        {copied ? (
+          <CheckIcon className="w-4 h-4" />
+        ) : (
+          <ClipboardDocumentIcon className="w-4 h-4" />
+        )}
+      </button>
+      
+      {/* Tooltip con la dirección completa */}
+      <div className="invisible group-hover:visible absolute z-10 w-max max-w-xs px-2 py-1 text-xs text-white bg-gray-800 rounded shadow-lg bottom-full left-1/2 transform -translate-x-1/2 mb-1">
+        {wallet}
+        <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-800"></div>
+      </div>
+    </div>
+  );
+}
+
 const money = new Intl.NumberFormat("en-US", {
   style: "currency",
   currency: "USD",
@@ -47,6 +113,7 @@ const money = new Intl.NumberFormat("en-US", {
 
 type UnknownRecord = Record<string, unknown>;
 
+/** 🔹 Ajustado para tu endpoint (data.data) */
 function unwrapPage<T = UnknownRecord>(
   raw: unknown
 ): {
@@ -57,41 +124,18 @@ function unwrapPage<T = UnknownRecord>(
   totalPages: number;
 } {
   const r = raw as UnknownRecord | undefined;
-  const dataField = (r && (r as UnknownRecord)["data"]) as unknown;
-  const layer: UnknownRecord | unknown[] | undefined =
-    dataField && !Array.isArray(dataField) ? (dataField as UnknownRecord) : r;
+  const rootData = (r && (r as UnknownRecord)["data"]) as UnknownRecord | undefined;
 
-  let items: T[] = [];
-  if (layer && typeof layer === "object" && !Array.isArray(layer)) {
-    const maybeData = (layer as UnknownRecord)["data"] as unknown;
-    const maybeItems = (layer as UnknownRecord)["items"] as unknown;
-    if (Array.isArray(maybeData)) items = maybeData as T[];
-    else if (Array.isArray(maybeItems)) items = maybeItems as T[];
-  } else if (Array.isArray(layer)) {
-    items = layer as T[];
-  }
+  const items = (rootData?.["data"] as T[]) ?? [];
 
   const total =
-    layer &&
-    typeof layer === "object" &&
-    typeof (layer as UnknownRecord)["total"] === "number"
-      ? ((layer as UnknownRecord)["total"] as number)
-      : items.length;
-  const page =
-    layer &&
-    typeof layer === "object" &&
-    typeof (layer as UnknownRecord)["page"] === "number"
-      ? ((layer as UnknownRecord)["page"] as number)
-      : 1;
+    typeof rootData?.["total"] === "number" ? (rootData["total"] as number) : items.length;
+  const page = typeof rootData?.["page"] === "number" ? (rootData["page"] as number) : 1;
   const limit =
-    layer &&
-    typeof layer === "object" &&
-    typeof (layer as UnknownRecord)["limit"] === "number"
-      ? ((layer as UnknownRecord)["limit"] as number)
-      : items.length;
+    typeof rootData?.["limit"] === "number" ? (rootData["limit"] as number) : items.length;
   const totalPages =
-    typeof (layer as any)?.totalPages === "number"
-      ? (layer as any).totalPages
+    typeof rootData?.["totalPages"] === "number"
+      ? (rootData["totalPages"] as number)
       : limit > 0
       ? Math.max(1, Math.ceil(total / limit))
       : 1;
@@ -124,7 +168,9 @@ function ConfirmModal({
     <Dialog open={open} onOpenChange={(v) => !pending && !v && onClose()}>
       <DialogContent className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700 max-w-md mx-auto shadow-lg rounded-xl">
         <DialogHeader>
-          <DialogTitle className="text-gray-900 dark:text-white text-base font-semibold">{title}</DialogTitle>
+          <DialogTitle className="text-gray-900 dark:text-white text-base font-semibold">
+            {title}
+          </DialogTitle>
           {description && (
             <DialogDescription className="text-gray-600 dark:text-gray-400 text-xs">
               {description}
@@ -153,23 +199,23 @@ function ConfirmModal({
   );
 }
 
-function WithdrawalsInner() {
+export default function WithdrawalsInner() {
   const router = useRouter();
   const { data: session, status: authStatus } = useSession();
 
-  // Estado
   const [scope, setScope] = useState<Scope>("all");
   const [page, setPage] = useState<number>(1);
   const [limit, setLimit] = useState<LimitParam>(10);
   const [status, setStatus] = useState<"" | WithdrawalStatus>("");
   const [email, setEmail] = useState<string>("");
 
-  // Modales y estado de acciones
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [rejectOpen, setRejectOpen] = useState(false);
   const [processing, setProcessing] = useState(false);
   const [selected, setSelected] = useState<Withdrawal | null>(null);
   const [rejectionDetail, setRejectionDetail] = useState("");
+
+  const [logins, setLogins] = useState<Record<string, string>>({});
 
   const accessToken = session?.accessToken as string | undefined;
 
@@ -177,23 +223,17 @@ function WithdrawalsInner() {
     const q = new URLSearchParams();
     q.set("page", String(page));
     q.set("limit", String(limit));
-    if (status) q.set("status", status); // minúsculas a UI; backend tolera mayúsculas en API propia axios
+    if (status) q.set("status", status);
     if (email) q.set("email", email);
     return q.toString();
   }, [page, limit, status, email]);
 
-  const basePath =
-    scope === "all"
-      ? "/withdrawals" // requiere rol admin
-      : "/withdrawals/my-withdrawals";
-
+  const basePath = scope === "all" ? "/withdrawals" : "/withdrawals/my-withdrawals";
   const url = `${API_BASE}${basePath}?${query}`;
 
   const fetcher = async (u: string) => {
     const res = await fetch(u, {
-      headers: accessToken
-        ? { Authorization: `Bearer ${accessToken}` }
-        : undefined,
+      headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
       credentials: "include",
     });
     if (!res.ok) {
@@ -211,7 +251,6 @@ function WithdrawalsInner() {
     fetcher
   );
 
-  // Derivar httpStatus de forma estable
   const httpStatus: number | undefined = (() => {
     if (error && typeof error === "object" && error !== null) {
       const e = error as Partial<HttpError>;
@@ -220,44 +259,51 @@ function WithdrawalsInner() {
     return undefined;
   })();
 
-  // Si el usuario no tiene permisos para ver "Todos (admin)", alterna automáticamente a "Mis retiros"
   useEffect(() => {
     if (httpStatus === 403 && scope === "all") {
       setScope("mine");
     }
   }, [httpStatus, scope]);
 
-  // Redirección si no hay sesión
   useEffect(() => {
     if (authStatus === "unauthenticated" || (!accessToken && authStatus !== "loading")) {
       router.replace("/auth/login");
     }
   }, [authStatus, accessToken, router]);
 
-  if (
-    authStatus === "loading" ||
-    (!accessToken && authStatus !== "unauthenticated")
-  ) {
-    return (
-      <MainLayout>
-        <div className="p-6">Verificando sesión…</div>
-      </MainLayout>
-    );
-  }
-
-  if (!accessToken) {
-    return (
-      <MainLayout>
-        <div className="p-6">Redirigiendo al login…</div>
-      </MainLayout>
-    );
-  }
-
   const pageObj = unwrapPage<Withdrawal>(data as unknown);
   const withdrawals = pageObj.items;
   const totalPages = pageObj.totalPages;
   const offset = (page - 1) * limit;
   const isServerErr = httpStatus === 500;
+
+  // 🔹 Efecto para cargar logins de challenges
+  useEffect(() => {
+    async function fetchLogins() {
+      const newLogins: Record<string, string> = {};
+      for (const w of withdrawals) {
+        if (w.challengeID && !logins[w.challengeID]) {
+          try {
+            const res = await fetch(`${API_BASE}/challenges/${w.challengeID}`, {
+              headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
+            });
+            if (res.ok) {
+              const json = await res.json();
+              newLogins[w.challengeID] = json.data?.brokerAccount?.login || "-";
+            } else {
+              newLogins[w.challengeID] = "-";
+            }
+          } catch {
+            newLogins[w.challengeID] = "-";
+          }
+        }
+      }
+      if (Object.keys(newLogins).length) {
+        setLogins((prev) => ({ ...prev, ...newLogins }));
+      }
+    }
+    if (withdrawals.length) fetchLogins();
+  }, [withdrawals, accessToken]);
 
   async function approve(w: Withdrawal) {
     setSelected(w);
@@ -290,7 +336,6 @@ function WithdrawalsInner() {
     if (!selected) return;
     try {
       setProcessing(true);
-      // Si el backend requiere rejectionDetail, lo enviamos cuando se provee.
       const payload: any = { status: "rejected" };
       if (rejectionDetail.trim()) payload.rejectionDetail = rejectionDetail.trim();
       await withdrawalsApi.updateStatus(selected.withdrawalID, payload);
@@ -307,16 +352,10 @@ function WithdrawalsInner() {
   return (
     <MainLayout>
       <div className="p-6 space-y-6 pt-4">
-        <ManagerHeader
-          title="Retiros"
-          description="Gestión de solicitudes de retiro"
-        />
+        <ManagerHeader title="Retiros" description="Gestión de solicitudes de retiro" />
 
         {/* Filtros */}
         <div className="flex flex-col sm:flex-row items-center gap-3">
-          {/* Eliminado: selector de Ámbito */}
-
-          {/* Filtro por Estado */}
           <div className="flex items-center gap-2">
             <label className="text-xs text-gray-600 dark:text-gray-400">Estado</label>
             <select
@@ -357,24 +396,24 @@ function WithdrawalsInner() {
         {/* Mensajes de error */}
         {isServerErr && (
           <div className="p-3 rounded-md bg-red-50 text-red-700 text-sm border border-red-200">
-            El servidor devolvió 500. Asegúrate de enviar <b>status</b> en
-            minúsculas (<code>pending|approved|paid|rejected</code>) y revisa los
-            logs del backend.
+            El servidor devolvió 500. Revisa que el <b>status</b> se envíe en
+            minúsculas (<code>pending|approved|paid|rejected</code>).
           </div>
         )}
 
         {(() => {
           const columns: ColumnConfig[] = [
-            { key: "serial", label: "ID", type: "normal" },
-            { key: "createdAt", label: "Fecha", type: "normal" },
-            {
-              key: "amount",
-              label: "Monto",
+            { key: "userName", label: "Usuario", type: "normal" },
+            { key: "login", label: "Login", type: "normal" },
+            // 🔹 Columna wallet con ancho reducido
+            { 
+              key: "wallet", 
+              label: "Wallet", 
               type: "normal",
-              render: (v) => String(v),
+              //width: "140px", // Ancho fijo reducido
+              render: (value) => <WalletCell wallet={String(value)} />
             },
-            { key: "wallet", label: "Wallet", type: "normal" },
-            { key: "challenge", label: "Desafío", type: "normal" },
+            { key: "amount", label: "Monto", type: "normal" },
             {
               key: "status",
               label: "Estado",
@@ -382,34 +421,21 @@ function WithdrawalsInner() {
               render: (v) => <Badge status={String(v)} />,
             },
             { key: "observation", label: "Observación", type: "normal" },
-            ...(scope === "all"
-              ? [
-                  {
-                    key: "userName",
-                    label: "Usuario",
-                    type: "normal",
-                  } as ColumnConfig,
-                ]
-              : []),
           ];
 
           const rows = withdrawals.map((w, idx) => ({
             __raw: w,
-            serial: offset + idx + 1,
-            createdAt: w.createdAt ? new Date(w.createdAt).toLocaleString() : "-",
-            amount: money.format(Number(w.amount ?? 0)),
+            userName: w.user
+              ? `${w.user.firstName ?? ""} ${w.user.lastName ?? ""}`.trim() ||
+                w.user.email ||
+                w.userID
+              : w.userID,
+            login: w.challengeID ? logins[w.challengeID] || "Cargando..." : "-",
+            challenge: w.challengeID || "-",
             wallet: w.wallet ?? "-",
-            challenge: w.challenge?.name || w.challengeID || "-",
+            amount: money.format(Number(w.amount ?? 0)),
             status: w.status,
             observation: w.observation ? w.observation : "-",
-            userName:
-              scope === "all"
-                ? w.user
-                  ? `${w.user.firstName ?? ""} ${w.user.lastName ?? ""}`.trim() ||
-                    w.user.email ||
-                    w.userID
-                  : w.userID
-                : undefined,
           }));
 
           return (
@@ -456,11 +482,15 @@ function WithdrawalsInner() {
           );
         })()}
 
-        {/* Modal de Confirmación para Aprobar */}
+        {/* Modal de Confirmación */}
         <ConfirmModal
           open={confirmOpen}
           title="Completar retiro"
-          description={selected ? `Marcar como pagado el retiro de ${money.format(Number(selected.amount))}?` : undefined}
+          description={
+            selected
+              ? `Marcar como pagado el retiro de ${money.format(Number(selected.amount))}?`
+              : undefined
+          }
           pending={processing}
           onClose={() => !processing && setConfirmOpen(false)}
           onConfirm={handleApproveConfirm}
@@ -471,14 +501,20 @@ function WithdrawalsInner() {
         <ConfirmModal
           open={rejectOpen}
           title="Rechazar retiro"
-          description={selected ? `Rechazar retiro de ${money.format(Number(selected.amount))}?` : undefined}
+          description={
+            selected
+              ? `Rechazar retiro de ${money.format(Number(selected.amount))}?`
+              : undefined
+          }
           pending={processing}
           onClose={() => !processing && setRejectOpen(false)}
           onConfirm={handleRejectConfirm}
           confirmText="Rechazar"
         >
           <div className="space-y-2">
-            <label className="text-xs text-gray-600 dark:text-gray-300">Motivo (opcional)</label>
+            <label className="text-xs text-gray-600 dark:text-gray-300">
+              Motivo (opcional)
+            </label>
             <textarea
               className="w-full p-2 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
               placeholder="Detalle del motivo de rechazo"
@@ -490,13 +526,5 @@ function WithdrawalsInner() {
         </ConfirmModal>
       </div>
     </MainLayout>
-  );
-}
-
-export default function WithdrawalsPage() {
-  return (
-    <SessionProvider>
-      <WithdrawalsInner />
-    </SessionProvider>
   );
 }
