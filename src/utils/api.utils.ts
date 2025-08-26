@@ -18,7 +18,7 @@ export function backendUrl(path: string) {
 export function pickAllowedHeaders(req: NextRequest) {
   const headers: Record<string, string> = {};
   // Lista blanca de cabeceras permitidas hacia backend
-  const allow = ["content-type"];
+  const allow = ["content-type", "x-api-key"];
   allow.forEach((k) => {
     const v = req.headers.get(k);
     if (v) headers[k] = v;

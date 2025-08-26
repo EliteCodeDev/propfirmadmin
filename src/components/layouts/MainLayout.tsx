@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Sidebar from "@/components/common/Sidebar";
 import BreadcrumbBar from "@/components/common/BreadcrumbBar";
+import { Toaster } from "sonner";
 
 export default function MainLayout({ children }: { children: React.ReactNode }) {
   const [sidebarCollapsed, setSidebarCollapsed] = useState<boolean>(() => {
@@ -45,10 +46,10 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
 
       {/* Solo aquí vive el scroll */}
       <main className="col-start-2 row-start-2 min-h-0 overflow-y-auto">
-        <div className="w-full">
-          {children}
-        </div>
+        <div className="w-full">{children}</div>
       </main>
+
+      <Toaster position="top-right" richColors />
     </div>
   );
 }

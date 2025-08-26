@@ -19,6 +19,7 @@ import {
   UserIcon,
   ChevronUpIcon,
   ChevronDownIcon,
+  EnvelopeIcon,
 } from "@heroicons/react/24/outline";
 import { signOut } from "next-auth/react";
 import { useSession } from "next-auth/react";
@@ -34,6 +35,7 @@ const navigation: NavigationItem[] = [
   { name: "Usuarios", href: "/admin/users", icon: UserGroupIcon },
   { name: "Broker Accounts", href: "/admin/brokeraccounts", icon: DocumentTextIcon },
   { name: "Retiros", href: "/admin/withdrawals", icon: BanknotesIcon },
+  { name: "Correo", href: "/admin/correo", icon: EnvelopeIcon },
 ];
 
 function classNames(...classes: string[]) {
