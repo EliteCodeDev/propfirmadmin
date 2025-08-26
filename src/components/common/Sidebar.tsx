@@ -168,14 +168,19 @@ export default function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
         <div className="flex-1 min-h-0 py-4 overflow-x-visible overflow-y-auto">
           <nav className={classNames("space-y-2", isCollapsed ? "px-2" : "px-3")}>
             {navigation.map((item, index) => {
+              // ✅ Condición corregida
               const isActive =
-                pathname === item.href || pathname.startsWith(item.href + "/");
+                item.href === "/admin/dashboard"
+                  ? pathname === "/admin/dashboard"
+                  : pathname === item.href || pathname.startsWith(item.href + "/");
+
               const showDivider = index === 0 || index === 2;
 
               return (
                 <div key={item.href}>
                   <Link
                     href={item.href}
+                    prefetch={false} // ✅ evita redirecciones raras
                     className={classNames(
                       "group flex items-center text-sm font-medium rounded-xl transition-all duration-300 ease-out relative overflow-hidden",
                       isCollapsed ? "p-3 justify-center" : "px-4 py-3",
@@ -258,6 +263,7 @@ export default function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
 
               <Link
                 href="/admin/profile"
+                prefetch={false}
                 className="w-full flex items-center px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all rounded-lg"
               >
                 <UserIcon className="h-4 w-4 mr-3 text-blue-500" />
