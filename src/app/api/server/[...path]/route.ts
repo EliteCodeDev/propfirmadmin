@@ -15,6 +15,7 @@ const ALLOWED_PREFIXES = [
   "/smt-api",
   "/plans",
   "/withdrawals",
+  "/mailer",
 ];
 
 export const dynamic = "force-dynamic";
