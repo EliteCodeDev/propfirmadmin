@@ -129,11 +129,11 @@ export default function CorreoPage() {
 
   return (
     <MainLayout>
-      <div className="space-y-6 px-4 sm:px-6 lg:px-8">
+      <div className="p-6 space-y-6 pt-4">
         <ManagerHeader title="Correo" description="Envío de correos manual para soporte o comunicaciones" />
 
         <div className="w-full max-w-3xl mx-auto">
-          <Card className="border-0 shadow-lg bg-white/80 dark:bg-white/5 backdrop-blur">
+          <Card className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
             <CardContent className="pt-6 space-y-5">
               {/* Buscar usuario */}
               <div className="space-y-2" ref={searchContainerRef}>
