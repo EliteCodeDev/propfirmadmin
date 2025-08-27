@@ -81,10 +81,10 @@ export default function BalanceSelectorModal({
               wooID: existingRelationBalance.wooID,
             };
           } else {
-            // Si no existe, usar defaults del balance
+            // Si no existe, usar defaults del balance (sin precio por defecto)
             const b = sourceBalances.find((x) => x.balanceID === id);
             next[id] = {
-              price: b?.balance,
+              // price: undefined,
               isActive: b?.isActive ?? true,
               hasDiscount: b?.hasDiscount ?? false,
               discount: b?.discount,
@@ -453,7 +453,7 @@ export default function BalanceSelectorModal({
                       } else {
                         // Es un nuevo balance, verificar si tiene configuración diferente a los defaults
                         const sourceBalance = sourceBalances.find((b) => b.balanceID === id);
-                        const defaultPrice = sourceBalance?.balance;
+                        const defaultPrice = undefined;
                         const defaultIsActive = sourceBalance?.isActive ?? true;
                         const defaultHasDiscount = sourceBalance?.hasDiscount ?? false;
                         const defaultDiscount = sourceBalance?.discount;
