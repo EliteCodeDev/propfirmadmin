@@ -245,10 +245,12 @@ export function TemplateVisualizer({}: TemplateVisualizerProps) {
                   const isSelected =
                     selectedBalance?.balanceID ===
                     balanceDetail.balance?.balanceID;
-                  const price = balanceDetail.relationBalance?.price;
-                  const formattedPrice = price
-                    ? `$${price.toLocaleString()}`
-                    : "$0";
+                  // Show balance label (e.g., "200k") instead of price
+                  const balanceLabel =
+                    balanceDetail.balance?.name ||
+                    (typeof balanceDetail.balance?.balance === "number"
+                      ? balanceDetail.balance.balance.toLocaleString()
+                      : "Sin balance");
 
                   return (
                     <button
@@ -265,7 +267,7 @@ export function TemplateVisualizer({}: TemplateVisualizerProps) {
                           : "bg-transparent text-white border-white/30 hover:border-white/60 hover:bg-white/10"
                       )}
                     >
-                      {formattedPrice}
+                      {balanceLabel}
                     </button>
                   );
                 })}
