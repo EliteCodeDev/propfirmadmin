@@ -1,12 +1,12 @@
 "use client";
 
 import React, { useState } from "react";
-import { CategoriesManager } from "./CategoriesManager";
+// Removed CategoriesManager import
 import { PlansManager } from "./PlansManager";
 import { BalancesManager } from "./BalancesManager";
 import { RelationsManager } from "./challenge-relations/RelationsManager";
 import { StagesManager } from "./StagesManager";
-import { RulesManager } from "./RulesManager";
+// Removed RulesManager import
 import { TemplateVisualizer } from "./TemplateVisualizer";
 import { useArrayValidation } from "@/hooks/useArrayValidation";
 import {
@@ -15,17 +15,14 @@ import {
   Layers,
   Link,
   Eye,
-  Folder,
-  FileText,
+  // Removed Folder and FileText icons
 } from "lucide-react";
 
 type TabType =
-  | "categories"
   | "plans"
   | "balances"
   | "challenges"
   | "stages"
-  | "rules"
   | "visualizer";
 
 interface ChallengeTemplatesManagerProps {
@@ -51,11 +48,6 @@ export function ChallengeTemplatesManager({
       icon: <Eye className="w-4 h-4" />,
     },
     {
-      id: "categories" as TabType,
-      label: "Categorías",
-      icon: <Folder className="w-4 h-4" />,
-    },
-    {
       id: "plans" as TabType,
       label: "Planes",
       icon: <Settings className="w-4 h-4" />,
@@ -70,11 +62,6 @@ export function ChallengeTemplatesManager({
       label: "Stages",
       icon: <Layers className="w-4 h-4" />,
     },
-    {
-      id: "rules" as TabType,
-      label: "Rules",
-      icon: <FileText className="w-4 h-4" />,
-    },
   ];
 
   const tabsValidation = useArrayValidation(tabs);
@@ -85,16 +72,12 @@ export function ChallengeTemplatesManager({
         return <RelationsManager pageSize={pageSize} />;
       case "visualizer":
         return <TemplateVisualizer />;
-      case "categories":
-        return <CategoriesManager pageSize={pageSize} />;
       case "plans":
         return <PlansManager pageSize={pageSize} />;
       case "balances":
         return <BalancesManager pageSize={pageSize} />;
       case "stages":
         return <StagesManager pageSize={pageSize} />;
-      case "rules":
-        return <RulesManager pageSize={pageSize} />;
       default:
         return <RelationsManager pageSize={pageSize} />;
     }
