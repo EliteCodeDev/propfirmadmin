@@ -103,6 +103,13 @@ export default function BalanceSelectorModal({
     return { available, selectedList };
   }, [sourceBalances, selected]);
 
+  // Ordenar los agregados (selectedList) de menor a mayor según su balance
+  const selectedListSorted = useMemo(() => {
+    return [...selectedList].sort(
+      (a, b) => (a.balance ?? 0) - (b.balance ?? 0)
+    );
+  }, [selectedList]);
+
   const filteredAvailable = useMemo(() => {
     const q = search.trim().toLowerCase();
     if (!q) return available;
@@ -125,7 +132,7 @@ export default function BalanceSelectorModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="w-[50vw] max-w-[40vw] sm:!max-w-6xl lg:!max-w-7xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700 shadow-lg rounded-xl">
+      <DialogContent className="w-[95vw] sm:w-[90vw] md:w-auto sm:!max-w-3xl md:!max-w-5xl lg:!max-w-6xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700 shadow-lg rounded-xl">
         <DialogHeader>
           <DialogTitle className="text-gray-900 dark:text-white text-base md:text-lg font-semibold">
             Seleccionar balances
@@ -136,10 +143,10 @@ export default function BalanceSelectorModal({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-2">
           {/* Columna izquierda: disponibles */}
           <div className="rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden bg-white dark:bg-gray-800">
-            <div className="px-3 py-2 bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+            <div className="px-2 py-1.5 bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
               <span className="text-sm font-medium text-gray-900 dark:text-white">
                 Disponibles
               </span>
@@ -147,14 +154,14 @@ export default function BalanceSelectorModal({
                 {available.length}
               </span>
             </div>
-            <div className="p-3">
+            <div className="p-2">
               <Input
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Buscar balances..."
-                className="mb-3 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="mb-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
-              <div className="space-y-2 max-h-64 overflow-auto pr-1">
+              <div className="space-y-1 max-h-64 overflow-auto pr-1">
                 {filteredAvailable.length === 0 ? (
                   <div className="text-xs text-gray-500 dark:text-gray-400">
                     Sin resultados
@@ -163,7 +170,7 @@ export default function BalanceSelectorModal({
                   filteredAvailable.map((b) => (
                     <div
                       key={b.balanceID}
-                      className="flex items-center justify-between px-3 py-2 rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                      className="flex items-center justify-between px-2 py-1.5 rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                     >
                       <div>
                         <div className="text-sm font-medium text-gray-900 dark:text-white">
@@ -176,7 +183,7 @@ export default function BalanceSelectorModal({
                       <Button
                         variant="outline"
                         size="sm"
-                        className="h-8 px-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600"
+                        className="h-7 px-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600"
                         onClick={() => add(b.balanceID)}
                       >
                         <Plus className="h-4 w-4" />
@@ -190,7 +197,7 @@ export default function BalanceSelectorModal({
 
           {/* Columna derecha: agregados */}
           <div className="rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden bg-white dark:bg-gray-800">
-            <div className="px-3 py-2 bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+            <div className="px-2 py-1.5 bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
               <span className="text-sm font-medium text-gray-900 dark:text-white">
                 Agregados
               </span>
@@ -198,19 +205,19 @@ export default function BalanceSelectorModal({
                 {selected.length}
               </span>
             </div>
-            <div className="p-3">
-              <div className="space-y-2 max-h-72 overflow-auto pr-1">
-                {selectedList.length === 0 ? (
+            <div className="p-2">
+              <div className="space-y-1 max-h-72 overflow-auto pr-1">
+                {selectedListSorted.length === 0 ? (
                   <div className="text-xs text-gray-500 dark:text-gray-400">
                     No has agregado balances
                   </div>
                 ) : (
-                  selectedList.map((b) => (
+                  selectedListSorted.map((b) => (
                     <div
                       key={b.balanceID}
                       className="rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800"
                     >
-                      <div className="flex items-center justify-between px-3 py-2">
+                      <div className="flex items-center justify-between px-2 py-1.5">
                         <div>
                           <div className="text-sm font-medium text-gray-900 dark:text-white">
                             {b.name}
@@ -223,7 +230,7 @@ export default function BalanceSelectorModal({
                           <Button
                             variant="outline"
                             size="sm"
-                            className="h-8 px-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600"
+                            className="h-7 px-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600"
                             onClick={() =>
                               setDetailsOpen((prev) => ({
                                 ...prev,
@@ -241,7 +248,7 @@ export default function BalanceSelectorModal({
                           <Button
                             variant="outline"
                             size="sm"
-                            className="h-8 px-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600"
+                            className="h-7 px-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600"
                             onClick={() => remove(b.balanceID)}
                             title="Quitar"
                           >
@@ -250,8 +257,8 @@ export default function BalanceSelectorModal({
                         </div>
                       </div>
                       {detailsOpen[b.balanceID] && (
-                        <div className="px-3 pb-3 border-t border-gray-200 dark:border-gray-700 pt-3 mt-2">
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div className="px-2 pb-2 border-t border-gray-200 dark:border-gray-700 pt-2 mt-1">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                             <div>
                               <Label
                                 htmlFor={`price-${b.balanceID}`}
@@ -276,10 +283,10 @@ export default function BalanceSelectorModal({
                                     },
                                   }))
                                 }
-                                className="mt-1 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
+                                className="mt-0.5 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
                               />
                             </div>
-                            <div className="flex items-center gap-2 pt-6">
+                            <div className="flex items-center gap-2 pt-4">
                               <Switch
                                 id={`active-${b.balanceID}`}
                                 checked={!!configs[b.balanceID]?.isActive}
@@ -344,7 +351,7 @@ export default function BalanceSelectorModal({
                                     }))
                                   }
                                   placeholder="Ej: 10"
-                                  className="mt-1 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500"
+                                  className="mt-0.5 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500"
                                 />
                               </div>
                             )}
@@ -373,7 +380,7 @@ export default function BalanceSelectorModal({
                                   }))
                                 }
                                 placeholder="ID de WooCommerce"
-                                className="mt-1 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500"
+                                className="mt-0.5 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500"
                               />
                             </div>
                           </div>
@@ -387,7 +394,7 @@ export default function BalanceSelectorModal({
           </div>
         </div>
 
-        <Separator className="my-2 bg-gray-200 dark:bg-gray-700" />
+        <Separator className="my-1.5 bg-gray-200 dark:bg-gray-700" />
 
         <DialogFooter className="flex items-center justify-end gap-2">
           <Button
