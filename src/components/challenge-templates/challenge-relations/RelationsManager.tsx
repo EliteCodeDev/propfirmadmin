@@ -50,7 +50,7 @@ import {
 
 // Validación
 const relationSchema = z.object({
-  categoryID: z.string().min(1, "La categoría es requerida"),
+  categoryID: z.string().uuid("Categoría inválida").optional().or(z.literal("")),
   planID: z.string().min(1, "El plan es requerido"),
 });
 
@@ -162,10 +162,10 @@ export function RelationsManager({ pageSize = 10 }: RelationsManagerProps) {
 
   async function onSubmit(formValues: RelationFormData) {
     try {
-      // No enviar balanceID vacío/"none"
+      // Construir payload respetando opcionalidad de categoría
       const payload = {
-        categoryID: formValues.categoryID,
         planID: formValues.planID,
+        ...(formValues.categoryID ? { categoryID: formValues.categoryID } : {}),
       };
       if (editItem) {
         // Editar
@@ -403,42 +403,7 @@ export function RelationsManager({ pageSize = 10 }: RelationsManagerProps) {
               onSubmit={form.handleSubmit(onSubmit)}
               className="space-y-3 mt-3"
             >
-              <FormField
-                control={form.control}
-                name="categoryID"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-gray-700 dark:text-gray-300 text-sm font-medium">
-                      Categoría
-                    </FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                    >
-                      <FormControl>
-                        <SelectTrigger className="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                          <SelectValue placeholder="Selecciona una categoría" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
-                        {categoriesValidation.safeMap((category) =>
-                          category?.categoryID ? (
-                            <SelectItem
-                              key={category.categoryID}
-                              value={category.categoryID}
-                              className="text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700"
-                            >
-                              {category?.name || "Sin nombre"}
-                            </SelectItem>
-                          ) : null
-                        )}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage className="text-red-600 dark:text-red-400" />
-                  </FormItem>
-                )}
-              />
-
+              {/* Plan primero */}
               <FormField
                 control={form.control}
                 name="planID"
@@ -447,10 +412,7 @@ export function RelationsManager({ pageSize = 10 }: RelationsManagerProps) {
                     <FormLabel className="text-gray-700 dark:text-gray-300 text-sm font-medium">
                       Plan
                     </FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                    >
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
                         <SelectTrigger className="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                           <SelectValue placeholder="Selecciona un plan" />
@@ -465,6 +427,40 @@ export function RelationsManager({ pageSize = 10 }: RelationsManagerProps) {
                               className="text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700"
                             >
                               {plan?.name || "Sin nombre"}
+                            </SelectItem>
+                          ) : null
+                        )}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage className="text-red-600 dark:text-red-400" />
+                  </FormItem>
+                )}
+              />
+
+              {/* Categoría después y opcional */}
+              <FormField
+                control={form.control}
+                name="categoryID"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-gray-700 dark:text-gray-300 text-sm font-medium">
+                      Categoría (opcional)
+                    </FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger className="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                          <SelectValue placeholder="Selecciona una categoría" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+                        {categoriesValidation.safeMap((category) =>
+                          category?.categoryID ? (
+                            <SelectItem
+                              key={category.categoryID}
+                              value={category.categoryID}
+                              className="text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700"
+                            >
+                              {category?.name || "Sin nombre"}
                             </SelectItem>
                           ) : null
                         )}

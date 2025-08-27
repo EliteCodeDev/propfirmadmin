@@ -37,7 +37,7 @@ export interface CreateBalancePayload {
 export type UpdateBalancePayload = Partial<CreateBalancePayload>;
 
 export interface CreateRelationPayload {
-  categoryID: string;
+  categoryID?: string;
   planID: string;
 }
 export type UpdateRelationPayload = Partial<CreateRelationPayload>;
