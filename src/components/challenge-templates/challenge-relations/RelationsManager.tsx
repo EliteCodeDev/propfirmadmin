@@ -217,12 +217,12 @@ export function RelationsManager({ pageSize = 10 }: RelationsManagerProps) {
   const tableData = relationsValidation.safeMap((item, index) => {
     const categoryName = getCategoryName(item?.categoryID || "");
     const planName = getPlanName(item?.planID || "");
-    const balanceCount = item?.balances?.length || 0;
-    const balanceText = balanceCount > 0 ? ` (${balanceCount} balances)` : "";
-
+    const balanceText = item?.balances?.length ? ` (${item.balances.length} balances)` : "";
+    // Cambiar a "Plan - Categoría" y evitar guion si no hay categoría
+    const composedName = categoryName && categoryName !== "N/A" ? `${planName} - ${categoryName}${balanceText}` : `${planName}${balanceText}`;
     return {
       id: index + 1,
-      name: `${categoryName} - ${planName}${balanceText}`,
+      name: composedName,
       originalId: item?.relationID || "",
     };
   });
