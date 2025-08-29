@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import PaginatedCardTable from "@/components/common/PaginatedCardTable";
-import type { ColumnConfig, RelationBalance } from "@/types";
+import type { ColumnConfig } from "@/types";
 import {
   ChallengeRelation,
   ChallengeCategory,
@@ -94,11 +94,7 @@ export function RelationsManager({ pageSize = 10 }: RelationsManagerProps) {
   // --------------------------------------------------
   // 1. Cargar datos al montar
   // --------------------------------------------------
-  useEffect(() => {
-    loadAllData();
-  }, []);
-
-  const loadAllData = async () => {
+  const loadAllData = useCallback(async () => {
     try {
       setIsLoading(true);
       const [relationsData, categoriesData, plansData, balancesData] =
@@ -121,7 +117,11 @@ export function RelationsManager({ pageSize = 10 }: RelationsManagerProps) {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [editItem]);
+
+  useEffect(() => {
+    loadAllData();
+  }, [loadAllData]);
 
   // --------------------------------------------------
   // 2. Crear / Editar
@@ -194,7 +194,6 @@ export function RelationsManager({ pageSize = 10 }: RelationsManagerProps) {
   const relationsValidation = useArrayValidation(relations);
   const categoriesValidation = useArrayValidation(categories);
   const plansValidation = useArrayValidation(plans);
-  const balancesValidation = useArrayValidation(balances);
 
   const getCategoryName = (id: string) => {
     const category = categoriesValidation.safeFind((c) => c?.categoryID === id);
@@ -206,10 +205,7 @@ export function RelationsManager({ pageSize = 10 }: RelationsManagerProps) {
     return plan?.name || "N/A";
   };
 
-  const getBalanceAmount = (id: string) => {
-    const balance = balancesValidation.safeFind((b) => b?.balanceID === id);
-    return balance ? `$${balance.balance?.toLocaleString()}` : "N/A";
-  };
+
 
   // --------------------------------------------------
   // 4. Procesar datos para la tabla

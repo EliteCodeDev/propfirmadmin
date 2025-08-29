@@ -11,7 +11,6 @@ import {
   MoonIcon,
   EnvelopeIcon,
   LockClosedIcon,
-  ShieldCheckIcon,
   CogIcon
 } from "@heroicons/react/24/outline";
 import { sendEmailConfirmation } from "@/api/auth";
@@ -349,7 +348,7 @@ function LoginContent() {
 
           <div className="text-center mt-8">
             <p className="text-sm text-slate-500 dark:text-slate-400">
-              © 2025 PropFirm Admin Panel. Todos los derechos reservados.
+              2025 © Copyright - PropFirmAdmin v1.0.0 Made with ❤ by EliteCode.
             </p>
           </div>
         </div>

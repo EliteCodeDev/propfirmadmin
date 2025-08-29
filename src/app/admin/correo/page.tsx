@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { mailerApi } from "@/api/mailer";
 import { toast } from "sonner";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
@@ -132,7 +132,7 @@ export default function CorreoPage() {
       <div className="p-6 space-y-6 pt-4">
         <ManagerHeader title="Correo" description="Envío de correos manual para soporte o comunicaciones" />
 
-        <div className="w-full max-w-3xl mx-auto">
+        <div className="w-full max-w-7xl mx-auto">
           <Card className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
             <CardContent className="pt-6 space-y-5">
               {/* Buscar usuario */}

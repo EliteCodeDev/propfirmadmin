@@ -274,7 +274,6 @@ export default function WithdrawalsInner() {
   const pageObj = unwrapPage<Withdrawal>(data as unknown);
   const withdrawals = pageObj.items;
   const totalPages = pageObj.totalPages;
-  const offset = (page - 1) * limit;
   const isServerErr = httpStatus === 500;
 
   // 🔹 Efecto para cargar logins de challenges
@@ -303,7 +302,7 @@ export default function WithdrawalsInner() {
       }
     }
     if (withdrawals.length) fetchLogins();
-  }, [withdrawals, accessToken]);
+  }, [withdrawals, accessToken, logins]);
 
   async function approve(w: Withdrawal) {
     setSelected(w);
@@ -423,7 +422,7 @@ export default function WithdrawalsInner() {
             { key: "observation", label: "Observación", type: "normal" },
           ];
 
-          const rows = withdrawals.map((w, idx) => ({
+          const rows = withdrawals.map((w) => ({
             __raw: w,
             userName: w.user
               ? `${w.user.firstName ?? ""} ${w.user.lastName ?? ""}`.trim() ||

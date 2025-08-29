@@ -9,6 +9,63 @@ export interface ChallengeEntity {
   updatedAt?: string;
 }
 
+export interface BrokerAccount {
+  brokerAccountID: string;
+  login: string;
+  password: string;
+  server: string;
+  serverIp: string;
+  platform: string;
+  isUsed: boolean;
+  investorPass: string;
+  innitialBalance: string;
+}
+
+export interface ChallengeRelation {
+  relationID: string;
+  categoryID: string;
+  planID: string;
+  groupName: string | null;
+}
+
+export interface ChallengeWithDetails {
+  challengeID: string;
+  userID: string;
+  relationID: string;
+  startDate: string;
+  endDate: string | null;
+  numPhase: number;
+  dynamicBalance: string | null;
+  status: string;
+  isActive: boolean;
+  parentID: string | null;
+  brokerAccountID: string;
+  relation: ChallengeRelation;
+  brokerAccount: BrokerAccount;
+}
+
+export interface ChallengeDetailedData {
+  accountID: string;
+  login: string;
+  challengeId: string;
+  status: string;
+  createDateTime: string;
+  lastUpdate: string;
+  balance: {
+    initialBalance: string;
+    currentBalance: string;
+    dailyBalance: string | null;
+  };
+  equity: number;
+  openPositions: {
+    positions: unknown[];
+    lenght: number;
+  };
+  closedPositions: {
+    positions: unknown[];
+  };
+}
+
 export interface ChallengeQuery {
   page?: number;
   limit?: number;
@@ -83,6 +140,29 @@ export const challengesApi = {
   },
   availablePlans: async (): Promise<ChallengePlanInfo[]> => {
     const { data } = await client.get("/challenges/templates/plans");
+    return data;
+  },
+  // New methods for fetching detailed challenge data
+  getChallengesWithDetails: async (): Promise<{
+    success: boolean;
+    message: string;
+    data: {
+      data: ChallengeWithDetails[];
+      total: number;
+      page: number;
+      limit: number;
+      totalPages: number;
+    };
+  }> => {
+    const { data } = await client.get("/challenges/me");
+    return data;
+  },
+  getChallengeDetails: async (challengeId: string): Promise<{
+    success: boolean;
+    message: string;
+    data: ChallengeDetailedData;
+  }> => {
+    const { data } = await client.get(`/challenges/me/${challengeId}`);
     return data;
   },
 };

@@ -356,7 +356,7 @@ function UsersInner() {
           <button
             className="inline-flex items-center gap-1 px-2 py-1 text-xs border rounded-md hover:bg-gray-50 dark:hover:bg-gray-700"
             title="Ver challenges del usuario"
-            onClick={() => uid && router.push(`/users/${uid}`)}
+            onClick={() => uid && router.push(`/admin/users/${uid}`)}
           >
             <ArrowTopRightOnSquareIcon className="w-4 h-4" />
             View

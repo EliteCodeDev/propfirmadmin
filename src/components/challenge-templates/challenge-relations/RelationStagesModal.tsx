@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import {
   Dialog,
   DialogContent,
@@ -32,7 +32,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { toast } from "sonner";
-import { Edit, Plus, X, Trash2 } from "lucide-react";
+import { Edit, Plus, Trash2 } from "lucide-react";
 import { challengeTemplatesApi } from "@/api/challenge-templates";
 import {
   StageRule,
@@ -101,13 +101,7 @@ export default function RelationStagesModal({
   });
 
   // Cargar datos cuando se abre el modal
-  useEffect(() => {
-    if (open && relationID) {
-      loadData();
-    }
-  }, [open, relationID]);
-
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     if (!relationID) return;
 
     try {
@@ -130,7 +124,13 @@ export default function RelationStagesModal({
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [relationID]);
+
+  useEffect(() => {
+    if (open && relationID) {
+      loadData();
+    }
+  }, [open, relationID, loadData]);
 
   const loadParameters = async (relationStagesData: RelationStage[]) => {
     try {
@@ -175,42 +175,7 @@ export default function RelationStagesModal({
     return stage?.name || "N/A";
   };
 
-  // Funciones CRUD para parámetros
-  const handleCreateParameter = () => {
-    setEditParameter(null);
-    form.reset({
-      ruleID: "",
-      relationStageID: "",
-      ruleValue: "",
-      isActive: true,
-    });
-    setOpenParameterModal(true);
-  };
 
-  const handleEditParameter = (parameter: StageParameter) => {
-    setEditParameter(parameter);
-    form.reset({
-      ruleID: parameter.ruleID,
-      relationStageID: parameter.relationStageID,
-      ruleValue: parameter.ruleValue,
-      isActive: parameter.isActive ?? true,
-    });
-    setOpenParameterModal(true);
-  };
-
-  const handleDeleteParameter = async (parameter: StageParameter) => {
-    try {
-      await challengeTemplatesApi.deleteParameter(
-        parameter.ruleID,
-        parameter.relationStageID
-      );
-      toast.success("Parámetro eliminado exitosamente");
-      await loadData();
-    } catch (error) {
-      console.error("Error al eliminar parámetro:", error);
-      toast.error("Error al eliminar parámetro");
-    }
-  };
 
   const handleSave = async () => {
     // Ya no es necesario guardar cambios aquí porque:

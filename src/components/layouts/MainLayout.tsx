@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Sidebar from "@/components/common/Sidebar";
-import BreadcrumbBar from "@/components/common/BreadcrumbBar";
+//import BreadcrumbBar from "@/components/common/BreadcrumbBar";
 import { Toaster } from "sonner";
 
 export default function MainLayout({ children }: { children: React.ReactNode }) {
@@ -41,7 +41,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
 
       {/* Breadcrumb fijo arriba (fuera del contenedor que scrollea) */}
       <div className="col-start-2 row-start-1">
-        <BreadcrumbBar />
+        {/* <BreadcrumbBar /> */}
       </div>
 
       {/* Solo aquí vive el scroll */}
