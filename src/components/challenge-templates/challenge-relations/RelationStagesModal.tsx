@@ -71,6 +71,11 @@ export default function RelationStagesModal({
   relationID,
   relationName,
 }: RelationStagesModalProps) {
+  // Helper: remove balance count suffix e.g., " (3 balances)" from relationName for submodal titles
+  const stripBalancesSuffix = (name?: string) =>
+    (name || "").replace(/\s*\(\d+\s+balances\)\s*$/i, "").trim();
+  const displayRelationName = stripBalancesSuffix(relationName);
+
   // Estados
   const [rules, setRules] = useState<StageRule[]>([]);
   const [stages, setStages] = useState<ChallengeStage[]>([]);
@@ -566,7 +571,7 @@ export default function RelationStagesModal({
         <DialogContent className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700 max-w-4xl mx-auto shadow-lg rounded-xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-gray-900 dark:text-white text-lg font-semibold">
-              Gestionar Parámetros de Etapa
+              {displayRelationName || relationName || "Gestionar Parámetros de Etapa"}
             </DialogTitle>
             <DialogDescription className="text-gray-600 dark:text-gray-400 text-sm">
               {selectedRelationStage
@@ -631,7 +636,7 @@ export default function RelationStagesModal({
         <DialogContent className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700 max-w-lg mx-auto shadow-lg rounded-xl">
           <DialogHeader>
             <DialogTitle className="text-gray-900 dark:text-white text-lg font-semibold">
-              {editParameter ? "Editar" : "Crear"} Parámetro
+              {displayRelationName || relationName || (editParameter ? "Editar Parámetro" : "Crear Parámetro")}
             </DialogTitle>
             <DialogDescription className="text-gray-600 dark:text-gray-400 text-sm">
               {editParameter
@@ -819,7 +824,7 @@ export default function RelationStagesModal({
         <DialogContent className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700 max-w-2xl mx-auto shadow-lg rounded-xl">
           <DialogHeader>
             <DialogTitle className="text-gray-900 dark:text-white text-lg font-semibold">
-              Añadir Etapas a la Relación
+              {displayRelationName || relationName || "Añadir Etapas"}
             </DialogTitle>
             <DialogDescription className="text-gray-600 dark:text-gray-400 text-sm">
               Selecciona las etapas que deseas añadir a esta relación
