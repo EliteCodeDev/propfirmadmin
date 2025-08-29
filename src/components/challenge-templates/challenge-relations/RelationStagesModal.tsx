@@ -650,41 +650,7 @@ export default function RelationStagesModal({
               onSubmit={form.handleSubmit(onSubmitParameter)}
               className="space-y-4"
             >
-              <FormField
-                control={form.control}
-                name="ruleID"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-gray-700 dark:text-gray-300 text-sm font-medium">
-                      Regla
-                    </FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                    >
-                      <FormControl>
-                        <SelectTrigger className="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white">
-                          <SelectValue placeholder="Selecciona una regla" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
-                        {rulesValidation.safeMap((rule) =>
-                          rule?.ruleID ? (
-                            <SelectItem
-                              key={rule.ruleID}
-                              value={rule.ruleID}
-                              className="text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700"
-                            >
-                              {rule.ruleName || rule.ruleSlug || "Sin nombre"}
-                            </SelectItem>
-                          ) : null
-                        )}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage className="text-red-600 dark:text-red-400" />
-                  </FormItem>
-                )}
-              />
+              
 
               {selectedRelationStage ? (
                 // Mostrar etapa seleccionada como solo lectura
@@ -743,6 +709,42 @@ export default function RelationStagesModal({
                   )}
                 />
               )}
+
+              <FormField
+                control={form.control}
+                name="ruleID"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-gray-700 dark:text-gray-300 text-sm font-medium">
+                      Regla
+                    </FormLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger className="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white">
+                          <SelectValue placeholder="Selecciona una regla" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+                        {rulesValidation.safeMap((rule) =>
+                          rule?.ruleID ? (
+                            <SelectItem
+                              key={rule.ruleID}
+                              value={rule.ruleID}
+                              className="text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700"
+                            >
+                              {rule.ruleName || rule.ruleSlug || "Sin nombre"}
+                            </SelectItem>
+                          ) : null
+                        )}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage className="text-red-600 dark:text-red-400" />
+                  </FormItem>
+                )}
+              />
 
               <FormField
                 control={form.control}
