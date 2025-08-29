@@ -493,12 +493,12 @@ export default function RelationStagesModal({
         <DialogContent className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700 max-w-4xl mx-auto shadow-lg rounded-xl">
           <DialogHeader>
             <DialogTitle className="text-gray-900 dark:text-white text-lg font-semibold">
-              Gestionar Etapas de Relación
+              {relationName
+                ? `${relationName}`
+                : "Gestiona las etapas y sus parámetros para esta relación"}
             </DialogTitle>
             <DialogDescription className="text-gray-600 dark:text-gray-400 text-sm">
-              {relationName
-                ? `Relación: ${relationName}`
-                : "Gestiona las etapas y sus parámetros para esta relación"}
+              Gestiona las etapas y sus parámetros para este challenge
             </DialogDescription>
           </DialogHeader>
 
@@ -506,7 +506,7 @@ export default function RelationStagesModal({
             {/* Información de etapas */}
             <div className="flex justify-between items-center">
               <h3 className="text-lg font-medium text-gray-900 dark:text-white">
-                Etapas de Relación ({relationStages.length})
+                Etapas del Challenge ({relationStages.length})
               </h3>
               <Button
                 onClick={handleAddStages}
