@@ -143,9 +143,9 @@ export default function BalanceSelectorModal({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-2">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mt-2">
           {/* Columna izquierda: disponibles */}
-          <div className="rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden bg-white dark:bg-gray-800">
+          <div className="md:col-span-1 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden bg-white dark:bg-gray-800">
             <div className="px-2 py-1.5 bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
               <span className="text-sm font-medium text-gray-900 dark:text-white">
                 Disponibles
@@ -196,7 +196,7 @@ export default function BalanceSelectorModal({
           </div>
 
           {/* Columna derecha: agregados */}
-          <div className="rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden bg-white dark:bg-gray-800">
+          <div className="md:col-span-2 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden bg-white dark:bg-gray-800">
             <div className="px-2 py-1.5 bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
               <span className="text-sm font-medium text-gray-900 dark:text-white">
                 Agregados
