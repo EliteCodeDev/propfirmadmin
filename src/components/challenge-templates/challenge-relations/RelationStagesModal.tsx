@@ -71,6 +71,11 @@ export default function RelationStagesModal({
   relationID,
   relationName,
 }: RelationStagesModalProps) {
+  // Helper: remove balance count suffix e.g., " (3 balances)" from relationName for submodal titles
+  const stripBalancesSuffix = (name?: string) =>
+    (name || "").replace(/\s*\(\d+\s+balances\)\s*$/i, "").trim();
+  const displayRelationName = stripBalancesSuffix(relationName);
+
   // Estados
   const [rules, setRules] = useState<StageRule[]>([]);
   const [stages, setStages] = useState<ChallengeStage[]>([]);
@@ -458,12 +463,12 @@ export default function RelationStagesModal({
         <DialogContent className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700 max-w-4xl mx-auto shadow-lg rounded-xl">
           <DialogHeader>
             <DialogTitle className="text-gray-900 dark:text-white text-lg font-semibold">
-              Gestionar Etapas de Relación
+              {relationName
+                ? `${relationName}`
+                : "Gestiona las etapas y sus parámetros para esta relación"}
             </DialogTitle>
             <DialogDescription className="text-gray-600 dark:text-gray-400 text-sm">
-              {relationName
-                ? `Relación: ${relationName}`
-                : "Gestiona las etapas y sus parámetros para esta relación"}
+              Gestiona las etapas y sus parámetros para este challenge
             </DialogDescription>
           </DialogHeader>
 
@@ -471,7 +476,7 @@ export default function RelationStagesModal({
             {/* Información de etapas */}
             <div className="flex justify-between items-center">
               <h3 className="text-lg font-medium text-gray-900 dark:text-white">
-                Etapas de Relación ({relationStages.length})
+                Etapas del Challenge ({relationStages.length})
               </h3>
               <Button
                 onClick={handleAddStages}
@@ -531,7 +536,7 @@ export default function RelationStagesModal({
         <DialogContent className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700 max-w-4xl mx-auto shadow-lg rounded-xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-gray-900 dark:text-white text-lg font-semibold">
-              Gestionar Parámetros de Etapa
+              {displayRelationName || relationName || "Gestionar Parámetros de Etapa"}
             </DialogTitle>
             <DialogDescription className="text-gray-600 dark:text-gray-400 text-sm">
               {selectedRelationStage
@@ -596,7 +601,7 @@ export default function RelationStagesModal({
         <DialogContent className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700 max-w-lg mx-auto shadow-lg rounded-xl">
           <DialogHeader>
             <DialogTitle className="text-gray-900 dark:text-white text-lg font-semibold">
-              {editParameter ? "Editar" : "Crear"} Parámetro
+              {displayRelationName || relationName || (editParameter ? "Editar Parámetro" : "Crear Parámetro")}
             </DialogTitle>
             <DialogDescription className="text-gray-600 dark:text-gray-400 text-sm">
               {editParameter
@@ -610,41 +615,7 @@ export default function RelationStagesModal({
               onSubmit={form.handleSubmit(onSubmitParameter)}
               className="space-y-4"
             >
-              <FormField
-                control={form.control}
-                name="ruleID"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-gray-700 dark:text-gray-300 text-sm font-medium">
-                      Regla
-                    </FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                    >
-                      <FormControl>
-                        <SelectTrigger className="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white">
-                          <SelectValue placeholder="Selecciona una regla" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
-                        {rulesValidation.safeMap((rule) =>
-                          rule?.ruleID ? (
-                            <SelectItem
-                              key={rule.ruleID}
-                              value={rule.ruleID}
-                              className="text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700"
-                            >
-                              {rule.ruleName || rule.ruleSlug || "Sin nombre"}
-                            </SelectItem>
-                          ) : null
-                        )}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage className="text-red-600 dark:text-red-400" />
-                  </FormItem>
-                )}
-              />
+              
 
               {selectedRelationStage ? (
                 // Mostrar etapa seleccionada como solo lectura
@@ -703,6 +674,42 @@ export default function RelationStagesModal({
                   )}
                 />
               )}
+
+              <FormField
+                control={form.control}
+                name="ruleID"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-gray-700 dark:text-gray-300 text-sm font-medium">
+                      Regla
+                    </FormLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger className="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white">
+                          <SelectValue placeholder="Selecciona una regla" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+                        {rulesValidation.safeMap((rule) =>
+                          rule?.ruleID ? (
+                            <SelectItem
+                              key={rule.ruleID}
+                              value={rule.ruleID}
+                              className="text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700"
+                            >
+                              {rule.ruleName || rule.ruleSlug || "Sin nombre"}
+                            </SelectItem>
+                          ) : null
+                        )}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage className="text-red-600 dark:text-red-400" />
+                  </FormItem>
+                )}
+              />
 
               <FormField
                 control={form.control}
@@ -784,7 +791,7 @@ export default function RelationStagesModal({
         <DialogContent className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700 max-w-2xl mx-auto shadow-lg rounded-xl">
           <DialogHeader>
             <DialogTitle className="text-gray-900 dark:text-white text-lg font-semibold">
-              Añadir Etapas a la Relación
+              {displayRelationName || relationName || "Añadir Etapas"}
             </DialogTitle>
             <DialogDescription className="text-gray-600 dark:text-gray-400 text-sm">
               Selecciona las etapas que deseas añadir a esta relación
