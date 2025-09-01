@@ -45,7 +45,7 @@ export const authOptions: NextAuthOptions = {
             email: credentials.email,
             password: credentials.password,
           });
-          console.log("Login response completa:", loginResponse);
+          // console.log("Login response completa:", loginResponse);
 
           const { user, access_token, refresh_token } = loginResponse as {
             user: {
@@ -62,11 +62,11 @@ export const authOptions: NextAuthOptions = {
             access_token?: string;
             refresh_token?: string;
           };
-          console.log("Datos extraídos:", {
-            user,
-            access_token,
-            refresh_token,
-          });
+          // console.log("Datos extraídos:", {
+          //   user,
+          //   access_token,
+          //   refresh_token,
+          // });
 
           if (user && access_token) {
             // Normalizamos el usuario del backend (puede venir con userID, role, etc.)
@@ -100,12 +100,12 @@ export const authOptions: NextAuthOptions = {
               accessToken: access_token,
               refreshToken: refresh_token,
             } as User;
-            console.log("Usuario que se retorna:", userToReturn);
+            // console.log("Usuario que se retorna:", userToReturn);
             return userToReturn;
           }
-          console.log(
-            "No se pudo crear el usuario - falta user o access_token"
-          );
+          // console.log(
+          //   "No se pudo crear el usuario - falta user o access_token"
+          // );
           return null;
         } catch (err) {
           if (isAxiosError(err)) {
@@ -129,11 +129,11 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async jwt({ token, user }) {
       const jwtToken = token as ExtendedJWT;
-      console.log("token", jwtToken);
+      // console.log("token", jwtToken);
 
       // Primer login - cuando user está presente
       if (user) {
-        console.log("Usuario en primer login:", user);
+        // console.log("Usuario en primer login:", user);
         const u = user as User & {
           accessToken?: string;
           refreshToken?: string;

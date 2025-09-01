@@ -30,13 +30,16 @@ export interface Challenge {
   startDate?: string | Date | null;
   endDate?: string | Date | null;
   numPhase?: number | null;
-  dynamicBalance?: number | string | null;
+  dynamicBalance?: number | null;
   status?: string | null;
   isActive?: boolean | null;
   parentID?: string | null;
   brokerAccountID?: string | null;
   // relations
   user?: ChallengeUserRef | null;
-  relation?: { plan?: ChallengeRelationPlan; category?: ChallengeRelationCategory };
+  relation?: {
+    plan?: ChallengeRelationPlan;
+    category?: ChallengeRelationCategory;
+  };
   brokerAccount?: ChallengeBrokerAccount | null;
 }

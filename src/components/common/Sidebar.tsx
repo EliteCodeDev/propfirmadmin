@@ -48,9 +48,14 @@ export default function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
   const pathname = usePathname();
   const [isCollapsed, setIsCollapsed] = useState(collapsed);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [isHydrated, setIsHydrated] = useState(false);
   const { theme, toggleTheme } = useTheme();
   const userMenuRef = useRef<HTMLDivElement>(null);
   const { data: session } = useSession();
+
+  useEffect(() => {
+    setIsHydrated(true);
+  }, []);
 
   useEffect(() => {
     setIsCollapsed(collapsed);
@@ -111,7 +116,7 @@ export default function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
 
   return (
     <>
-      {!isCollapsed && (
+      {isHydrated && !isCollapsed && (
         <div
           className="fixed inset-0 bg-black/50 backdrop-blur-sm z-20 lg:hidden"
           onClick={toggleSidebar}

@@ -215,6 +215,12 @@ export const challengeTemplatesApi = {
     const { data } = await client.get("/challenge-templates/relations");
     return data.data;
   },
+  listRelationsComplete: async (): Promise<ChallengeRelation[]> => {
+    const { data } = await client.get(
+      "/challenge-templates/relations-complete"
+    );
+    return data.data;
+  },
   getRelation: async (id: string): Promise<ChallengeRelation> => {
     const { data } = await client.get(`/challenge-templates/relations/${id}`);
     return data;
