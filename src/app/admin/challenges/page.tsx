@@ -102,10 +102,34 @@ function ChallengesInner() {
   const [page, setPage] = useState<number>(1);
   const [limit, setLimit] = useState<LimitParam>(10);
   const [status, setStatus] = useState<string>("");
+  const [showDisapprovalModal, setShowDisapprovalModal] = useState(false);
+  const [showCredentialsModal, setShowCredentialsModal] = useState(false);
+  const [showApprovalModal, setShowApprovalModal] = useState(false);
+  const [showConfirmationModal, setShowConfirmationModal] = useState(false);
+  const [selectedChallenge, setSelectedChallenge] = useState<Challenge | null>(null);
+  const [disapprovalReason, setDisapprovalReason] = useState("");
+  const [dropdownOpen, setDropdownOpen] = useState<string | null>(null);
+  const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
+  const [pendingAction, setPendingAction] = useState<'credentials' | 'approve' | 'disapprove' | null>(null);
+  
+  // Estados de loading para cada acción
+  const [isLoadingCredentials, setIsLoadingCredentials] = useState(false);
+  const [isLoadingApproval, setIsLoadingApproval] = useState(false);
+  const [isLoadingDisapproval, setIsLoadingDisapproval] = useState(false);
 
   const accessToken = session?.accessToken as string | undefined;
 
-  // Shared fetcher for authenticated requests
+  const query = useMemo(() => {
+    const q = new URLSearchParams();
+    q.set("page", String(page));
+    q.set("limit", String(limit));
+    if (status) q.set("status", status);
+    return q.toString();
+  }, [page, limit, status]);
+
+  const basePath = scope === "all" ? "/challenges" : "/challenges/my-challenges";
+  const url = `${API_BASE}${basePath}?${query}`;
+
   const fetcher = async (u: string) => {
     const res = await fetch(u, {
       headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
@@ -115,70 +139,6 @@ function ChallengesInner() {
     return res.json();
   };
 
-  // Helper to unwrap various user list shapes to an array
-  const unwrapUsers = (raw: unknown): any[] => {
-    if (!raw) return [];
-    const lvl1 = (raw as any).data ?? raw;
-    if (Array.isArray(lvl1)) return lvl1 as any[];
-    if (lvl1 && typeof lvl1 === "object") {
-      if (Array.isArray((lvl1 as any).users)) return (lvl1 as any).users as any[];
-      if (Array.isArray((lvl1 as any).data)) return (lvl1 as any).data as any[];
-      if (Array.isArray((lvl1 as any).items)) return (lvl1 as any).items as any[];
-    }
-    return [];
-  };
-  const getUserId = (u: any): string | undefined => u?.userID || u?.id || u?.userId;
-
-  // Utilities to detect email and UUID-like IDs
-  const isEmail = (v: string) => /.+@.+\..+/.test(v);
-  const isUuidLike = (v: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(v);
-
-  // When searching, resolve userID if the term is an email or a direct userID input
-  const trimmedSearch = search.trim();
-  const lowerSearch = trimmedSearch.toLowerCase();
-  const usersSearchUrl = useMemo(() => {
-    if (!accessToken) return null;
-    if (!isEmail(trimmedSearch)) return null; // Only query users API for email terms
-    const q = new URLSearchParams();
-    q.set("limit", "50");
-    q.set("search", trimmedSearch);
-    return `${API_BASE}/users?${q.toString()}`;
-  }, [accessToken, trimmedSearch]);
-
-  const { data: usersData } = useSWR<any>(usersSearchUrl, usersSearchUrl ? fetcher : null);
-
-  const matchedUserID = useMemo(() => {
-    // Priority 1: exact email match (case-insensitive)
-    if (isEmail(trimmedSearch)) {
-      const arr = unwrapUsers(usersData);
-      const exact = arr.find((u) => String(u?.email ?? "").toLowerCase() === lowerSearch);
-      if (exact) return getUserId(exact);
-      // If no exact match but there are candidates, choose the first (user said multiple matches are acceptable)
-      if (arr.length > 0) {
-        const first = arr[0];
-        const fid = getUserId(first);
-        if (fid) return fid;
-      }
-    }
-    // Priority 2: direct userID input (UUID-like)
-    if (isUuidLike(trimmedSearch)) return trimmedSearch;
-    // No server-assisted user filter
-    return undefined;
-  }, [usersData, trimmedSearch, lowerSearch]);
-
-  const query = useMemo(() => {
-    const q = new URLSearchParams();
-    q.set("page", String(page));
-    q.set("limit", String(limit));
-    if (status) q.set("status", status);
-    if (matchedUserID) q.set("userID", matchedUserID);
-    // Nota: No enviar `search` al backend de challenges
-    return q.toString();
-  }, [page, limit, status, matchedUserID]);
-
-  const basePath = scope === "all" ? "/challenges" : "/challenges/my-challenges";
-  const url = `${API_BASE}${basePath}?${query}`;
-
   const { data, error, isLoading, mutate } = useSWR<PageResponse<Challenge>>(accessToken ? url : null, fetcher);
 
   useEffect(() => {
@@ -186,6 +146,303 @@ function ChallengesInner() {
       router.replace("/auth/login");
     }
   }, [authStatus, accessToken, router]);
+
+  // Cerrar dropdown al hacer clic fuera y con tecla Escape
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Element;
+      const clickedInsideDropdown = target.closest('.dropdown-container');
+      
+      if (dropdownOpen && !clickedInsideDropdown) {
+        setDropdownOpen(null);
+      }
+    };
+
+    const handleEscapeKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && dropdownOpen) {
+        setDropdownOpen(null);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('keydown', handleEscapeKey);
+    
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleEscapeKey);
+    };
+  }, [dropdownOpen]);
+
+  // Reposicionar dropdown en scroll y resize
+  useEffect(() => {
+    const handleScroll = () => {
+      if (dropdownOpen) {
+        const button = document.querySelector(`[data-challenge-id="${dropdownOpen}"]`);
+        if (button) {
+          const rect = button.getBoundingClientRect();
+          const position = calculateDropdownPosition(rect);
+          setDropdownPosition(position);
+        }
+      }
+    };
+
+    const handleResize = () => {
+      if (dropdownOpen) {
+        const button = document.querySelector(`[data-challenge-id="${dropdownOpen}"]`);
+        if (button) {
+          const rect = button.getBoundingClientRect();
+          const position = calculateDropdownPosition(rect);
+          setDropdownPosition(position);
+        }
+      }
+    };
+
+    if (dropdownOpen) {
+      window.addEventListener('scroll', handleScroll, true);
+      window.addEventListener('resize', handleResize);
+    }
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll, true);
+      window.removeEventListener('resize', handleResize);
+    };
+  }, [dropdownOpen]);
+
+  const handleSendCredentials = async () => {
+    if (!selectedChallenge || isLoadingCredentials) return;
+    
+    setIsLoadingCredentials(true);
+    const loadingToast = toast.loading('Enviando credenciales...', {
+      duration: Infinity,
+    });
+    
+    try {
+      console.log('Attempting to send credentials for challenge:', selectedChallenge.challengeID);
+      
+      const response = await fetch(`${API_BASE}/challenges/${selectedChallenge.challengeID}/send-credentials`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Error response:', errorText);
+        throw new Error(`Error al enviar credenciales: ${response.status} - ${errorText}`);
+      }
+
+      toast.dismiss(loadingToast);
+      toast.success('Credenciales enviadas exitosamente');
+      setShowCredentialsModal(false);
+      setSelectedChallenge(null);
+    } catch (error) {
+      toast.dismiss(loadingToast);
+      console.error('Full error details:', error);
+      
+      if (error instanceof TypeError && error.message === 'Failed to fetch') {
+        toast.error('Error de conexión: No se puede conectar al servidor. Verifique que el backend esté ejecutándose.');
+      } else {
+        const errorMessage = error instanceof Error ? error.message : 'Error desconocido';
+        toast.error(`Error al enviar credenciales: ${errorMessage}`);
+      }
+    } finally {
+      setIsLoadingCredentials(false);
+    }
+  };
+
+  const handleApprove = async () => {
+    if (!selectedChallenge || isLoadingApproval) return;
+    
+    setIsLoadingApproval(true);
+    const loadingToast = toast.loading('Aprobando challenge...', {
+      duration: Infinity,
+    });
+    
+    try {
+      console.log('Attempting to approve challenge:', selectedChallenge.challengeID);
+      console.log('API_BASE:', API_BASE);
+      console.log('Full URL:', `${API_BASE}/challenges/${selectedChallenge.challengeID}/approve`);
+      
+      const response = await fetch(`${API_BASE}/challenges/${selectedChallenge.challengeID}/approve`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      console.log('Response status:', response.status);
+      console.log('Response ok:', response.ok);
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Error response:', errorText);
+        throw new Error(`Error al aprobar challenge: ${response.status} - ${errorText}`);
+      }
+
+      toast.dismiss(loadingToast);
+      toast.success('Challenge aprobado exitosamente');
+      setShowApprovalModal(false);
+      setSelectedChallenge(null);
+      mutate();
+    } catch (error) {
+      toast.dismiss(loadingToast);
+      console.error('Full error details:', error);
+      
+      if (error instanceof TypeError && error.message === 'Failed to fetch') {
+        toast.error('Error de conexión: No se puede conectar al servidor. Verifique que el backend esté ejecutándose.');
+      } else {
+        const errorMessage = error instanceof Error ? error.message : 'Error desconocido';
+        toast.error(`Error al aprobar challenge: ${errorMessage}`);
+      }
+    } finally {
+      setIsLoadingApproval(false);
+    }
+  };
+
+  const closeCredentialsModal = () => {
+    if (isLoadingCredentials) return;
+    setShowCredentialsModal(false);
+    setSelectedChallenge(null);
+  };
+
+  const closeApprovalModal = () => {
+    if (isLoadingApproval) return;
+    setShowApprovalModal(false);
+    setSelectedChallenge(null);
+  };
+
+  const confirmDisapproval = async () => {
+    if (!selectedChallenge || !disapprovalReason.trim() || isLoadingDisapproval) {
+      if (!disapprovalReason.trim()) {
+        toast.error('Por favor ingrese una razón para la desaprobación');
+      }
+      return;
+    }
+
+    setIsLoadingDisapproval(true);
+    const loadingToast = toast.loading('Desaprobando challenge...', {
+      duration: Infinity,
+    });
+
+    try {
+      console.log('Attempting to disapprove challenge:', selectedChallenge.challengeID);
+      
+      const response = await fetch(`${API_BASE}/challenges/${selectedChallenge.challengeID}/disapprove`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ observation: disapprovalReason })
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Error response:', errorText);
+        throw new Error(`Error al desaprobar challenge: ${response.status} - ${errorText}`);
+      }
+
+      toast.dismiss(loadingToast);
+      toast.success('Challenge desaprobado exitosamente');
+      setShowDisapprovalModal(false);
+      setSelectedChallenge(null);
+      setDisapprovalReason('');
+      mutate();
+    } catch (error) {
+      toast.dismiss(loadingToast);
+      console.error('Full error details:', error);
+      
+      if (error instanceof TypeError && error.message === 'Failed to fetch') {
+        toast.error('Error de conexión: No se puede conectar al servidor. Verifique que el backend esté ejecutándose.');
+      } else {
+        const errorMessage = error instanceof Error ? error.message : 'Error desconocido';
+        toast.error(`Error al desaprobar challenge: ${errorMessage}`);
+      }
+    } finally {
+      setIsLoadingDisapproval(false);
+    }
+  };
+
+  const closeDisapprovalModal = () => {
+    if (isLoadingDisapproval) return;
+    setShowDisapprovalModal(false);
+    setSelectedChallenge(null);
+    setDisapprovalReason('');
+  };
+
+  const closeConfirmationModal = () => {
+    setShowConfirmationModal(false);
+    setSelectedChallenge(null);
+    setPendingAction(null);
+  };
+
+  const handleConfirmAction = () => {
+    if (!pendingAction || !selectedChallenge) return;
+
+    setShowConfirmationModal(false);
+
+    switch (pendingAction) {
+      case 'credentials':
+        setShowCredentialsModal(true);
+        break;
+      case 'approve':
+        setShowApprovalModal(true);
+        break;
+      case 'disapprove':
+        setShowDisapprovalModal(true);
+        break;
+    }
+
+    setPendingAction(null);
+  };
+
+  const getActionDetails = () => {
+    switch (pendingAction) {
+      case 'credentials':
+        return {
+          title: 'Enviar Credenciales',
+          description: '¿Confirma que desea enviar las credenciales de este challenge por correo electrónico?',
+          icon: (
+            <svg className="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+            </svg>
+          ),
+          buttonColor: 'bg-blue-500 hover:bg-blue-600'
+        };
+      case 'approve':
+        return {
+          title: 'Aprobar Challenge',
+          description: '¿Confirma que desea aprobar este challenge? Esta acción cambiará el estado del challenge.',
+          icon: (
+            <svg className="w-6 h-6 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            </svg>
+          ),
+          buttonColor: 'bg-green-500 hover:bg-green-600'
+        };
+      case 'disapprove':
+        return {
+          title: 'Desaprobar Challenge',
+          description: '¿Confirma que desea desaprobar este challenge? Deberá proporcionar una razón.',
+          icon: (
+            <svg className="w-6 h-6 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          ),
+          buttonColor: 'bg-red-500 hover:bg-red-600'
+        };
+      default:
+        return {
+          title: 'Confirmar Acción',
+          description: '¿Está seguro que desea continuar?',
+          icon: null,
+          buttonColor: 'bg-gray-500 hover:bg-gray-600'
+        };
+    }
+  };
 
   if (authStatus === "loading" || (!accessToken && authStatus !== "unauthenticated")) {
     return (
@@ -203,6 +460,11 @@ function ChallengesInner() {
     );
   }
 
+  const pageObj = unwrapPage<Challenge>(data as unknown);
+  const challenges = pageObj.items;
+  const totalPages = pageObj.totalPages;
+  const offset = (page - 1) * limit;
+
   const columns: ColumnConfig[] = [
     { key: "serial", label: "ID", type: "normal" },
     { key: "user", label: "User", type: "normal" },
@@ -216,7 +478,7 @@ function ChallengesInner() {
     { key: "actions", label: "Acciones", type: "normal", render: (value, row) => value as React.ReactNode },
   ];
 
-  const rows: Record<string, unknown>[] = filteredChallenges.map((c, idx) => {
+  const rows: Record<string, unknown>[] = challenges.map((c, idx) => {
     const serial = offset + idx + 1;
     const userName = c.user
       ? `${c.user.firstName ?? ""} ${c.user.lastName ?? ""}`.trim() || c.user.email || c.userID
@@ -227,7 +489,7 @@ function ChallengesInner() {
     const start = c.startDate ? new Date(c.startDate).toLocaleDateString() : "-";
     const end = c.endDate ? new Date(c.endDate).toLocaleDateString() : "-";
 
-  const row: Record<string, unknown> = {
+    return {
       serial,
       user: userName,
       login,
@@ -237,8 +499,42 @@ function ChallengesInner() {
       status: c.status ?? "-",
       startDate: start,
       endDate: end,
-  };
-  return row;
+      actions: (
+        <div className="relative dropdown-container">
+          <button
+            data-challenge-id={c.challengeID}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              
+              if (dropdownOpen === c.challengeID) {
+                setDropdownOpen(null);
+              } else {
+                const rect = e.currentTarget.getBoundingClientRect();
+                const position = calculateDropdownPosition(rect);
+                setDropdownPosition(position);
+                setDropdownOpen(c.challengeID);
+              }
+            }}
+            className="inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+            type="button"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zM12 13a1 1 0 110-2 1 1 0 010 2zM12 20a1 1 0 110-2 1 1 0 010 2z" />
+            </svg>
+            Acciones
+            <svg 
+              className={`w-4 h-4 transform transition-transform duration-200 ${dropdownOpen === c.challengeID ? 'rotate-180' : ''}`} 
+              fill="none" 
+              stroke="currentColor" 
+              viewBox="0 0 24 24"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+        </div>
+      ),
+    };
   });
 
   return (
@@ -254,17 +550,6 @@ function ChallengesInner() {
         {/* Filtros */}
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4">
           <div className="flex flex-col sm:flex-row gap-3 items-end">
-            <div className="w-full sm:flex-1">
-              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Search</label>
-              <input
-                type="text"
-                className="block w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
-                placeholder="Email, user ID, login, challenge ID…"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
-            </div>
-
             <div className="w-full sm:w-48">
               <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Scope</label>
               <select
@@ -317,7 +602,7 @@ function ChallengesInner() {
           columns={columns}
           rows={rows}
           isLoading={isLoading}
-          emptyText={error ? (error as Error).message : (filteredChallenges.length === 0 ? "No challenges found." : undefined)}
+          emptyText={error ? (error as Error).message : "No challenges found."}
           pagination={{
             currentPage: page,
             totalPages: Math.max(1, totalPages),
