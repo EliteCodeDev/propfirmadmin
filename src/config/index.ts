@@ -95,6 +95,7 @@ export const internalBackendUrl = getEnv("BACKEND_INTERNAL_URL", {
 
 // Base URL para llamadas REST del frontend.
 export const apiBaseUrl = `${backendUrl}/api`;
+export const nameApp = process.env.NEXT_PUBLIC_NAME_APP || "";
 export const internalApiBaseUrl = `${internalBackendUrl}/api`;
 
 // Secret de NextAuth (solo disponible en server / middleware / edge runtime).
@@ -107,11 +108,12 @@ export const HERO_BG = process.env.NEXT_PUBLIC_LOGIN_BG || "";
 export const LOGIN_RIGHT_BG = process.env.NEXT_PUBLIC_LOGIN_RIGHT_BG || "";
 
 // Claves recapcha
-export const SITE_KEY_CLOUDFLARE =  process.env.NEXT_PUBLIC_SITE_KEY_CLOUDFLARE
-export const SECRET_KEY_CLOUDFLARE = process.env.NEXT_PUBLIC_SECRET_KEY_CLOUDFLARE
+export const SITE_KEY_CLOUDFLARE = process.env.NEXT_PUBLIC_SITE_KEY_CLOUDFLARE;
+export const SECRET_KEY_CLOUDFLARE =
+  process.env.NEXT_PUBLIC_SECRET_KEY_CLOUDFLARE;
 
 // IMAGE LOGIN
-export const IMAGEN_LOGIN = process.env.NEXT_PUBLIC_IMAGEN_LOGIN
+export const IMAGEN_LOGIN = process.env.NEXT_PUBLIC_IMAGEN_LOGIN;
 
 // Helper para exponer un snapshot (útil en depuración).
 export const env = {
@@ -125,6 +127,7 @@ export const env = {
   backendUrlSource: process.env.NEXT_PUBLIC_BACKEND_URL ? "env" : "default",
   LOGO_APP,
   PUBLIC_API_KEY,
+  nameApp,
   // No exponer secretos adicionales aquí si se agregan en el futuro.
 };
 
