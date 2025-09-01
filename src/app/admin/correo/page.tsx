@@ -112,9 +112,13 @@ export default function CorreoPage() {
   const onSubmit = async (values: FormValues) => {
     try {
       setLoading(true);
-      const html = `<div>${values.title ? `<h2 style=\"margin:0 0 12px;font-size:18px\">${values.title}</h2>` : ""}<div>${values.body}</div></div>`;
-      await mailerApi.send({ to: values.to, subject: values.subject, html });
-      toast.success("Correo enviado");
+      await mailerApi.sendAdmin({ 
+        to: values.to, 
+        subject: values.subject, 
+        title: values.title,
+        body: values.body 
+      });
+      toast.success("Correo enviado con estilos de la empresa");
       reset();
       setQuery("");
       setResults([]);
