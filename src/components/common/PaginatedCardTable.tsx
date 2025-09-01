@@ -39,7 +39,7 @@ const renderCell = (column: ColumnConfig, row: Record<string, unknown>) => {
   const raw = row[column.key];
   const value = typeof raw === "string" ? raw : String(raw ?? "");
 
-  if (column.render) return column.render(value, row);
+  if (column.render) return column.render(raw, row);
 
   switch (column.type) {
     case "link": {
