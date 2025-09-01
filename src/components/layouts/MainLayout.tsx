@@ -1,20 +1,24 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Sidebar from "@/components/common/Sidebar";
 //import BreadcrumbBar from "@/components/common/BreadcrumbBar";
 import { Toaster } from "sonner";
 
 export default function MainLayout({ children }: { children: React.ReactNode }) {
-  const [sidebarCollapsed, setSidebarCollapsed] = useState<boolean>(() => {
-    if (typeof window === "undefined") return false;
+  const [sidebarCollapsed, setSidebarCollapsed] = useState<boolean>(false);
+  const [isHydrated, setIsHydrated] = useState(false);
+
+  // Aplicar el estado del localStorage solo después de la hidratación
+  useEffect(() => {
     try {
       const saved = localStorage.getItem("sidebarCollapsed");
-      return saved === "true";
-    } catch {
-      return false;
-    }
-  });
+      if (saved === "true") {
+        setSidebarCollapsed(true);
+      }
+    } catch {}
+    setIsHydrated(true);
+  }, []);
 
   const handleSidebarToggle = () => {
     setSidebarCollapsed((prev) => {

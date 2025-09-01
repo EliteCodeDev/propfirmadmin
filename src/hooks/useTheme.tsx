@@ -49,16 +49,12 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
     setThemeState(newTheme);
   };
 
-  if (!mounted) {
-    return (
-      <ThemeContext.Provider value={{ theme: 'light', toggleTheme: () => {}, setTheme: () => {} }}>
-        {children}
-      </ThemeContext.Provider>
-    );
-  }
+  // Durante la hidratación, siempre devolver 'light' para evitar mismatches
+  // El tema correcto se aplicará después del montaje
+  const currentTheme = mounted ? theme : 'light';
 
   return (
-    <ThemeContext.Provider value={{ theme, toggleTheme, setTheme }}>
+    <ThemeContext.Provider value={{ theme: currentTheme, toggleTheme, setTheme }}>
       {children}
     </ThemeContext.Provider>
   );

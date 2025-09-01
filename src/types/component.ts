@@ -27,6 +27,7 @@ export interface BalanceSelectorModalProps {
       wooID?: number;
     }>
   ) => void;
+  relationName?: string;
 }
 
 export interface BalancesManagerProps {

@@ -50,7 +50,11 @@ import {
 
 // Validación
 const relationSchema = z.object({
-  categoryID: z.string().uuid("Categoría inválida").optional().or(z.literal("")),
+  categoryID: z
+    .string()
+    .uuid("Categoría inválida")
+    .optional()
+    .or(z.literal("")),
   planID: z.string().min(1, "El plan es requerido"),
 });
 
@@ -81,6 +85,10 @@ export function RelationsManager({ pageSize = 10 }: RelationsManagerProps) {
     id: "",
     name: "",
   });
+  // Snapshot de balances específicos de la relación seleccionada (para el modal)
+  const [relationBalancesSnapshot, setRelationBalancesSnapshot] = useState<
+    ChallengeRelation["balances"]
+  >([]);
 
   // Form
   const form = useForm<RelationFormData>({
@@ -99,7 +107,7 @@ export function RelationsManager({ pageSize = 10 }: RelationsManagerProps) {
       setIsLoading(true);
       const [relationsData, categoriesData, plansData, balancesData] =
         await Promise.all([
-          challengeTemplatesApi.listRelations(),
+          challengeTemplatesApi.listRelationsComplete(),
           challengeTemplatesApi.listCategories(),
           challengeTemplatesApi.listPlans(),
           challengeTemplatesApi.listBalances(),
@@ -205,17 +213,20 @@ export function RelationsManager({ pageSize = 10 }: RelationsManagerProps) {
     return plan?.name || "N/A";
   };
 
-
-
   // --------------------------------------------------
   // 4. Procesar datos para la tabla
   // --------------------------------------------------
   const tableData = relationsValidation.safeMap((item, index) => {
     const categoryName = getCategoryName(item?.categoryID || "");
     const planName = getPlanName(item?.planID || "");
-    const balanceText = item?.balances?.length ? ` (${item.balances.length} balances)` : "";
+    const balanceText = item?.balances?.length
+      ? ` (${item.balances.length} balances)`
+      : "";
     // Cambiar a "Plan - Categoría" y evitar guion si no hay categoría
-    const composedName = categoryName && categoryName !== "N/A" ? `${planName} - ${categoryName}${balanceText}` : `${planName}${balanceText}`;
+    const composedName =
+      categoryName && categoryName !== "N/A"
+        ? `${planName} - ${categoryName}${balanceText}`
+        : `${planName}${balanceText}`;
     return {
       id: index + 1,
       name: composedName,
@@ -251,14 +262,28 @@ export function RelationsManager({ pageSize = 10 }: RelationsManagerProps) {
       </button>
       <button
         className="p-1.5 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors"
-        onClick={() => {
+        onClick={async () => {
           const rid = String(row.originalId || "");
-          const rel = relations.find((r) => r.relationID === rid);
-          const existingBalanceIds =
-            rel?.balances?.map((rb) => rb.balanceID) || [];
-          setSelectedBalanceIds(existingBalanceIds);
-          setSelectedRelationIdForBalances(rid);
-          setOpenBalanceModal(true);
+          try {
+            // Buscar la relación en los datos ya cargados con listRelationsComplete
+            const rel = relations.find(r => r.relationID === rid);
+            if (rel) {
+              const existingBalanceIds =
+                rel?.balances?.map((rb) => rb.balanceID) || [];
+              setRelationBalancesSnapshot(rel?.balances || []);
+              setSelectedBalanceIds(existingBalanceIds);
+              setSelectedRelationIdForBalances(rid);
+              setOpenBalanceModal(true);
+            } else {
+              toast.error("No se pudo encontrar la relación");
+            }
+          } catch (e) {
+            console.error(
+              "Error cargando relación antes de abrir modal de balances",
+              e
+            );
+            toast.error("No se pudo cargar la relación");
+          }
         }}
         title="Agregar balance"
       >
@@ -317,23 +342,39 @@ export function RelationsManager({ pageSize = 10 }: RelationsManagerProps) {
 
       {/* Modal selector de balances */}
       <BalanceSelectorModal
+        key={selectedRelationIdForBalances || "relation-balances-modal"}
         open={openBalanceModal}
+        relationName={
+          selectedRelationIdForBalances
+            ? (() => {
+                const relation = relations.find(
+                  (r) => r.relationID === selectedRelationIdForBalances
+                );
+                const categoryName = getCategoryName(
+                  relation?.categoryID || ""
+                );
+                const planName = getPlanName(relation?.planID || "");
+                const balanceText = relation?.balances?.length
+                  ? ` (${relation.balances.length} balances)`
+                  : "";
+                return categoryName && categoryName !== "N/A"
+                  ? `${planName} - ${categoryName}${balanceText}`
+                  : `${planName}${balanceText}`;
+              })()
+            : ""
+        }
         onOpenChange={setOpenBalanceModal}
         balances={balances}
         initialSelected={selectedBalanceIds}
         initialRelationBalances={
-          selectedRelationIdForBalances
-            ? relations.find(
-                (r) => r.relationID === selectedRelationIdForBalances
-              )?.balances?.map(balance => ({
-                challengeBalanceID: balance.balanceID,
-                price: balance.price,
-                isActive: balance.isActive,
-                hasDiscount: balance.hasDiscount,
-                discount: balance.discount,
-                wooID: balance.wooID
-              })) || []
-            : []
+          relationBalancesSnapshot?.map((rb) => ({
+            challengeBalanceID: rb.balanceID,
+            price: rb.price,
+            isActive: rb.isActive,
+            hasDiscount: rb.hasDiscount,
+            discount: rb.discount,
+            wooID: rb.wooID,
+          })) || []
         }
         onConfirmWithDetails={async (items) => {
           setSelectedBalanceIds(items.map((item) => item.challengeBalanceID));
@@ -351,9 +392,7 @@ export function RelationsManager({ pageSize = 10 }: RelationsManagerProps) {
                   isActive: item.isActive ?? true,
                   hasDiscount: item.hasDiscount ?? false,
                   discount:
-                    item.hasDiscount && item.discount
-                      ? item.discount
-                      : "0",
+                    item.hasDiscount && item.discount ? item.discount : "0",
                   wooID: item.wooID || undefined,
                 }));
                 await challengeTemplatesApi.createBalancesForRelation(
@@ -362,6 +401,14 @@ export function RelationsManager({ pageSize = 10 }: RelationsManagerProps) {
                 );
                 toast.success("Balances actualizados en la relación");
                 await loadAllData();
+                // Refrescar snapshot de la relación recién modificada
+                try {
+                  // Recargar todos los datos para obtener la información actualizada
+                  const refreshedRelations = await challengeTemplatesApi.listRelationsComplete();
+                  setRelations(refreshedRelations);
+                  const refreshed = refreshedRelations.find(r => r.relationID === selectedRelationIdForBalances);
+                  setRelationBalancesSnapshot(refreshed?.balances || []);
+                } catch {}
               }
             } catch (e) {
               console.error("Error al actualizar relation balances:", e);
@@ -408,7 +455,10 @@ export function RelationsManager({ pageSize = 10 }: RelationsManagerProps) {
                     <FormLabel className="text-gray-700 dark:text-gray-300 text-sm font-medium">
                       Plan
                     </FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
                       <FormControl>
                         <SelectTrigger className="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                           <SelectValue placeholder="Selecciona un plan" />
@@ -442,7 +492,10 @@ export function RelationsManager({ pageSize = 10 }: RelationsManagerProps) {
                     <FormLabel className="text-gray-700 dark:text-gray-300 text-sm font-medium">
                       Categoría (opcional)
                     </FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
                       <FormControl>
                         <SelectTrigger className="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                           <SelectValue placeholder="Selecciona una categoría" />
