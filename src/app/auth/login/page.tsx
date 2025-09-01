@@ -152,10 +152,6 @@ function LoginContent() {
                   Administración
                 </span>
               </h1>
-              <p className="text-xl text-slate-300 leading-relaxed font-light">
-                Centro de control unificado para la gestión integral de
-                operaciones y configuraciones del sistema
-              </p>
             </div>
 
             <div className="space-y-4 pt-8">
@@ -228,13 +224,6 @@ function LoginContent() {
                 </div>
               )}
             </div>
-
-            <h2 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">
-              Acceso al Sistema
-            </h2>
-            <p className="text-slate-600 dark:text-slate-400 font-medium">
-              Ingresa tus credenciales de administrador
-            </p>
           </div>
 
           <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 p-8">
