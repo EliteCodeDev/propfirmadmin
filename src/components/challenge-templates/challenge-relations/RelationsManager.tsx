@@ -29,6 +29,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -56,6 +57,7 @@ const relationSchema = z.object({
     .optional()
     .or(z.literal("")),
   planID: z.string().min(1, "El plan es requerido"),
+  groupName: z.string().optional(),
 });
 
 type RelationFormData = z.infer<typeof relationSchema>;
@@ -96,6 +98,7 @@ export function RelationsManager({ pageSize = 10 }: RelationsManagerProps) {
     defaultValues: {
       categoryID: "",
       planID: "",
+      groupName: "",
     },
   });
 
@@ -139,33 +142,11 @@ export function RelationsManager({ pageSize = 10 }: RelationsManagerProps) {
     form.reset({
       categoryID: "",
       planID: "",
+      groupName: "",
     });
     setOpenModal(true);
     setSelectedBalanceIds([]);
     setSelectedRelationIdForBalances(null);
-  }
-
-  function handleOpenEdit(item: {
-    id: number;
-    name: string;
-    originalId?: string;
-  }) {
-    const relation = relationsValidation.safeFind(
-      (r) => r?.relationID === item.originalId
-    );
-    if (relation) {
-      setEditItem(relation);
-      form.reset({
-        categoryID: relation.categoryID || "",
-        planID: relation.planID || "",
-      });
-      // Mapear los balances existentes de la relación
-      const existingBalanceIds =
-        relation.balances?.map((rb) => rb.balanceID) || [];
-      setSelectedBalanceIds(existingBalanceIds);
-      setOpenModal(true);
-      setSelectedRelationIdForBalances(null);
-    }
   }
 
   async function onSubmit(formValues: RelationFormData) {
@@ -173,6 +154,7 @@ export function RelationsManager({ pageSize = 10 }: RelationsManagerProps) {
       // Construir payload respetando opcionalidad de categoría
       const payload = {
         planID: formValues.planID,
+        groupName: formValues.groupName || undefined,
         ...(formValues.categoryID ? { categoryID: formValues.categoryID } : {}),
       };
       if (editItem) {
@@ -202,6 +184,32 @@ export function RelationsManager({ pageSize = 10 }: RelationsManagerProps) {
   const relationsValidation = useArrayValidation(relations);
   const categoriesValidation = useArrayValidation(categories);
   const plansValidation = useArrayValidation(plans);
+
+  const handleOpenEdit = useCallback((item: {
+    id: number;
+    name: string;
+    originalId?: string;
+  }) => {
+    const relation = relationsValidation.safeFind(
+      (r) => r?.relationID === item.originalId
+    );
+    if (relation) {
+      // Primero preparar todos los datos sin actualizar estado
+      const formData = {
+        categoryID: relation.categoryID || "",
+        planID: relation.planID || "",
+        groupName: relation.groupName || "",
+      };
+      const existingBalanceIds = relation.balances?.map((rb) => rb.balanceID) || [];
+      
+      // Luego actualizar el estado en batch para evitar re-renders múltiples
+      setEditItem(relation);
+      setSelectedBalanceIds(existingBalanceIds);
+      setSelectedRelationIdForBalances(null);
+      form.reset(formData);
+      setOpenModal(true);
+    }
+  }, [relationsValidation, form]);
 
   const getCategoryName = (id: string) => {
     const category = categoriesValidation.safeFind((c) => c?.categoryID === id);
@@ -245,7 +253,7 @@ export function RelationsManager({ pageSize = 10 }: RelationsManagerProps) {
   const startIndex = (page - 1) * pageSizeLocal;
   const paginatedRows = tableData.slice(startIndex, startIndex + pageSizeLocal);
 
-  const renderActions = (row: Record<string, unknown>) => (
+  const renderActions = useCallback((row: Record<string, unknown>) => (
     <div className="flex items-center justify-center gap-2">
       <button
         className="p-1.5 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
@@ -302,7 +310,7 @@ export function RelationsManager({ pageSize = 10 }: RelationsManagerProps) {
         <Settings className="h-4 w-4" />
       </button>
     </div>
-  );
+  ), [relations, handleOpenEdit]);
 
   // --------------------------------------------------
   // 5. Render
@@ -483,6 +491,26 @@ export function RelationsManager({ pageSize = 10 }: RelationsManagerProps) {
                 )}
               />
 
+              <FormField
+                control={form.control}
+                name="groupName"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-gray-700 dark:text-gray-300 text-sm font-medium">
+                      Nombre del grupo
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        {...field}
+                        placeholder="Ingresa el nombre del grupo (opcional)"
+                        className="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white text-sm placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      />
+                    </FormControl>
+                    <FormMessage className="text-red-600 dark:text-red-400" />
+                  </FormItem>
+                )}
+              />
+
               {/* Categoría después y opcional */}
               <FormField
                 control={form.control}
@@ -519,6 +547,8 @@ export function RelationsManager({ pageSize = 10 }: RelationsManagerProps) {
                   </FormItem>
                 )}
               />
+
+
 
               <DialogFooter className="mt-4 flex gap-2">
                 <Button

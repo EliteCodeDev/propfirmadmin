@@ -6,26 +6,31 @@ import Sidebar from "@/components/common/Sidebar";
 import { Toaster } from "sonner";
 
 export default function MainLayout({ children }: { children: React.ReactNode }) {
+  // Inicializar siempre con false para evitar hydration mismatch
   const [sidebarCollapsed, setSidebarCollapsed] = useState<boolean>(false);
   const [isHydrated, setIsHydrated] = useState(false);
 
-  // Aplicar el estado del localStorage solo después de la hidratación
+  // Cargar el estado del localStorage después de la hidratación
   useEffect(() => {
+    setIsHydrated(true);
     try {
       const saved = localStorage.getItem("sidebarCollapsed");
       if (saved === "true") {
         setSidebarCollapsed(true);
       }
-    } catch {}
-    setIsHydrated(true);
+    } catch {
+      // Si falla el acceso a localStorage, mantener valor por defecto
+    }
   }, []);
 
   const handleSidebarToggle = () => {
     setSidebarCollapsed((prev) => {
       const next = !prev;
-      try {
-        localStorage.setItem("sidebarCollapsed", String(next));
-      } catch {}
+      if (isHydrated) {
+        try {
+          localStorage.setItem("sidebarCollapsed", String(next));
+        } catch {}
+      }
       return next;
     });
   };

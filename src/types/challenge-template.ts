@@ -73,6 +73,7 @@ export interface ChallengeRelation {
   relationID: string;
   categoryID: string;
   planID: string;
+  groupName?: string;
   category?: ChallengeCategory;
   plan?: ChallengePlan;
   stages?: RelationStage[];
