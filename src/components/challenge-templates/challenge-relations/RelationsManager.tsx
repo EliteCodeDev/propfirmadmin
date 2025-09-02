@@ -29,6 +29,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -52,6 +53,7 @@ import {
 const relationSchema = z.object({
   categoryID: z.string().min(1, "La categoría es requerida"),
   planID: z.string().min(1, "El plan es requerido"),
+  groupName: z.string().optional(),
 });
 
 type RelationFormData = z.infer<typeof relationSchema>;
@@ -88,6 +90,7 @@ export function RelationsManager({ pageSize = 10 }: RelationsManagerProps) {
     defaultValues: {
       categoryID: "",
       planID: "",
+      groupName: "",
     },
   });
 
@@ -131,6 +134,7 @@ export function RelationsManager({ pageSize = 10 }: RelationsManagerProps) {
     form.reset({
       categoryID: "",
       planID: "",
+      groupName: "",
     });
     setOpenModal(true);
     setSelectedBalanceIds([]);
@@ -150,6 +154,7 @@ export function RelationsManager({ pageSize = 10 }: RelationsManagerProps) {
       form.reset({
         categoryID: relation.categoryID || "",
         planID: relation.planID || "",
+        groupName: relation.groupName ||"", // Por ahora vacío hasta que se actualice el tipo
       });
       // Mapear los balances existentes de la relación
       const existingBalanceIds =
@@ -166,6 +171,7 @@ export function RelationsManager({ pageSize = 10 }: RelationsManagerProps) {
       const payload = {
         categoryID: formValues.categoryID,
         planID: formValues.planID,
+        groupName: formValues.groupName || undefined,
       };
       if (editItem) {
         // Editar
@@ -474,6 +480,28 @@ export function RelationsManager({ pageSize = 10 }: RelationsManagerProps) {
                   </FormItem>
                 )}
               />
+
+              <FormField
+                control={form.control}
+                name="groupName"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-gray-700 dark:text-gray-300 text-sm font-medium">
+                      Nombre del grupo
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        {...field}
+                        placeholder="Ingresa el nombre del grupo (opcional)"
+                        className="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white text-sm placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      />
+                    </FormControl>
+                    <FormMessage className="text-red-600 dark:text-red-400" />
+                  </FormItem>
+                )}
+              />
+
+
 
               <DialogFooter className="mt-4 flex gap-2">
                 <Button

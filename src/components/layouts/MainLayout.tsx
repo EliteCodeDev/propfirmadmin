@@ -1,26 +1,35 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Sidebar from "@/components/common/Sidebar";
 import BreadcrumbBar from "@/components/common/BreadcrumbBar";
 
 export default function MainLayout({ children }: { children: React.ReactNode }) {
-  const [sidebarCollapsed, setSidebarCollapsed] = useState<boolean>(() => {
-    if (typeof window === "undefined") return false;
+  // Inicializar siempre con false para evitar hydration mismatch
+  const [sidebarCollapsed, setSidebarCollapsed] = useState<boolean>(false);
+  const [isHydrated, setIsHydrated] = useState(false);
+
+  // Cargar el estado del localStorage después de la hidratación
+  useEffect(() => {
+    setIsHydrated(true);
     try {
       const saved = localStorage.getItem("sidebarCollapsed");
-      return saved === "true";
+      if (saved === "true") {
+        setSidebarCollapsed(true);
+      }
     } catch {
-      return false;
+      // Si falla el acceso a localStorage, mantener valor por defecto
     }
-  });
+  }, []);
 
   const handleSidebarToggle = () => {
     setSidebarCollapsed((prev) => {
       const next = !prev;
-      try {
-        localStorage.setItem("sidebarCollapsed", String(next));
-      } catch {}
+      if (isHydrated) {
+        try {
+          localStorage.setItem("sidebarCollapsed", String(next));
+        } catch {}
+      }
       return next;
     });
   };
