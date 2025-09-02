@@ -141,30 +141,6 @@ export function RelationsManager({ pageSize = 10 }: RelationsManagerProps) {
     setSelectedRelationIdForBalances(null);
   }
 
-  function handleOpenEdit(item: {
-    id: number;
-    name: string;
-    originalId?: string;
-  }) {
-    const relation = relationsValidation.safeFind(
-      (r) => r?.relationID === item.originalId
-    );
-    if (relation) {
-      setEditItem(relation);
-      form.reset({
-        categoryID: relation.categoryID || "",
-        planID: relation.planID || "",
-        groupName: relation.groupName ||"", // Por ahora vacío hasta que se actualice el tipo
-      });
-      // Mapear los balances existentes de la relación
-      const existingBalanceIds =
-        relation.balances?.map((rb) => rb.balanceID) || [];
-      setSelectedBalanceIds(existingBalanceIds);
-      setOpenModal(true);
-      setSelectedRelationIdForBalances(null);
-    }
-  }
-
   async function onSubmit(formValues: RelationFormData) {
     try {
       // Construir payload respetando opcionalidad de categoría
@@ -200,6 +176,32 @@ export function RelationsManager({ pageSize = 10 }: RelationsManagerProps) {
   const relationsValidation = useArrayValidation(relations);
   const categoriesValidation = useArrayValidation(categories);
   const plansValidation = useArrayValidation(plans);
+
+  const handleOpenEdit = useCallback((item: {
+    id: number;
+    name: string;
+    originalId?: string;
+  }) => {
+    const relation = relationsValidation.safeFind(
+      (r) => r?.relationID === item.originalId
+    );
+    if (relation) {
+      // Primero preparar todos los datos sin actualizar estado
+      const formData = {
+        categoryID: relation.categoryID || "",
+        planID: relation.planID || "",
+        groupName: relation.groupName || "",
+      };
+      const existingBalanceIds = relation.balances?.map((rb) => rb.balanceID) || [];
+      
+      // Luego actualizar el estado en batch para evitar re-renders múltiples
+      setEditItem(relation);
+      setSelectedBalanceIds(existingBalanceIds);
+      setSelectedRelationIdForBalances(null);
+      form.reset(formData);
+      setOpenModal(true);
+    }
+  }, [relationsValidation, form]);
 
   const getCategoryName = (id: string) => {
     const category = categoriesValidation.safeFind((c) => c?.categoryID === id);
@@ -240,7 +242,7 @@ export function RelationsManager({ pageSize = 10 }: RelationsManagerProps) {
   const startIndex = (page - 1) * pageSizeLocal;
   const paginatedRows = tableData.slice(startIndex, startIndex + pageSizeLocal);
 
-  const renderActions = (row: Record<string, unknown>) => (
+  const renderActions = useCallback((row: Record<string, unknown>) => (
     <div className="flex items-center justify-center gap-2">
       <button
         className="p-1.5 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
@@ -283,7 +285,7 @@ export function RelationsManager({ pageSize = 10 }: RelationsManagerProps) {
         <Settings className="h-4 w-4" />
       </button>
     </div>
-  );
+  ), [relations, handleOpenEdit]);
 
   // --------------------------------------------------
   // 5. Render
