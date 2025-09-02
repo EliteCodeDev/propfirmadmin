@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from "react";
 import Sidebar from "@/components/common/Sidebar";
-import BreadcrumbBar from "@/components/common/BreadcrumbBar";
+//import BreadcrumbBar from "@/components/common/BreadcrumbBar";
+import { Toaster } from "sonner";
 
 export default function MainLayout({ children }: { children: React.ReactNode }) {
   // Inicializar siempre con false para evitar hydration mismatch
@@ -49,15 +50,15 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
 
       {/* Breadcrumb fijo arriba (fuera del contenedor que scrollea) */}
       <div className="col-start-2 row-start-1">
-        <BreadcrumbBar />
+        {/* <BreadcrumbBar /> */}
       </div>
 
       {/* Solo aquí vive el scroll */}
       <main className="col-start-2 row-start-2 min-h-0 overflow-y-auto">
-        <div className="w-full">
-          {children}
-        </div>
+        <div className="w-full">{children}</div>
       </main>
+
+      <Toaster position="top-right" richColors />
     </div>
   );
 }

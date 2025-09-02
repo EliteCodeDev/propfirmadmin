@@ -103,6 +103,16 @@ export const NEXTAUTH_SECRET = getEnv("NEXTAUTH_SECRET", {
   default: isClient ? "" : "dev-secret-change", // Vacío en cliente, valor por defecto en servidor
 });
 
+export const HERO_BG = process.env.NEXT_PUBLIC_LOGIN_BG || "";
+export const LOGIN_RIGHT_BG = process.env.NEXT_PUBLIC_LOGIN_RIGHT_BG || "";
+
+// Claves recapcha
+export const SITE_KEY_CLOUDFLARE =  process.env.NEXT_PUBLIC_SITE_KEY_CLOUDFLARE
+export const SECRET_KEY_CLOUDFLARE = process.env.NEXT_PUBLIC_SECRET_KEY_CLOUDFLARE
+
+// IMAGE LOGIN
+export const IMAGEN_LOGIN = process.env.NEXT_PUBLIC_IMAGEN_LOGIN
+
 // Helper para exponer un snapshot (útil en depuración).
 export const env = {
   NODE_ENV,

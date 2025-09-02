@@ -1,5 +1,5 @@
 import client from "@/api/client";
-import type { PaginatedResponse, PageResponse } from "@/types/pagination";
+import type { PageResponse } from "@/types/pagination";
 import type { Withdrawal, UpdateWithdrawalStatusPayload } from "@/types";
 
 export interface WithdrawalQuery {

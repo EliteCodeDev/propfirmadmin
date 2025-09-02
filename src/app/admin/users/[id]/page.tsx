@@ -17,6 +17,7 @@ import {
   ArrowLeftIcon,
 } from "@heroicons/react/24/outline";
 import type { User, Challenge } from "@/types";
+import { challengesApi, type ChallengeWithDetails, type ChallengeDetailedData } from "@/api/challenges";
 
 /* ========= Config ========= */
 const API_BASE = apiBaseUrl.replace(/\/$/, "");
@@ -92,29 +93,7 @@ async function authedFetcher([url, token]: [string, string]) {
   return res.json();
 }
 
-function buildChallengeUrls(userId: string) {
-  const uid = encodeURIComponent(userId);
-  return [
-    `/challenges?userID=${uid}&page=1&limit=1000`,
-    `/challenges?userId=${uid}&page=1&limit=1000`,
-    `/challenges?user=${uid}&page=1&limit=1000`,
-    `/challenges?page=1&limit=1000`,
-  ];
-}
 
-function filterByUserId<
-  T extends {
-    userID?: unknown;
-    userId?: unknown;
-    user?: { id?: unknown; userID?: unknown } | null;
-  }
->(list: T[], userId: string) {
-  const target = String(userId).trim().toLowerCase();
-  return list.filter((c) => {
-    const cand = c.userID ?? c.userId ?? c.user?.userID ?? c.user?.id ?? "";
-    return String(cand).trim().toLowerCase() === target;
-  });
-}
 
 /* ========= Página interna ========= */
 function UserDetailInner() {
@@ -139,7 +118,7 @@ function UserDetailInner() {
     isLoading: userLoading,
     error: userErr,
   } = useSWR(
-    canFetch && userId ? [`/api/users/${userId}`, token!] : null,
+    canFetch && userId ? [`/users/${userId}`, token!] : null,
     authedFetcher,
     { revalidateOnFocus: false }
   );
@@ -151,43 +130,74 @@ function UserDetailInner() {
   const hasUserData = !!(user?.userID || user?.id || user?.username);
 
   /* ---- Challenges del usuario ---- */
-  const urls = useMemo(
-    () => (userId ? buildChallengeUrls(userId) : []),
-    [userId]
-  );
-
   const {
-    data: chRaw,
+    data: challengesWithDetailsRaw,
     isLoading: chLoading,
     error: chErr,
   } = useSWR(
-    canFetch && hasUserData && urls.length ? [urls, token!] : null,
-    async ([uList, tok]: [string[], string]) => {
-      for (let i = 0; i < uList.length - 1; i++) {
+    canFetch && hasUserData ? [`challenges-with-details`, token!] : null,
+    async () => {
+      try {
+        const response = await challengesApi.getChallengesWithDetails();
+        return response.data.data;
+      } catch (error) {
+        console.error('Error fetching challenges with details:', error);
+        throw error;
+      }
+    },
+    { revalidateOnFocus: false }
+  );
+
+  const challengesWithDetails: ChallengeWithDetails[] = useMemo(() => {
+    const list = Array.isArray(challengesWithDetailsRaw) ? challengesWithDetailsRaw : [];
+    return userId ? list.filter(c => c.userID === userId) : [];
+  }, [challengesWithDetailsRaw, userId]);
+
+  // Fetch detailed data for each challenge
+  const {
+    data: challengeDetailsMap,
+    isLoading: detailsLoading,
+    error: detailsErr,
+  } = useSWR(
+    canFetch && challengesWithDetails.length > 0 ? [`challenge-details-${challengesWithDetails.map(c => c.challengeID).join(',')}`, token!] : null,
+    async () => {
+      const detailsMap: Record<string, ChallengeDetailedData> = {};
+      
+      for (const challenge of challengesWithDetails) {
         try {
-          const j = await authedFetcher([uList[i], tok]);
-          const arr = unwrapItems<Challenge>(j);
-          if (arr.length > 0) return arr;
-        } catch {
-          // intenta siguiente variante
+          const response = await challengesApi.getChallengeDetails(challenge.challengeID);
+          detailsMap[challenge.challengeID] = response.data;
+        } catch (error) {
+          console.error(`Error fetching details for challenge ${challenge.challengeID}:`, error);
+          // Continue with other challenges even if one fails
         }
       }
-      const jf = await authedFetcher([uList[uList.length - 1], tok]);
-      return unwrapItems<Challenge>(jf);
+      
+      return detailsMap;
     },
     { revalidateOnFocus: false }
   );
 
   const challenges: Challenge[] = useMemo(() => {
-    const list = Array.isArray(chRaw) ? (chRaw as Challenge[]) : [];
-    return userId ? filterByUserId(list, userId) : [];
-  }, [chRaw, userId]);
+    // Convert ChallengeWithDetails to Challenge format for backward compatibility
+    return challengesWithDetails.map(c => ({
+      challengeID: c.challengeID,
+      userID: c.userID,
+      status: c.status,
+      isActive: c.isActive,
+      numPhase: c.numPhase,
+      dynamicBalance: c.dynamicBalance,
+      brokerAccount: c.brokerAccount,
+      startDate: c.startDate,
+      endDate: c.endDate,
+    } as Challenge));
+  }, [challengesWithDetails]);
 
   // Estados de carga específicos
   const isInitialLoading = isAuthLoading || !token;
   const isUserDataLoading = userLoading && !hasUserData;
-  const isChallengesLoading = chLoading;
-  const hasErrors = userErr || chErr;
+  const isChallengesLoading = chLoading || detailsLoading;
+  const hasErrors = userErr || chErr || detailsErr;
 
   /* ---- Cards ---- */
   const fullName =
@@ -249,6 +259,7 @@ function UserDetailInner() {
     { key: "accountType", label: "Type", type: "normal" },
     { key: "accountSize", label: "Size", type: "normal" },
     { key: "balance", label: "Balance", type: "normal" },
+    { key: "equity", label: "Equity", type: "normal" },
     { key: "platform", label: "Platform", type: "normal" },
     { key: "status", label: "Status", type: "badge" },
     { key: "dateReceived", label: "Date", type: "normal" },
@@ -259,17 +270,22 @@ function UserDetailInner() {
       (challenges || []).map((c) => {
         const login = c?.brokerAccount?.login ?? "-";
         const platform = c?.brokerAccount?.platform ?? "-";
-        const sizeRaw =
-          c?.brokerAccount?.initialBalance ?? c?.dynamicBalance ?? null;
-
-        const sizeNum =
-          sizeRaw == null
-            ? null
-            : typeof sizeRaw === "number"
-            ? sizeRaw
-            : Number.isFinite(parseFloat(String(sizeRaw)))
-            ? parseFloat(String(sizeRaw))
-            : null;
+        
+        // Get detailed challenge data for real balance information
+        const detailedData = challengeDetailsMap?.[c.challengeID];
+        
+        // Use real balance data if available, fallback to initial balance
+        const currentBalance = detailedData?.balance?.currentBalance;
+        const initialBalance = detailedData?.balance?.initialBalance ?? c?.brokerAccount?.initialBalance;
+        const equity = detailedData?.equity;
+        
+        // Parse balance values
+        const currentBalanceNum = currentBalance ? parseFloat(currentBalance) : null;
+        const initialBalanceNum = initialBalance ? parseFloat(String(initialBalance)) : null;
+        
+        // Use current balance for display, fallback to initial balance
+        const displayBalance = currentBalanceNum ?? initialBalanceNum;
+        const accountSize = initialBalanceNum; // Account size is the initial balance
 
         const whenRaw =
           (c as { startDate?: unknown; createdAt?: unknown }).startDate ??
@@ -285,14 +301,15 @@ function UserDetailInner() {
         return {
           accountNumber: login || `${c.challengeID.slice(0, 8)}...`,
           accountType: c?.numPhase ? `${c.numPhase}-step` : "Challenge",
-          accountSize: sizeNum != null ? `$${sizeNum.toLocaleString()}` : "-",
-          balance: sizeNum != null ? `$${sizeNum.toLocaleString()}` : "-",
+          accountSize: accountSize != null ? `$${accountSize.toLocaleString()}` : "-",
+          balance: displayBalance != null ? `$${displayBalance.toLocaleString()}` : "-",
+          equity: equity != null ? `$${equity.toLocaleString()}` : "-",
           platform,
           status: c?.status ?? (c?.isActive ? "Active" : "Inactive"),
           dateReceived: whenDate ? whenDate.toLocaleDateString() : "-",
         };
       }),
-    [challenges]
+    [challenges, challengeDetailsMap]
   );
 
   const totalItems = mapped.length;
@@ -329,17 +346,17 @@ function UserDetailInner() {
     return (
       <MainLayout>
         <LoadingSpinner
-          size="md"
-          text="Cargando Challenges"
-          subtitle="Obteniendo información del usuario..."
-          showProgress
-          steps={[
-            "Consultando datos del usuario...",
-            "Cargando información de contacto...",
-            "Obteniendo detalles de cuenta...",
-            "Preparando vista de detalles...",
-          ]}
-        />
+        size="md"
+        text="Cargando Challenges"
+        subtitle="Obteniendo información del usuario y challenges..."
+        showProgress
+        steps={[
+          "Consultando datos del usuario...",
+          "Cargando challenges del usuario...",
+          "Obteniendo balances y detalles...",
+          "Preparando vista de detalles...",
+        ]}
+      />
       </MainLayout>
     );
   }

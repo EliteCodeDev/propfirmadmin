@@ -117,7 +117,7 @@ export function BalancesManager({ pageSize = 10 }: BalancesManagerProps) {
       setEditItem(balance);
       form.reset({
         name: balance.name || "",
-        balance: balance.balance || 0,
+        balance: typeof balance.balance === "number" ? balance.balance : Number(balance.balance ?? 0),
         isActive: balance.isActive ?? true,
         hasDiscount: balance.hasDiscount ?? false,
         discount: balance.discount || "",
@@ -243,6 +243,7 @@ export function BalancesManager({ pageSize = 10 }: BalancesManagerProps) {
             <form
               onSubmit={form.handleSubmit(onSubmit)}
               className="space-y-3 mt-3"
+              noValidate
             >
               <FormField
                 control={form.control}
@@ -280,9 +281,12 @@ export function BalancesManager({ pageSize = 10 }: BalancesManagerProps) {
                         step="0.01"
                         placeholder="Monto del balance"
                         className="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white text-sm placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        onChange={(e) =>
-                          field.onChange(parseFloat(e.target.value) || 0)
-                        }
+                        onChange={(e) => {
+                          const raw = e.target.value;
+                          const normalized = raw.replace(",", ".");
+                          const parsed = parseFloat(normalized);
+                          field.onChange(Number.isNaN(parsed) ? undefined : parsed);
+                        }}
                       />
                     </FormControl>
                     <FormMessage className="text-red-600 dark:text-red-400" />

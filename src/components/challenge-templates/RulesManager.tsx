@@ -41,6 +41,21 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 
+// Helpers
+const slugify = (value: string) =>
+  value
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+
+const BASIC_SLUG_SUGGESTIONS = [
+  "profit-target",
+  "daily-drawdown",
+  "max-drawdown",
+  "trading-days",
+];
+
 // Validación
 const ruleSchema = z.object({
   ruleType: z.enum(["number", "percentage", "boolean", "string"], {
@@ -64,6 +79,7 @@ export function RulesManager({ pageSize = 10 }: RulesManagerProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [pageSizeLocal, setPageSizeLocal] = useState(pageSize);
+  const [selectedSlug, setSelectedSlug] = useState<string>("");
 
   // Form
   const form = useForm<RuleFormData>({
@@ -105,6 +121,7 @@ export function RulesManager({ pageSize = 10 }: RulesManagerProps) {
       ruleName: "",
       ruleDescription: "",
     });
+    setSelectedSlug("");
     setOpenModal(true);
   }
 
@@ -125,17 +142,27 @@ export function RulesManager({ pageSize = 10 }: RulesManagerProps) {
         ruleName: rule.ruleName || "",
         ruleDescription: rule.ruleDescription || "",
       });
+      setSelectedSlug(rule.ruleSlug || "");
       setOpenModal(true);
     }
   }
 
   async function onSubmit(formValues: RuleFormData) {
     try {
+      // Determinar slug a enviar
+      const computedFromName = slugify(formValues.ruleName || "");
+      const finalSlug = selectedSlug || computedFromName;
+
+      if (!finalSlug) {
+        toast.error("Selecciona o ingresa un slug para la regla");
+        return;
+      }
+
       const payload = {
         ruleType: formValues.ruleType,
         ruleName: formValues.ruleName || undefined,
         ruleDescription: formValues.ruleDescription || undefined,
-        ruleSlug: formValues.ruleName?.toLowerCase().replace(/\s+/g, "-") || "",
+        ruleSlug: finalSlug,
       };
 
       if (editItem) {
@@ -316,6 +343,57 @@ export function RulesManager({ pageSize = 10 }: RulesManagerProps) {
                   </FormItem>
                 )}
               />
+
+              {/* Slug sugerencias */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <FormLabel className="text-gray-700 dark:text-gray-300 text-sm font-medium">
+                    Slug de la regla
+                  </FormLabel>
+                  <span className="text-xs text-gray-500 dark:text-gray-400">
+                    Selecciona uno de los básicos o ingresa uno personalizado
+                  </span>
+                </div>
+
+                <div className="flex flex-wrap gap-2">
+                  {BASIC_SLUG_SUGGESTIONS.map((slug) => {
+                    const isActive = selectedSlug === slug;
+                    return (
+                      <Button
+                        key={slug}
+                        type="button"
+                        variant={isActive ? "default" : "outline"}
+                        className={`h-7 px-2 text-xs ${
+                          isActive
+                            ? "bg-emerald-600 hover:bg-emerald-700 text-white"
+                            : "border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300"
+                        }`}
+                        onClick={() => setSelectedSlug(slug)}
+                      >
+                        {slug}
+                      </Button>
+                    );
+                  })}
+                </div>
+
+                <div className="mt-2">
+                  <Input
+                    value={selectedSlug}
+                    onChange={(e) => setSelectedSlug(slugify(e.target.value))}
+                    placeholder="Ej: profit-target"
+                    className="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white text-sm"
+                  />
+                  <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                    Solo minúsculas, números y guiones medios.
+                  </p>
+                  <div className="mt-1 text-xs">
+                    <span className="text-gray-500 dark:text-gray-400">Slug seleccionado: </span>
+                    <code className="px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100">
+                      {selectedSlug || "—"}
+                    </code>
+                  </div>
+                </div>
+              </div>
 
               <FormField
                 control={form.control}

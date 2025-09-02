@@ -14,7 +14,6 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import type {
   ColumnConfig,
   PaginatedCardTableProps,
-  ActionsRenderer,
 } from "@/types";
 
 function usePageNumbers(

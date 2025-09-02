@@ -9,3 +9,4 @@ export * from "./http";
 export * from "./table";
 export * from "./challenge-template";
 export * from "./component";
+export * from "./verification";

@@ -18,7 +18,7 @@ import {
 } from "lucide-react";
 import { useArrayValidation } from "@/hooks/useArrayValidation";
 
-import type { ChallengeItem, ChallengeTableProps } from "@/types";
+import type { ChallengeTableProps } from "@/types";
 
 export const ChallengeTable: React.FC<ChallengeTableProps> = ({
   title,

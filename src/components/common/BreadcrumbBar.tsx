@@ -3,7 +3,14 @@
 import React, { useMemo } from "react";
 import { usePathname } from "next/navigation";
 import { Breadcrumbs, type BreadcrumbItem } from "@/components/ui/breadcrumb";
-import { HomeIcon, UserGroupIcon, BanknotesIcon, TrophyIcon, CogIcon, ChartBarIcon } from "@heroicons/react/24/outline";
+import {
+  HomeIcon,
+  UserGroupIcon,
+  BanknotesIcon,
+  TrophyIcon,
+  CogIcon,
+  ChartBarIcon,
+} from "@heroicons/react/24/outline";
 
 const LABELS: Record<string, string> = {
   dashboard: "Dashboard",
@@ -34,34 +41,38 @@ export default function BreadcrumbBar() {
   const pathname = usePathname();
 
   const crumbs = useMemo((): BreadcrumbItem[] => {
-  const segments = pathname.split("/").filter(Boolean);
+    const segments = pathname.split("/").filter(Boolean);
     const crumbs: BreadcrumbItem[] = [];
-    
+
     // Si estamos en rutas de auth, no mostrar breadcrumbs
     if (segments[0] === "auth") {
       return [];
     }
-    
+
     // Filtrar el segmento 'admin' si existe
     const filteredSegments = segments[0] === "admin" ? segments.slice(1) : segments;
-    const onDashboard = filteredSegments.length === 0 || filteredSegments[0] === "dashboard";
 
-    // Home/Dashboard: solo linkeable si NO estás ya en dashboard
+    // Siempre agregamos Dashboard como raíz, pero sin href para evitar redirecciones raras
     crumbs.push({
       label: "Dashboard",
-      href: onDashboard ? undefined : "/admin/dashboard", 
       icon: (p) => <HomeIcon {...p} />,
-      current: onDashboard,
+      current: filteredSegments.length === 0,
     });
 
+    // Recorrer el resto de segmentos
     let acc = "/admin";
     filteredSegments.forEach((seg, idx) => {
-      if (seg === "dashboard") return; 
+      if (seg === "dashboard") return;
       acc += `/${seg}`;
       const label = LABELS[seg] || humanize(seg);
       const icon = ICONS[seg];
       const isLast = idx === filteredSegments.length - 1;
-      crumbs.push({ label, href: isLast ? undefined : acc, icon, current: isLast });
+      crumbs.push({
+        label,
+        href: isLast ? undefined : acc,
+        icon,
+        current: isLast,
+      });
     });
 
     return crumbs;

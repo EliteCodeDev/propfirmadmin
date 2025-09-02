@@ -10,9 +10,13 @@ export interface WithdrawalUserRef {
 }
 
 export interface WithdrawalChallengeRef {
+  challengeID?: string;
   name?: string;
-  accountLogin?: string;
+  brokerAccount?: {
+    login?: string;
+  };
 }
+
 
 export interface Withdrawal {
   withdrawalID: string;

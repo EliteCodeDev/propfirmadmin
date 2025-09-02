@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import PaginatedCardTable from "@/components/common/PaginatedCardTable";
-import type { ColumnConfig, RelationBalance } from "@/types";
+import type { ColumnConfig } from "@/types";
 import {
   ChallengeRelation,
   ChallengeCategory,
@@ -51,7 +51,7 @@ import {
 
 // Validación
 const relationSchema = z.object({
-  categoryID: z.string().min(1, "La categoría es requerida"),
+  categoryID: z.string().uuid("Categoría inválida").optional().or(z.literal("")),
   planID: z.string().min(1, "El plan es requerido"),
   groupName: z.string().optional(),
 });
@@ -97,11 +97,7 @@ export function RelationsManager({ pageSize = 10 }: RelationsManagerProps) {
   // --------------------------------------------------
   // 1. Cargar datos al montar
   // --------------------------------------------------
-  useEffect(() => {
-    loadAllData();
-  }, []);
-
-  const loadAllData = async () => {
+  const loadAllData = useCallback(async () => {
     try {
       setIsLoading(true);
       const [relationsData, categoriesData, plansData, balancesData] =
@@ -124,7 +120,11 @@ export function RelationsManager({ pageSize = 10 }: RelationsManagerProps) {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [editItem]);
+
+  useEffect(() => {
+    loadAllData();
+  }, [loadAllData]);
 
   // --------------------------------------------------
   // 2. Crear / Editar
@@ -167,11 +167,11 @@ export function RelationsManager({ pageSize = 10 }: RelationsManagerProps) {
 
   async function onSubmit(formValues: RelationFormData) {
     try {
-      // No enviar balanceID vacío/"none"
+      // Construir payload respetando opcionalidad de categoría
       const payload = {
-        categoryID: formValues.categoryID,
         planID: formValues.planID,
         groupName: formValues.groupName || undefined,
+        ...(formValues.categoryID ? { categoryID: formValues.categoryID } : {}),
       };
       if (editItem) {
         // Editar
@@ -200,7 +200,6 @@ export function RelationsManager({ pageSize = 10 }: RelationsManagerProps) {
   const relationsValidation = useArrayValidation(relations);
   const categoriesValidation = useArrayValidation(categories);
   const plansValidation = useArrayValidation(plans);
-  const balancesValidation = useArrayValidation(balances);
 
   const getCategoryName = (id: string) => {
     const category = categoriesValidation.safeFind((c) => c?.categoryID === id);
@@ -212,10 +211,7 @@ export function RelationsManager({ pageSize = 10 }: RelationsManagerProps) {
     return plan?.name || "N/A";
   };
 
-  const getBalanceAmount = (id: string) => {
-    const balance = balancesValidation.safeFind((b) => b?.balanceID === id);
-    return balance ? `$${balance.balance?.toLocaleString()}` : "N/A";
-  };
+
 
   // --------------------------------------------------
   // 4. Procesar datos para la tabla
@@ -223,12 +219,12 @@ export function RelationsManager({ pageSize = 10 }: RelationsManagerProps) {
   const tableData = relationsValidation.safeMap((item, index) => {
     const categoryName = getCategoryName(item?.categoryID || "");
     const planName = getPlanName(item?.planID || "");
-    const balanceCount = item?.balances?.length || 0;
-    const balanceText = balanceCount > 0 ? ` (${balanceCount} balances)` : "";
-
+    const balanceText = item?.balances?.length ? ` (${item.balances.length} balances)` : "";
+    // Cambiar a "Plan - Categoría" y evitar guion si no hay categoría
+    const composedName = categoryName && categoryName !== "N/A" ? `${planName} - ${categoryName}${balanceText}` : `${planName}${balanceText}`;
     return {
       id: index + 1,
-      name: `${categoryName} - ${planName}${balanceText}`,
+      name: composedName,
       originalId: item?.relationID || "",
     };
   });
@@ -409,42 +405,7 @@ export function RelationsManager({ pageSize = 10 }: RelationsManagerProps) {
               onSubmit={form.handleSubmit(onSubmit)}
               className="space-y-3 mt-3"
             >
-              <FormField
-                control={form.control}
-                name="categoryID"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-gray-700 dark:text-gray-300 text-sm font-medium">
-                      Categoría
-                    </FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                    >
-                      <FormControl>
-                        <SelectTrigger className="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                          <SelectValue placeholder="Selecciona una categoría" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
-                        {categoriesValidation.safeMap((category) =>
-                          category?.categoryID ? (
-                            <SelectItem
-                              key={category.categoryID}
-                              value={category.categoryID}
-                              className="text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700"
-                            >
-                              {category?.name || "Sin nombre"}
-                            </SelectItem>
-                          ) : null
-                        )}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage className="text-red-600 dark:text-red-400" />
-                  </FormItem>
-                )}
-              />
-
+              {/* Plan primero */}
               <FormField
                 control={form.control}
                 name="planID"
@@ -453,10 +414,7 @@ export function RelationsManager({ pageSize = 10 }: RelationsManagerProps) {
                     <FormLabel className="text-gray-700 dark:text-gray-300 text-sm font-medium">
                       Plan
                     </FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                    >
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
                         <SelectTrigger className="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                           <SelectValue placeholder="Selecciona un plan" />
@@ -496,6 +454,40 @@ export function RelationsManager({ pageSize = 10 }: RelationsManagerProps) {
                         className="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white text-sm placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       />
                     </FormControl>
+                    <FormMessage className="text-red-600 dark:text-red-400" />
+                  </FormItem>
+                )}
+              />
+
+              {/* Categoría después y opcional */}
+              <FormField
+                control={form.control}
+                name="categoryID"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-gray-700 dark:text-gray-300 text-sm font-medium">
+                      Categoría (opcional)
+                    </FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger className="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                          <SelectValue placeholder="Selecciona una categoría" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+                        {categoriesValidation.safeMap((category) =>
+                          category?.categoryID ? (
+                            <SelectItem
+                              key={category.categoryID}
+                              value={category.categoryID}
+                              className="text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700"
+                            >
+                              {category?.name || "Sin nombre"}
+                            </SelectItem>
+                          ) : null
+                        )}
+                      </SelectContent>
+                    </Select>
                     <FormMessage className="text-red-600 dark:text-red-400" />
                   </FormItem>
                 )}
