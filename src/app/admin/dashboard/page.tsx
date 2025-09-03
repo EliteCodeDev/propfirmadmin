@@ -1,12 +1,103 @@
-// src/app/dashboard/page.tsx
+// src/app/admin/dashboard/page.tsx
 import { redirect } from "next/navigation";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import MainLayout from "@/components/layouts/MainLayout";
-import { StatCard } from "./_components/StatCard";
-import { SectionCard } from "./_components/SectionCard";
-import PerformanceAnalytics from "./_components/PerformanceAnalytics";
-import { BanknotesIcon, ChartBarIcon, UserGroupIcon } from "@heroicons/react/24/outline";
+import DashboardContent from "./_components/DashboardContent";
+import DashboardApi from "@/api/dashboard";
+import { DashboardStats } from "@/types/dashboard";
+import { BellIcon, ChartBarIcon, CogIcon } from "lucide-react";
+import { DocumentChartBarIcon } from "@heroicons/react/24/outline";
+
+async function getDashboardData(): Promise<DashboardStats | null> {
+  try {
+    const data = await DashboardApi.getStats();
+    return data;
+  } catch (error) {
+    console.error('Error fetching dashboard data:', error);
+    return null;
+  }
+}
+
+// Componente Header del Dashboard
+function DashboardHeader({ session, dashboardData }: { 
+  session: any; 
+  dashboardData: DashboardStats | null; 
+}) {
+  const currentHour = new Date().getHours();
+  const greeting = currentHour < 12 ? 'Buenos días' : currentHour < 18 ? 'Buenas tardes' : 'Buenas noches';
+  const currentDate = new Date().toLocaleDateString('es-ES', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  });
+
+  return (
+    <div className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 transition-colors duration-200">
+      <div className="px-6 py-8">
+        {/* Saludo y navegación */}
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+          <div className="flex-1">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg transition-colors duration-200">
+                <ChartBarIcon className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold text-gray-900 dark:text-white transition-colors duration-200">
+                  {greeting}, {session?.user?.name || 'Admin'}
+                </h1>
+                <p className="text-gray-600 dark:text-gray-300 capitalize transition-colors duration-200">
+                  {currentDate}
+                </p>
+              </div>
+            </div>
+            
+            {/* Resumen rápido */}
+            <div className="mt-4">
+              <p className="text-gray-700 dark:text-gray-300 mb-3 transition-colors duration-200">
+                Resumen del estado actual de tu negocio
+              </p>
+              
+              {dashboardData && (
+                <div className="flex flex-wrap items-center gap-6 text-sm">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 bg-green-500 dark:bg-green-400 rounded-full"></div>
+                    <span className="text-gray-600 dark:text-gray-300 transition-colors duration-200">
+                      <strong className="text-gray-900 dark:text-white">
+                        {dashboardData.totalUsers?.toLocaleString() || '0'}
+                      </strong> usuarios registrados
+                    </span>
+                  </div>
+                  
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 bg-blue-500 dark:bg-blue-400 rounded-full"></div>
+                    <span className="text-gray-600 dark:text-gray-300 transition-colors duration-200">
+                      <strong className="text-gray-900 dark:text-white">
+                        {dashboardData.totalOrders?.toLocaleString() || '0'}
+                      </strong> pedidos procesados
+                    </span>
+                  </div>
+                  
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 bg-emerald-500 dark:bg-emerald-400 rounded-full"></div>
+                    <span className="text-gray-600 dark:text-gray-300 transition-colors duration-200">
+                      <strong className="text-emerald-600 dark:text-emerald-400">
+                        ${dashboardData.totalSales?.toLocaleString('es-ES', { 
+                          minimumFractionDigits: 2 
+                        }) || '0.00'}
+                      </strong> en ventas totales
+                    </span>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default async function Dashboard() {
   const session = await getServerSession(authOptions);
@@ -15,56 +106,17 @@ export default async function Dashboard() {
     redirect("/auth/login");
   }
 
+  // Fetch dashboard data
+  const dashboardData = await getDashboardData();
+
   return (
     <MainLayout>
-      <div className="relative w-full h-full p-6">
-        {/* subtle decorative gradients */}
-        <div className="absolute inset-0 pointer-events-none overflow-hidden">
-          <div className="absolute top-20 right-20 w-32 h-32 bg-gradient-to-br from-blue-100/30 to-indigo-100/30 rounded-full blur-3xl" />
-          <div className="absolute bottom-40 left-10 w-24 h-24 bg-gradient-to-tr from-gray-100/40 to-blue-50/40 rounded-full blur-2xl" />
-          <div className="absolute top-1/2 left-1/3 w-16 h-16 bg-gradient-to-bl from-indigo-50/50 to-gray-50/50 rounded-full blur-xl" />
-        </div>
-
-        <div className="flex flex-col space-y-8 relative">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6">
-            <div className="xl:col-span-2 lg:col-span-1"><StatCard size="sm" label="Total Users" value="140" variant="indigo" delay={0} icon={<UserGroupIcon className="h-6 w-6 text-indigo-600" />} /></div>
-            <div className="xl:col-span-2 lg:col-span-1"><StatCard size="sm" label="Total Orders" value="122" variant="blue" delay={100} icon={<ChartBarIcon className="h-6 w-6 text-blue-600" />} /></div>
-            <div className="xl:col-span-2 lg:col-span-1"><StatCard size="sm" label="Total Sales" value="$5909.18" variant="emerald" delay={200} icon={<BanknotesIcon className="h-6 w-6 text-emerald-600" />} /></div>
-
-            <div className="xl:col-span-2 lg:col-span-1"><StatCard size="sm" label="Monthly Users" value="2" variant="gray" delay={300} delta="92.59%" deltaColor="red" deltaDirection="down" icon={<UserGroupIcon className="h-6 w-6 text-indigo-600" />} /></div>
-            <div className="xl:col-span-2 lg:col-span-1"><StatCard size="sm" label="Monthly Orders" value="5" variant="gray" delay={400} delta="88.37%" deltaColor="red" deltaDirection="down" icon={<ChartBarIcon className="h-6 w-6 text-indigo-600" />} /></div>
-            <div className="xl:col-span-2 lg:col-span-1"><StatCard size="sm" label="Monthly Sales" value="$0" variant="gray" delay={500} delta="0%" deltaColor="red" deltaDirection="down" icon={<BanknotesIcon className="h-6 w-6 text-indigo-600" />} /></div>
-          </div>
-
-          {/* Bottom row - financial metrics (wider) */}
-          <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-            <div className="xl:col-span-1"><StatCard size="sm" label="Withdrawable Profits" value="$16065" variant="emerald" delay={600} icon={<BanknotesIcon className="h-6 w-6 text-emerald-600" />} /></div>
-            <div className="xl:col-span-1"><StatCard size="sm" label="Payouts" value="$68520" variant="indigo" delay={700} icon={<BanknotesIcon className="h-6 w-6 text-indigo-600" />} /></div>
-          </div>
-
-          {/* Two big sections */}
-          <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
-            <div className="xl:col-span-2">
-              <PerformanceAnalytics />
-            </div>
-
-            <div className="xl:col-span-2">
-              <SectionCard>
-                <div className="flex items-center gap-4 mb-8">
-                  <div className="p-4 bg-gradient-to-br from-indigo-50 to-blue-50 rounded-2xl"><ChartBarIcon className="h-6 w-6 text-indigo-600" /></div>
-                  <div>
-                    <h3 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-1">Best Selling Plans this Month</h3>
-                    <p className="text-gray-600 dark:text-gray-400">Track your top performing plans and revenue</p>
-                  </div>
-                </div>
-                {/* Table placeholder */}
-                <div className="bg-gradient-to-br from-gray-50/50 to-white/50 dark:from-gray-800/40 dark:to-gray-900/30 rounded-3xl border border-gray-100 dark:border-gray-700 overflow-hidden">
-                  <div className="p-8 text-gray-400">Table placeholder</div>
-                </div>
-              </SectionCard>
-            </div>
-          </div>
-        </div>
+      {/* Header del Dashboard */}
+      <DashboardHeader session={session} dashboardData={dashboardData} />
+      
+      {/* Contenido Principal */}
+      <div className="p-6 bg-gray-50 dark:bg-gray-800 min-h-screen transition-colors duration-200">
+        <DashboardContent initialData={dashboardData} />
       </div>
     </MainLayout>
   );

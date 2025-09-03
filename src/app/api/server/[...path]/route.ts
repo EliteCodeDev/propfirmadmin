@@ -17,6 +17,7 @@ const ALLOWED_PREFIXES = [
   "/withdrawals",
   "/verification",
   "/mailer",
+  "/dashboard",
 ];
 
 export const dynamic = "force-dynamic";
