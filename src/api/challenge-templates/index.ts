@@ -10,6 +10,8 @@ import {
   StageRule,
   StageParameter,
   RelationStage,
+  Addon,
+  RelationAddon,
 } from "@/types/challenge-template";
 
 // Payloads genéricos
@@ -104,6 +106,28 @@ export interface balanceForRelationPayload {
 }
 export type UpdateRelationBalancePayload =
   Partial<CreateRelationBalancePayload>;
+
+// Addons DTO-aligned payloads
+export interface CreateAddonPayload {
+  name: string;
+  isActive: boolean;
+  hasDiscount: boolean;
+  discount: number;
+  balance: number;
+}
+export type UpdateAddonPayload = Partial<CreateAddonPayload>;
+
+export interface CreateRelationAddonPayload {
+  addonID: string;
+  relationID: string;
+  price?: number;
+  isActive?: boolean;
+  hasDiscount?: boolean;
+  discount?: number;
+  wooID?: number;
+}
+export type UpdateRelationAddonPayload = Partial<CreateRelationAddonPayload>;
+
 export const challengeTemplatesApi = {
   // Categories
   createCategory: async (
@@ -383,16 +407,15 @@ export const challengeTemplatesApi = {
     return data;
   },
   listRelationStages: async (relationID?: string): Promise<RelationStage[]> => {
-    const url = relationID
-      ? `/challenge-templates/relation-stages/by-relation/${relationID}`
-      : "/challenge-templates/relation-stages";
-    const { data } = await client.get(url);
-    return data.data || data;
+    const { data } = await client.get(
+      relationID
+        ? `/challenge-templates/relation-stages/relation/${relationID}`
+        : "/challenge-templates/relation-stages"
+    );
+    return data.data;
   },
   getRelationStage: async (id: string): Promise<RelationStage> => {
-    const { data } = await client.get(
-      `/challenge-templates/relation-stages/${id}`
-    );
+    const { data } = await client.get(`/challenge-templates/relation-stages/${id}`);
     return data;
   },
   updateRelationStage: async (
@@ -410,5 +433,91 @@ export const challengeTemplatesApi = {
       `/challenge-templates/relation-stages/${id}`
     );
     return data;
+  },
+
+  // Addons
+  createAddon: async (payload: CreateAddonPayload): Promise<Addon> => {
+    const { data } = await client.post("/addons", payload);
+    return data;
+  },
+  listAddons: async (): Promise<Addon[]> => {
+    const { data } = await client.get("/addons");
+    return data.data ?? data; // Some services return raw lists
+  },
+  getAddon: async (id: string): Promise<Addon> => {
+    const { data } = await client.get(`/addons/${id}`);
+    return data;
+  },
+  updateAddon: async (
+    id: string,
+    payload: UpdateAddonPayload
+  ): Promise<Addon> => {
+    const { data } = await client.patch(
+      `/addons/${id}`,
+      payload
+    );
+    return data;
+  },
+  deleteAddon: async (id: string): Promise<{ success: boolean }> => {
+    const { data } = await client.delete(`/addons/${id}`);
+    return data;
+  },
+
+  // Relation Addons
+  createRelationAddon: async (
+    payload: CreateRelationAddonPayload
+  ): Promise<RelationAddon> => {
+    const { data } = await client.post(
+      "/relation-addons",
+      payload
+    );
+    return data;
+  },
+  listRelationAddons: async (
+    relationID?: string
+  ): Promise<RelationAddon[]> => {
+    const { data } = await client.get(
+      relationID
+        ? `/relation-addons/relation/${relationID}`
+        : "/relation-addons"
+    );
+    return data.data ?? data;
+  },
+  getRelationAddon: async (
+    addonID: string,
+    relationID: string
+  ): Promise<RelationAddon> => {
+    const { data } = await client.get(
+      `/relation-addons/${addonID}/${relationID}`
+    );
+    return data;
+  },
+  updateRelationAddon: async (
+    addonID: string,
+    relationID: string,
+    payload: UpdateRelationAddonPayload
+  ): Promise<RelationAddon> => {
+    const { data } = await client.patch(
+      `/relation-addons/${addonID}/${relationID}`,
+      payload
+    );
+    return data;
+  },
+  deleteRelationAddon: async (
+    addonID: string,
+    relationID: string
+  ): Promise<{ success: boolean }> => {
+    const res = await client.delete(
+      `/relation-addons/${addonID}/${relationID}`
+    );
+    // Algunos endpoints pueden responder 204 sin cuerpo.
+    if (res.status === 204) {
+      return { success: true };
+    }
+    // Si no hay data pero el status es 2xx, asumir éxito.
+    if (res.status >= 200 && res.status < 300 && (res.data === undefined || res.data === null)) {
+      return { success: true };
+    }
+    return res.data ?? { success: res.status >= 200 && res.status < 300 };
   },
 };

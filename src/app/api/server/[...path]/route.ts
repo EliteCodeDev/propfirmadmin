@@ -17,6 +17,8 @@ const ALLOWED_PREFIXES = [
   "/withdrawals",
   "/verification",
   "/mailer",
+  "/addons",
+  "/relation-addons",
 ];
 
 export const dynamic = "force-dynamic";
@@ -80,13 +82,33 @@ async function proxy(req: NextRequest) {
     cache: "no-cache",
   });
 
+  // Manejar 204 No Content sin intentar serializar cuerpo
+  if (res.status === 204) {
+    return new NextResponse(null, { status: 204 });
+  }
+
   const text = await res.text();
-  let data: unknown = text;
+  let data: any = text;
   const responseContentType = res.headers.get("content-type") || "";
   if (responseContentType.includes("application/json")) {
     try {
       data = JSON.parse(text);
     } catch {}
+  }
+
+  // Si respuesta de error carece de cuerpo útil, inyectar payload informativo
+  if (res.status >= 400) {
+    const emptyJson = data && typeof data === "object" && Object.keys(data).length === 0;
+    const notObject = typeof data !== "object" || data === null;
+    if (emptyJson || notObject) {
+      data = {
+        message: (responseContentType.includes("application/json") && typeof data === "object" ? (data as any)?.message : undefined) || res.statusText || "HTTP Error",
+        status: res.status,
+        path: subPath,
+        method,
+      };
+      return NextResponse.json(data, { status: res.status });
+    }
   }
 
   // Si el backend devuelve algo que no sea JSON, lo envolvemos para mantener coherencia.
