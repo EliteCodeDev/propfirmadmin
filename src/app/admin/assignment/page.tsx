@@ -84,7 +84,7 @@ export default function AssignmentPage() {
                 }));
 
                 setUsers(mappedUsers);
-                console.log("Usuarios cargados:", mappedUsers); // Para debug
+                // console.log("Usuarios cargados:", mappedUsers); // Para debug
             } catch (error) {
                 console.error("Error al cargar usuarios:", error);
                 setUsersError(error);
@@ -94,7 +94,7 @@ export default function AssignmentPage() {
         obtenerUsuarios();
     }, []);
 
-    console.log(users);
+    // console.log(users);
 
     // Solo loader inicial (no volverá a mostrarse al revalidar)
     const loadingInitialUsers = loadingUsers && users?.length === 0;
@@ -111,9 +111,9 @@ export default function AssignmentPage() {
             )
             .slice(0, 10);
 
-        console.log("Search term:", searchEmail);
-        console.log("Users array:", users);
-        console.log("Filtered suggestions:", filtered);
+        // console.log("Search term:", searchEmail);
+        // console.log("Users array:", users);
+        // console.log("Filtered suggestions:", filtered);
 
         return filtered;
     }, [users, searchEmail]);
@@ -284,7 +284,7 @@ export default function AssignmentPage() {
 
     // 5) Estados de selección (actualizados para trabajar con challenge templates)
     const [selectedStep, setSelectedStep] = useState<any>(null);
-    const [selectedRelation, setSelectedRelation] = useState<any>(null);
+    const [selectedRelation, setSelectedRelation] = useState<ChallengeRelation | null | undefined>(null);
     const [selectedProduct, setSelectedProduct] = useState<any>(null);
     const [selectedStage, setSelectedStage] = useState<any>(null);
 
@@ -363,8 +363,8 @@ export default function AssignmentPage() {
                         wooID: 999,
                         total: matchingVariation.price || 0,
                         product: {
-                            productID: matchingVariation.wooId || 999,
-                            variationID: matchingVariation.wooId || 999,
+                            productID: Number(selectedPlan.wooID) || 999,
+                            variationID: selectedBalance.relationBalances?.find((value) => value.relationID === selectedRelation?.relationID)?.wooID || 999,
                             name: `${selectedPlan.name} - ${selectedCategory.name} - ${selectedBalance.name || selectedBalance.balance}`,
                             price: matchingVariation.price || 0
                         }

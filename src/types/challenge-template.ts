@@ -57,6 +57,7 @@ export interface ChallengeBalance {
   hasDiscount: boolean;
   discount?: string;
   balance?: number;
+  relationBalances?: RelationBalance[];
 }
 export interface RelationBalance {
   relationBalanceID: string;
