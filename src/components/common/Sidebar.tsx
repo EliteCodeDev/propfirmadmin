@@ -21,6 +21,7 @@ import {
   ChevronDownIcon,
   EnvelopeIcon,
   ShieldCheckIcon,
+  UserPlusIcon,
 } from "@heroicons/react/24/outline";
 import { signOut } from "next-auth/react";
 import { useSession } from "next-auth/react";
@@ -38,6 +39,7 @@ const navigation: NavigationItem[] = [
   { name: "Broker Accounts", href: "/admin/brokeraccounts", icon: DocumentTextIcon },
   { name: "Retiros", href: "/admin/withdrawals", icon: BanknotesIcon },
   { name: "Correo", href: "/admin/correo", icon: EnvelopeIcon },
+  { name: "Asignacion", href: "/admin/assignment", icon: UserPlusIcon },
 ];
 
 function classNames(...classes: string[]) {
