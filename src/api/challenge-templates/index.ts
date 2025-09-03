@@ -409,10 +409,10 @@ export const challengeTemplatesApi = {
   listRelationStages: async (relationID?: string): Promise<RelationStage[]> => {
     const { data } = await client.get(
       relationID
-        ? `/challenge-templates/relation-stages/relation/${relationID}`
+        ? `/challenge-templates/relation-stages/by-relation/${relationID}`
         : "/challenge-templates/relation-stages"
     );
-    return data.data;
+    return data?.data ?? data;
   },
   getRelationStage: async (id: string): Promise<RelationStage> => {
     const { data } = await client.get(`/challenge-templates/relation-stages/${id}`);
