@@ -22,6 +22,7 @@ import {
     EnvelopeIcon,
     ChevronRightIcon,
 } from "@heroicons/react/24/outline";
+import { apiBaseUrl } from "@/config";
 
 function classNames(...classes: string[]) {
     return classes.filter(Boolean).join(" ");
@@ -68,7 +69,7 @@ export default function AssignmentPage() {
         const obtenerUsuarios = async () => {
             try {
                 const response = await axios.get(
-                    `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/users?page=1&limit=999999999`
+                    `${apiBaseUrl}/users?page=1&limit=999999999`
                 );
 
                 // Mapear los datos de la API a la estructura esperada
@@ -373,8 +374,7 @@ export default function AssignmentPage() {
             setLoadingModal(true);
 
             try {
-                // const res = await fetch('http://onlyfunds_only-back:4001/api/orders/create-complete', {
-                const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/orders/create-complete`, {
+                const res = await fetch(`${apiBaseUrl}/orders/create-complete`, {
                     method: "POST",
                     headers: {
                         // "x-api-key":

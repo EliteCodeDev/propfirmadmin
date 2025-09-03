@@ -9,15 +9,17 @@ import {
   ChallengeRelation,
   ChallengeStage,
   RelationStage,
-} from "@/types";
+  Addon,
+  RelationAddon,
+} from "@/types/challenge-template";
 import { useArrayValidation } from "@/hooks/useArrayValidation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { Loader2, RefreshCw, CheckCircle, DollarSign } from "lucide-react";
+import { Loader2, RefreshCw, CheckCircle, DollarSign, Gift } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-import type { TemplateVisualizerProps } from "@/types";
+import type { TemplateVisualizerProps } from "@/types/component";
 
 export function TemplateVisualizer({}: TemplateVisualizerProps) {
   // Estado de datos
@@ -27,6 +29,8 @@ export function TemplateVisualizer({}: TemplateVisualizerProps) {
   const [relations, setRelations] = useState<ChallengeRelation[]>([]);
   const [stages, setStages] = useState<ChallengeStage[]>([]);
   const [relationStages, setRelationStages] = useState<RelationStage[]>([]);
+  const [addons, setAddons] = useState<Addon[]>([]);
+  const [relationAddons, setRelationAddons] = useState<RelationAddon[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -36,6 +40,7 @@ export function TemplateVisualizer({}: TemplateVisualizerProps) {
     useState<ChallengeCategory | null>(null);
   const [selectedBalance, setSelectedBalance] =
     useState<ChallengeBalance | null>(null);
+  const [selectedAddon, setSelectedAddon] = useState<Addon | null>(null);
   // Eliminado selectedRelation: usamos currentRelation directamente-+
 
   // Cargar todos los datos
@@ -50,6 +55,7 @@ export function TemplateVisualizer({}: TemplateVisualizerProps) {
         relationsData,
         stagesData,
         relationStagesData,
+        addonsData,
       ] = await Promise.all([
         challengeTemplatesApi.listCategories(),
         challengeTemplatesApi.listPlans(),
@@ -57,6 +63,7 @@ export function TemplateVisualizer({}: TemplateVisualizerProps) {
         challengeTemplatesApi.listRelations(),
         challengeTemplatesApi.listStages(),
         challengeTemplatesApi.listRelationStages(),
+        challengeTemplatesApi.listAddons(),
       ]);
 
       setCategories(categoriesData);
@@ -65,6 +72,7 @@ export function TemplateVisualizer({}: TemplateVisualizerProps) {
       setRelations(relationsData);
       setStages(stagesData);
       setRelationStages(relationStagesData);
+      setAddons(addonsData);
     } catch (error: unknown) {
       console.error("Error al cargar datos:", error);
       setError(error instanceof Error ? error.message : "Error desconocido");
@@ -138,6 +146,44 @@ export function TemplateVisualizer({}: TemplateVisualizerProps) {
           (a.relationStage?.numPhase || 0) - (b.relationStage?.numPhase || 0)
       );
   }, [currentRelation, relationStagesValidation, stagesValidation]);
+
+  // Addons disponibles para la relación actual
+  const availableAddons = useMemo(() => {
+    if (!currentRelation) return [] as Addon[];
+    const relationAddonIds = new Set(
+      relationAddons
+        .filter((ra) => ra.relationID === currentRelation.relationID)
+        .map((ra) => ra.addonID)
+    );
+    return addons.filter((a) => relationAddonIds.has(a.addonID));
+  }, [addons, relationAddons, currentRelation]);
+
+  // Cargar addons de la relación al cambiar la relación actual
+  useEffect(() => {
+    if (!currentRelation?.relationID) {
+      setRelationAddons([]);
+      setSelectedAddon(null);
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      try {
+        const ras = await challengeTemplatesApi.listRelationAddons(
+          currentRelation.relationID
+        );
+        if (!cancelled) setRelationAddons(ras);
+      } catch (e) {
+        console.error("Error al cargar addons de la relación", e);
+        if (!cancelled) {
+          setRelationAddons([]);
+          toast.error("No se pudieron cargar los addons de la relación");
+        }
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [currentRelation?.relationID]);
 
   // Actualizar relación seleccionada cuando cambie la relación actual
   // Eliminado: ya no mantenemos selectedRelation en estado
@@ -420,6 +466,100 @@ export function TemplateVisualizer({}: TemplateVisualizerProps) {
             </CardContent>
           </Card>
         )}
+
+        {/* Addons Section */}
+        <Card className="border-0 shadow-lg bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm">
+          <CardHeader className="border-b border-gray-100 dark:border-gray-700">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-xl">
+                <Gift className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+              </div>
+              <CardTitle className="text-xl font-semibold text-gray-900 dark:text-gray-100">
+                Addons de la relación
+              </CardTitle>
+            </div>
+          </CardHeader>
+          <CardContent className="pt-6">
+            {availableAddons.length === 0 ? (
+              <div className="text-sm text-muted-foreground">No hay addons asociados a esta relación.</div>
+            ) : (
+              <div className="flex flex-wrap gap-2">
+                {availableAddons.map((a) => (
+                  <button
+                    key={a.addonID}
+                    onClick={() => setSelectedAddon(a)}
+                    className={cn(
+                      "px-3 py-1.5 text-sm rounded-full border transition",
+                      selectedAddon?.addonID === a.addonID
+                        ? "bg-purple-600 text-white border-purple-600"
+                        : "bg-background text-foreground border-border hover:bg-accent"
+                    )}
+                  >
+                    {a.name}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {selectedAddon && (
+              <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Gift className="h-5 w-5 text-purple-500" /> {selectedAddon.name}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-2 text-sm">
+                      {/* Eliminado: Precio base, no existe en Addon */}
+                      <div>
+                        <span className="font-medium">Balance asociado:</span> {selectedAddon.balance != null ? selectedAddon.balance : "—"}
+                      </div>
+                      <div>
+                        <span className="font-medium">Activo:</span> {selectedAddon.isActive ? "Sí" : "No"}
+                      </div>
+                      <div>
+                        <span className="font-medium">Descuento:</span> {selectedAddon.hasDiscount ? `${selectedAddon.discount ?? 0}%` : "No"}
+                      </div>
+                      {/* Eliminado: WooCommerce ID, no existe en Addon */}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {(() => {
+                  const cfg = relationAddons.find(
+                    (ra) => currentRelation && ra.relationID === currentRelation.relationID && ra.addonID === selectedAddon.addonID
+                  );
+                  if (!cfg) return null;
+                  return (
+                    <Card>
+                      <CardHeader>
+                        <CardTitle>Configuración en esta relación</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-2 text-sm">
+                          <div>
+                            <span className="font-medium">Precio:</span> {cfg.price != null ? cfg.price : "—"}
+                          </div>
+                          <div>
+                            <span className="font-medium">Activo:</span> {cfg.isActive ? "Sí" : "No"}
+                          </div>
+                          <div>
+                            <span className="font-medium">Descuento:</span> {cfg.hasDiscount ? `${cfg.discount ?? 0}%` : "No"}
+                          </div>
+                          <div>
+                            <span className="font-medium">WooCommerce ID:</span> {cfg.wooID ?? "—"}
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  );
+                })()}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+        {/* Fin Addons Section */}
       </div>
     </div>
   );
