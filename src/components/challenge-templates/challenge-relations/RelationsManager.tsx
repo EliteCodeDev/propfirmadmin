@@ -8,6 +8,7 @@ import {
   ChallengeCategory,
   ChallengePlan,
   ChallengeBalance,
+  Addon,
 } from "@/types/challenge-template";
 
 import { challengeTemplatesApi } from "@/api/challenge-templates";
@@ -17,6 +18,7 @@ import { toast } from "sonner";
 import { Edit, Plus, Settings } from "lucide-react";
 import BalanceSelectorModal from "./RelationBalancesModal";
 import RelationStagesModal from "./RelationStagesModal";
+import RelationAddonsModal from "./RelationAddonsModal";
 import { ManagerHeader } from "../ManagerHeader";
 
 // shadcn/ui
@@ -91,7 +93,15 @@ export function RelationsManager({ pageSize = 10 }: RelationsManagerProps) {
   const [relationBalancesSnapshot, setRelationBalancesSnapshot] = useState<
     ChallengeRelation["balances"]
   >([]);
-
+  // Addons state
+  const [addons, setAddons] = useState<Addon[]>([]);
+  const [openAddonsModal, setOpenAddonsModal] = useState(false);
+  const [selectedAddonIds, setSelectedAddonIds] = useState<string[]>([]);
+  const [selectedRelationIdForAddons, setSelectedRelationIdForAddons] =
+    useState<string | null>(null);
+  const [relationAddonsSnapshot, setRelationAddonsSnapshot] = useState<
+    ChallengeRelation["addons"]
+  >([]);
   // Form
   const form = useForm<RelationFormData>({
     resolver: zodResolver(relationSchema),
@@ -108,20 +118,30 @@ export function RelationsManager({ pageSize = 10 }: RelationsManagerProps) {
   const loadAllData = useCallback(async () => {
     try {
       setIsLoading(true);
-      const [relationsData, categoriesData, plansData, balancesData] =
-        await Promise.all([
-          challengeTemplatesApi.listRelationsComplete(),
-          challengeTemplatesApi.listCategories(),
-          challengeTemplatesApi.listPlans(),
-          challengeTemplatesApi.listBalances(),
-        ]);
+      const [
+        relationsData,
+        categoriesData,
+        plansData,
+        balancesData,
+        addonsData,
+      ] = await Promise.all([
+        challengeTemplatesApi.listRelationsComplete(),
+        challengeTemplatesApi.listCategories(),
+        challengeTemplatesApi.listPlans(),
+        challengeTemplatesApi.listBalances(),
+        challengeTemplatesApi.listAddons(),
+      ]);
 
       setRelations(relationsData);
       setCategories(categoriesData);
       setPlans(plansData);
       setBalances(balancesData);
+      setAddons(addonsData);
       // Cuando creamos una relación nueva, limpiar selección
-      if (!editItem) setSelectedBalanceIds([]);
+      if (!editItem) {
+        setSelectedBalanceIds([]);
+        setSelectedAddonIds([]);
+      }
     } catch (error) {
       console.error("Error al cargar datos:", error);
       toast.error("Error al cargar datos");
@@ -147,6 +167,8 @@ export function RelationsManager({ pageSize = 10 }: RelationsManagerProps) {
     setOpenModal(true);
     setSelectedBalanceIds([]);
     setSelectedRelationIdForBalances(null);
+    setSelectedAddonIds([]);
+    setSelectedRelationIdForAddons(null);
   }
 
   async function onSubmit(formValues: RelationFormData) {
@@ -201,11 +223,14 @@ export function RelationsManager({ pageSize = 10 }: RelationsManagerProps) {
         groupName: relation.groupName || "",
       };
       const existingBalanceIds = relation.balances?.map((rb) => rb.balanceID) || [];
+      const existingAddonIds = relation.addons?.map((ra) => ra.addonID) || [];
       
       // Luego actualizar el estado en batch para evitar re-renders múltiples
       setEditItem(relation);
       setSelectedBalanceIds(existingBalanceIds);
       setSelectedRelationIdForBalances(null);
+      setSelectedAddonIds(existingAddonIds);
+      setSelectedRelationIdForAddons(null);
       form.reset(formData);
       setOpenModal(true);
     }
@@ -294,6 +319,39 @@ export function RelationsManager({ pageSize = 10 }: RelationsManagerProps) {
           }
         }}
         title="Agregar balance"
+      >
+        <Plus className="h-4 w-4" />
+      </button>
+      <button
+        className="p-1.5 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-cyan-600 dark:text-cyan-400 hover:bg-cyan-50 dark:hover:bg-cyan-900/20 transition-colors"
+        onClick={async () => {
+          const rid = String(row.originalId || "");
+          try {
+            const rel = relations.find(r => r.relationID === rid);
+            if (rel) {
+              // Cargar el estado más reciente desde el backend para asegurar selección correcta
+              try {
+                const latest = await challengeTemplatesApi.listRelationAddons(rid);
+                const existingAddonIds = latest.map((ra) => ra.addonID);
+                setRelationAddonsSnapshot(latest);
+                setSelectedAddonIds(existingAddonIds);
+              } catch (fetchErr) {
+                // Fallback a datos ya cargados si falla la petición
+                const existingAddonIds = rel?.addons?.map((ra) => ra.addonID) || [];
+                setRelationAddonsSnapshot(rel?.addons || []);
+                setSelectedAddonIds(existingAddonIds);
+              }
+              setSelectedRelationIdForAddons(rid);
+              setOpenAddonsModal(true);
+            } else {
+              toast.error("No se pudo encontrar la relación");
+            }
+          } catch (e) {
+            console.error("Error cargando relación antes de abrir modal de addons", e);
+            toast.error("No se pudo cargar la relación");
+          }
+        }}
+        title="Agregar addon"
       >
         <Plus className="h-4 w-4" />
       </button>
@@ -423,6 +481,181 @@ export function RelationsManager({ pageSize = 10 }: RelationsManagerProps) {
               toast.error("No se pudo actualizar la relación");
             } finally {
               setSelectedRelationIdForBalances(null);
+            }
+          }
+        }}
+      />
+
+      {/* Modal selector de addons */}
+      <RelationAddonsModal
+        key={selectedRelationIdForAddons || "relation-addons-modal"}
+        open={openAddonsModal}
+        relationName={
+          selectedRelationIdForAddons
+            ? (() => {
+                const relation = relations.find(
+                  (r) => r.relationID === selectedRelationIdForAddons
+                );
+                const categoryName = getCategoryName(
+                  relation?.categoryID || ""
+                );
+                const planName = getPlanName(relation?.planID || "");
+                const addonsText = relation?.addons?.length
+                  ? ` (${relation.addons.length} addons)`
+                  : "";
+                return categoryName && categoryName !== "N/A"
+                  ? `${planName} - ${categoryName}${addonsText}`
+                  : `${planName}${addonsText}`;
+              })()
+            : ""
+        }
+        onOpenChange={setOpenAddonsModal}
+        addons={addons}
+        initialSelected={selectedAddonIds}
+        initialRelationAddons={
+          relationAddonsSnapshot?.map((ra) => ({
+            addonID: ra.addonID,
+            price: ra.price,
+            isActive: ra.isActive,
+            hasDiscount: ra.hasDiscount,
+            discount: ra.discount,
+            wooID: ra.wooID,
+          })) || []
+        }
+        onConfirmWithDetails={async (items) => {
+          setSelectedAddonIds(items.map((i) => i.addonID));
+          if (selectedRelationIdForAddons) {
+            try {
+              // Obtener el estado más reciente desde el backend para evitar duplicados por snapshot desactualizado
+              const latest = await challengeTemplatesApi.listRelationAddons(
+                selectedRelationIdForAddons
+              );
+              setRelationAddonsSnapshot(latest);
+
+              const existingIds = new Set(latest.map((ra) => ra.addonID));
+              const selectedIds = new Set(items.map((i) => i.addonID));
+
+              const toDelete = Array.from(existingIds).filter((id) => !selectedIds.has(id));
+              const toCreate = Array.from(selectedIds).filter((id) => !existingIds.has(id));
+              const toUpdate = items
+                .filter((i) => existingIds.has(i.addonID))
+                .filter((i) => {
+                  const ex = latest.find((ra) => ra.addonID === i.addonID);
+                  return (
+                    ex?.price !== i.price ||
+                    ex?.isActive !== i.isActive ||
+                    ex?.hasDiscount !== i.hasDiscount ||
+                    ex?.discount !== i.discount ||
+                    ex?.wooID !== i.wooID
+                  );
+                });
+
+              // Borrados: ignorar 404 (ya borrado)
+              await Promise.all(
+                toDelete.map(async (id) => {
+                  try {
+                    await challengeTemplatesApi.deleteRelationAddon(
+                      id,
+                      selectedRelationIdForAddons
+                    );
+                  } catch (err: any) {
+                    const status = err?.response?.status;
+                    if (status === 404) return; // ya no existe
+                    // Verificar estado real: si ya no aparece en backend, ignorar
+                    try {
+                      const now = await challengeTemplatesApi.listRelationAddons(
+                        selectedRelationIdForAddons
+                      );
+                      const stillExists = now.some((ra) => ra.addonID === id);
+                      if (!stillExists) return; // considerar borrado efectivo
+                    } catch {}
+                    throw err;
+                  }
+                })
+              );
+
+              // Creaciones: si el backend responde 400 "already exists", hacer fallback a update (idempotente)
+              const duplicateHandled: string[] = [];
+              await Promise.all(
+                toCreate.map(async (id) => {
+                  const cfg = items.find((i) => i.addonID === id);
+                  try {
+                    await challengeTemplatesApi.createRelationAddon({
+                      addonID: id,
+                      relationID: selectedRelationIdForAddons,
+                      price: cfg?.price,
+                      isActive: cfg?.isActive,
+                      hasDiscount: cfg?.hasDiscount,
+                      discount: cfg?.discount,
+                      wooID: cfg?.wooID,
+                    });
+                  } catch (err: any) {
+                    const status = err?.response?.status;
+                    const message: string | undefined = err?.response?.data?.message;
+                    if (
+                      status === 400 &&
+                      message &&
+                      message.toLowerCase().includes("already exists")
+                    ) {
+                      await challengeTemplatesApi.updateRelationAddon(
+                        id,
+                        selectedRelationIdForAddons,
+                        {
+                          price: cfg?.price,
+                          isActive: cfg?.isActive,
+                          hasDiscount: cfg?.hasDiscount,
+                          discount: cfg?.discount,
+                          wooID: cfg?.wooID,
+                        }
+                      );
+                      duplicateHandled.push(id);
+                    } else {
+                      throw err;
+                    }
+                  }
+                })
+              );
+
+              // Actualizaciones
+              await Promise.all(
+                toUpdate.map((i) =>
+                  challengeTemplatesApi.updateRelationAddon(
+                    i.addonID,
+                    selectedRelationIdForAddons,
+                    {
+                      price: i.price,
+                      isActive: i.isActive,
+                      hasDiscount: i.hasDiscount,
+                      discount: i.discount,
+                      wooID: i.wooID,
+                    }
+                  )
+                )
+              );
+
+              if (duplicateHandled.length > 0) {
+                const names = duplicateHandled
+                  .map((id) => addons.find((a) => a.addonID === id)?.name || id)
+                  .join(", ");
+                toast.message(
+                  `Algunos addons ya existían y fueron actualizados: ${names}`
+                );
+              }
+
+              toast.success("Addons actualizados en la relación");
+              // Refrescar datos y snapshot
+              const refreshedRelations = await challengeTemplatesApi.listRelationsComplete();
+              setRelations(refreshedRelations);
+              const refreshed = refreshedRelations.find(
+                (r) => r.relationID === selectedRelationIdForAddons
+              );
+              setRelationAddonsSnapshot(refreshed?.addons || []);
+            } catch (e: any) {
+              console.error("Error al actualizar relation addons:", e);
+              const msg = e?.response?.data?.message || "No se pudo actualizar la relación";
+              toast.error(msg);
+            } finally {
+              setSelectedRelationIdForAddons(null);
             }
           }
         }}

@@ -1,6 +1,6 @@
 // UI Component interfaces
 
-import type { ChallengeBalance } from "@/types";
+import type { ChallengeBalance, Addon } from "@/types";
 
 // Challenge Templates Components
 export interface BalanceSelectorModalProps {
@@ -30,6 +30,34 @@ export interface BalanceSelectorModalProps {
   relationName?: string;
 }
 
+// New: Addon selector modal props
+export interface AddonSelectorModalProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  addons: Addon[];
+  initialSelected?: string[];
+  initialRelationAddons?: Array<{
+    addonID: string;
+    price?: number;
+    isActive?: boolean;
+    hasDiscount?: boolean;
+    discount?: number;
+    wooID?: number;
+  }>;
+  onConfirm?: (selectedIds: string[]) => void;
+  onConfirmWithDetails?: (
+    items: Array<{
+      addonID: string;
+      price?: number;
+      isActive?: boolean;
+      hasDiscount?: boolean;
+      discount?: number;
+      wooID?: number;
+    }>
+  ) => void;
+  relationName?: string;
+}
+
 export interface BalancesManagerProps {
   pageSize?: number;
 }
@@ -51,6 +79,15 @@ export interface RelationsManagerProps {
 }
 
 export interface TemplateVisualizerProps {
+  pageSize?: number;
+}
+
+// Newly added component props
+export interface AddonsManagerProps {
+  pageSize?: number;
+}
+
+export interface ProductsManagerProps {
   pageSize?: number;
 }
 

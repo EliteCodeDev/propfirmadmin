@@ -42,9 +42,18 @@ client.interceptors.response.use(
         } catch {}
       }
       const payload = error.response.data;
-      const info = typeof payload === "object" && payload !== null && Object.keys(payload).length === 0
-        ? `(status ${status})`
-        : payload;
+      let info: unknown = payload;
+      try {
+        const isEmptyObject =
+          payload && typeof payload === "object" && Object.keys(payload).length === 0;
+        if (!payload || isEmptyObject) {
+          const msg = (error.response?.data && error.response.data.message)
+            || error.response?.statusText
+            || error.message
+            || "Unknown error";
+          info = { message: msg, status, url: error.config?.url };
+        }
+      } catch {}
       console.error("API Error Response:", info);
     } else if (error.request) {
       console.error("API Error Request:", error.request);

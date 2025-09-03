@@ -78,6 +78,7 @@ export interface ChallengeRelation {
   plan?: ChallengePlan;
   stages?: RelationStage[];
   balances?: RelationBalance[];
+  addons?: RelationAddon[];
 }
 
 export interface ChallengeStage {
@@ -107,4 +108,26 @@ export interface StageParameter {
   relationStageID: string;
   ruleValue: string;
   isActive?: boolean;
+}
+
+// Addons
+export interface Addon {
+  addonID: string;
+  name: string;
+  isActive: boolean;
+  hasDiscount: boolean;
+  discount?: number;
+  balance?: number;
+}
+
+export interface RelationAddon {
+  addonID: string;
+  relationID: string;
+  price?: number;
+  isActive?: boolean;
+  hasDiscount?: boolean;
+  discount?: number;
+  wooID?: number;
+  addon?: Addon;
+  relation?: ChallengeRelation;
 }
