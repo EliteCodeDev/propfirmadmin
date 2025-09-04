@@ -145,7 +145,7 @@ export default function DashboardContent({ initialData }: DashboardContentProps)
             />
           </div>
 
-          <div className="xl:col-span-2 lg:col-span-1">
+          {/* <div className="xl:col-span-2 lg:col-span-1">
             <StatCard
               size="sm"
               label="Monthly Users"
@@ -183,8 +183,8 @@ export default function DashboardContent({ initialData }: DashboardContentProps)
               deltaDirection={dashboardData?.salesGrowth?.direction || 'down'}
               icon={<BanknotesIcon className="h-6 w-6 text-indigo-600" />}
             />
-          </div>
-        </div>
+          </div>*/}
+        </div> 
 
         {/* Bottom row - financial metrics (wider) */}
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
