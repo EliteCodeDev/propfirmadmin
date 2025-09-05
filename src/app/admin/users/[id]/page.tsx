@@ -527,6 +527,93 @@ function UserDetailInner() {
               }}
             />
           </div>
+
+          {/* Verificaciones KYC del usuario */}
+          <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
+            <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+              <div>
+                <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100">User Verifications (KYC)</h2>
+                <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                  Últimas verificaciones enviadas por este usuario
+                </p>
+              </div>
+              {verifLoading && (
+                <div className="flex items-center text-xs text-gray-500 dark:text-gray-400">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500 mr-2"></div>
+                  Cargando verificaciones...
+                </div>
+              )}
+            </div>
+
+            <div className="p-4">
+              {verifErr && (
+                <div className="text-sm text-red-600 dark:text-red-400">
+                  No fue posible cargar las verificaciones de este usuario.
+                </div>
+              )}
+
+              {!verifLoading && !verifErr && verifications.length === 0 && (
+                <div className="text-sm text-gray-500 dark:text-gray-400">
+                  Este usuario no tiene verificaciones.
+                </div>
+              )}
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {verifications.map((v: VerificationItem) => (
+                  <div key={v.verificationID} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-gray-50 dark:bg-gray-900/30">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+                        {documentTypeLabels[v.documentType] || v.documentType.toUpperCase()}
+                      </div>
+                      <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${statusColors[v.status] || "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200"}`}>
+                        {v.status}
+                      </span>
+                    </div>
+                    <div className="text-xs text-gray-600 dark:text-gray-400 space-y-1">
+                      <div><span className="font-medium">Documento:</span> {v.numDocument || "-"}</div>
+                      <div><span className="font-medium">Enviado:</span> {new Date(v.submittedAt).toLocaleString()}</div>
+                      {v.approvedAt && <div><span className="font-medium">Aprobado:</span> {new Date(v.approvedAt).toLocaleString()}</div>}
+                      {v.rejectedAt && <div><span className="font-medium">Rechazado:</span> {new Date(v.rejectedAt).toLocaleString()}</div>}
+                      {v.rejectionReason && (
+                        <div className="mt-1 text-red-600 dark:text-red-400"><span className="font-medium">Motivo rechazo:</span> {v.rejectionReason}</div>
+                      )}
+                    </div>
+
+                    {Array.isArray(v.media) && v.media.length > 0 && (
+                      <div className="mt-3">
+                        <div className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Documentos</div>
+                        <div className="grid grid-cols-3 gap-2">
+                          {v.media.slice(0, 6).map((m: MediaItem) => (
+                            <div key={m.mediaID} className="relative w-full aspect-video overflow-hidden rounded">
+                              {m.type === 'image' ? (
+                                <Image src={(m.url || '').replace(/[\s)]$/g, '')} alt="doc" fill className="object-cover" />
+                              ) : (
+                                <a
+                                  href={m.url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="flex items-center justify-center w-full h-full bg-gray-100 dark:bg-gray-800 text-xs text-gray-700 dark:text-gray-300"
+                                  title="Abrir documento"
+                                >
+                                  Ver documento
+                                </a>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              {(verificationsResp?.data?.totalPages ?? 0) > 1 && (
+                <div className="mt-4 text-xs text-gray-500 dark:text-gray-400">
+                  Mostrando {verifications.length} de {verificationsResp?.data?.total} verificaciones. Usa la sección Verifications para gestión completa.
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       </div>
     </MainLayout>
