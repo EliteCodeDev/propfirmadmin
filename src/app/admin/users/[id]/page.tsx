@@ -18,6 +18,9 @@ import {
 } from "@heroicons/react/24/outline";
 import type { User, Challenge } from "@/types";
 import { challengesApi, type ChallengeWithDetails, type ChallengeDetailedData } from "@/api/challenges";
+import { verificationApi } from "@/api/verification";
+import type { VerificationItem, VerificationStatus, DocumentType, MediaItem } from "@/types/verification";
+import Image from "next/image";
 
 /* ========= Config ========= */
 const API_BASE = apiBaseUrl.replace(/\/$/, "");
@@ -93,7 +96,19 @@ async function authedFetcher([url, token]: [string, string]) {
   return res.json();
 }
 
+/* ========= Verifications UI helpers ========= */
+const statusColors: Record<VerificationStatus | string, string> = {
+  pending: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300",
+  approved: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300",
+  rejected: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300",
+} as const;
 
+const documentTypeLabels: Record<DocumentType | string, string> = {
+  dni: "DNI",
+  passport: "Pasaporte",
+  driver_license: "Licencia de Conducir",
+  other: "Otro",
+} as const;
 
 /* ========= Página interna ========= */
 function UserDetailInner() {
@@ -192,6 +207,25 @@ function UserDetailInner() {
       endDate: c.endDate,
     } as Challenge));
   }, [challengesWithDetails]);
+
+   /* ---- Verificaciones del usuario ---- */
+   const {
+     data: verificationsResp,
+     isLoading: verifLoading,
+     error: verifErr,
+   } = useSWR(
+     canFetch && userId ? ["user-verifications", userId] : null,
+     async () => {
+       const res = await verificationApi.getByUserId(String(userId), { page: 1, limit: 10 });
+       return res;
+     },
+     { revalidateOnFocus: false }
+   );
+
+   const verifications: VerificationItem[] = useMemo(() => {
+     const list = verificationsResp?.data?.data ?? [];
+     return Array.isArray(list) ? list : [];
+   }, [verificationsResp]);
 
   // Estados de carga específicos
   const isInitialLoading = isAuthLoading || !token;
@@ -454,6 +488,8 @@ function UserDetailInner() {
               </div>
             </div>
 
+          
+
             {/* Recent Activity */}
             <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 shadow-sm">
               <div className="flex items-center mb-3">
@@ -482,53 +518,7 @@ function UserDetailInner() {
               </div>
             </div>
           </div>
-
-          {/* Tabla de challenges */}
-          <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
-            <div className="p-4 border-b border-gray-200 dark:border-gray-700">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100">
-                    Prop Accounts
-                  </h2>
-                  <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
-                    Linked challenges & broker accounts ({totalItems} total)
-                  </p>
-                </div>
-                {isChallengesLoading && (
-                  <div className="flex items-center text-xs text-gray-500 dark:text-gray-400">
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500 mr-2"></div>
-                    Loading challenges...
-                  </div>
-                )}
-              </div>
-            </div>
-
-            <PaginatedCardTable
-              columns={columns}
-              rows={rows}
-              isLoading={isChallengesLoading}
-              emptyText={
-                hasErrors?.message ||
-                (!isChallengesLoading && mapped.length === 0
-                  ? "This user has no challenges."
-                  : undefined)
-              }
-              pagination={{
-                currentPage: page,
-                totalPages,
-                totalItems,
-                pageSize,
-                onPageChange: (p) => setPage(p),
-                onPageSizeChange: (n) => {
-                  setPage(1);
-                  setPageSize(n);
-                },
-              }}
-            />
-          </div>
-
-          {/* Verificaciones KYC del usuario */}
+            {/* Verificaciones KYC del usuario */}
           <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
             <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
               <div>
@@ -614,6 +604,53 @@ function UserDetailInner() {
               )}
             </div>
           </div>
+
+          {/* Tabla de challenges */}
+          <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
+            <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100">
+                    Prop Accounts
+                  </h2>
+                  <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                    Linked challenges & broker accounts ({totalItems} total)
+                  </p>
+                </div>
+                {isChallengesLoading && (
+                  <div className="flex items-center text-xs text-gray-500 dark:text-gray-400">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500 mr-2"></div>
+                    Loading challenges...
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <PaginatedCardTable
+              columns={columns}
+              rows={rows}
+              isLoading={isChallengesLoading}
+              emptyText={
+                hasErrors?.message ||
+                (!isChallengesLoading && mapped.length === 0
+                  ? "This user has no challenges."
+                  : undefined)
+              }
+              pagination={{
+                currentPage: page,
+                totalPages,
+                totalItems,
+                pageSize,
+                onPageChange: (p) => setPage(p),
+                onPageSizeChange: (n) => {
+                  setPage(1);
+                  setPageSize(n);
+                },
+              }}
+            />
+          </div>
+
+          
         </div>
       </div>
     </MainLayout>
