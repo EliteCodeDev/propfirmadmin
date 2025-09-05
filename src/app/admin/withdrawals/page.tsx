@@ -320,7 +320,7 @@ export default function WithdrawalsInner() {
     if (!selected) return;
     try {
       setProcessing(true);
-      await withdrawalsApi.updateStatus(selected.withdrawalID, { status: "paid" });
+      await withdrawalsApi.updateStatus(selected.withdrawalID, { status: "approved" });
       setConfirmOpen(false);
       setSelected(null);
       await mutate();
@@ -336,7 +336,7 @@ export default function WithdrawalsInner() {
     try {
       setProcessing(true);
       const payload: any = { status: "rejected" };
-      if (rejectionDetail.trim()) payload.rejectionDetail = rejectionDetail.trim();
+      if (rejectionDetail.trim()) payload.observation = rejectionDetail.trim();
       await withdrawalsApi.updateStatus(selected.withdrawalID, payload);
       setRejectOpen(false);
       setSelected(null);
@@ -454,7 +454,7 @@ export default function WithdrawalsInner() {
                       disabled={!canAct}
                       onClick={() => approve(w)}
                     >
-                      Completar
+                      Aprobar
                     </button>
                     <button
                       className="px-2 py-1 text-[11px] rounded bg-red-600 hover:bg-red-700 text-white disabled:opacity-50"

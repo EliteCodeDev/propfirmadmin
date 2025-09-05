@@ -185,7 +185,7 @@ export default function RelationAddonsModal({
                           <div className="px-2 pb-2 border-t border-gray-200 dark:border-gray-700 pt-2 mt-1">
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                               <div>
-                                <Label htmlFor={`price-${a!.addonID}`} className="text-xs font-medium text-gray-700 dark:text-gray-300">Precio</Label>
+                                <Label htmlFor={`price-${a!.addonID}`} className="text-xs font-medium text-gray-700 dark:text-gray-300">Valor</Label>
                                 <Input id={`price-${a!.addonID}`} type="number" min={0} value={configs[a!.addonID]?.price ?? ""} onChange={(e) => setConfigs((prev) => ({ ...prev, [a!.addonID]: { ...prev[a!.addonID], price: e.target.value === "" ? undefined : Number(e.target.value) } }))} className="mt-0.5 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500" />
                               </div>
                               <div className="flex items-center gap-2 pt-4">
