@@ -33,6 +33,7 @@ import { toast } from "sonner";
 import { Edit } from "lucide-react";
 import { ManagerHeader } from "./ManagerHeader";
 import { RulesManager } from "./RulesManager";
+import { WithdrawalRulesManager } from "./WithdrawalRulesManager";
 
 // Validación
 const stageSchema = z.object({
@@ -51,7 +52,7 @@ export function StagesManager({ pageSize = 10 }: StagesManagerProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [pageSizeLocal, setPageSizeLocal] = useState(pageSize);
-  const [activeSubTab, setActiveSubTab] = useState<"stages" | "rules">(
+  const [activeSubTab, setActiveSubTab] = useState<"stages" | "rules" | "withdrawal-rules">(
     "stages"
   );
 
@@ -194,6 +195,16 @@ export function StagesManager({ pageSize = 10 }: StagesManagerProps) {
           >
             Rules
           </button>
+          <button
+            onClick={() => setActiveSubTab("withdrawal-rules")}
+            className={`ml-1 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+              activeSubTab === "withdrawal-rules"
+                ? "bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow"
+                : "text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
+            }`}
+          >
+            Withdrawal Rules
+          </button>
         </div>
       </div>
 
@@ -289,9 +300,13 @@ export function StagesManager({ pageSize = 10 }: StagesManagerProps) {
             </DialogContent>
           </Dialog>
         </>
-      ) : (
+      ) : activeSubTab === "rules" ? (
         <div className="px-0">
           <RulesManager pageSize={pageSizeLocal} />
+        </div>
+      ) : (
+        <div className="px-0">
+          <WithdrawalRulesManager pageSize={pageSizeLocal} />
         </div>
       )}
     </div>

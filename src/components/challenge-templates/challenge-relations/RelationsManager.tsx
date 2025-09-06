@@ -9,6 +9,7 @@ import {
   ChallengePlan,
   ChallengeBalance,
   Addon,
+  WithdrawalRule,
 } from "@/types/challenge-template";
 
 import { challengeTemplatesApi } from "@/api/challenge-templates";
@@ -19,6 +20,7 @@ import { Edit, Plus, Settings } from "lucide-react";
 import BalanceSelectorModal from "./RelationBalancesModal";
 import RelationStagesModal from "./RelationStagesModal";
 import RelationAddonsModal from "./RelationAddonsModal";
+import RelationWithdrawalRulesModal from "./RelationWithdrawalRulesModal";
 import { ManagerHeader } from "../ManagerHeader";
 
 // shadcn/ui
@@ -102,6 +104,19 @@ export function RelationsManager({ pageSize = 10 }: RelationsManagerProps) {
   const [relationAddonsSnapshot, setRelationAddonsSnapshot] = useState<
     ChallengeRelation["addons"]
   >([]);
+  // Withdrawal Rules state
+  const [withdrawalRules, setWithdrawalRules] = useState<WithdrawalRule[]>([]);
+  const [openWithdrawalRulesModal, setOpenWithdrawalRulesModal] = useState(false);
+  const [selectedWithdrawalRuleIds, setSelectedWithdrawalRuleIds] = useState<string[]>([]);
+  const [selectedRelationIdForWithdrawalRules, setSelectedRelationIdForWithdrawalRules] =
+    useState<string | null>(null);
+  const [relationWithdrawalRulesSnapshot, setRelationWithdrawalRulesSnapshot] = useState<
+    Array<{
+      ruleID: string;
+      ruleValue?: string | number | boolean;
+      isActive?: boolean;
+    }>
+  >([]);
   // Form
   const form = useForm<RelationFormData>({
     resolver: zodResolver(relationSchema),
@@ -124,12 +139,14 @@ export function RelationsManager({ pageSize = 10 }: RelationsManagerProps) {
         plansData,
         balancesData,
         addonsData,
+        withdrawalRulesData,
       ] = await Promise.all([
         challengeTemplatesApi.listRelationsComplete(),
         challengeTemplatesApi.listCategories(),
         challengeTemplatesApi.listPlans(),
         challengeTemplatesApi.listBalances(),
         challengeTemplatesApi.listAddons(),
+        challengeTemplatesApi.listWithdrawalRules(),
       ]);
 
       setRelations(relationsData);
@@ -137,10 +154,12 @@ export function RelationsManager({ pageSize = 10 }: RelationsManagerProps) {
       setPlans(plansData);
       setBalances(balancesData);
       setAddons(addonsData);
+      setWithdrawalRules(withdrawalRulesData);
       // Cuando creamos una relación nueva, limpiar selección
       if (!editItem) {
         setSelectedBalanceIds([]);
         setSelectedAddonIds([]);
+        setSelectedWithdrawalRuleIds([]);
       }
     } catch (error) {
       console.error("Error al cargar datos:", error);
@@ -335,7 +354,7 @@ export function RelationsManager({ pageSize = 10 }: RelationsManagerProps) {
                 const existingAddonIds = latest.map((ra) => ra.addonID);
                 setRelationAddonsSnapshot(latest);
                 setSelectedAddonIds(existingAddonIds);
-              } catch (fetchErr) {
+              } catch (_error) {
                 // Fallback a datos ya cargados si falla la petición
                 const existingAddonIds = rel?.addons?.map((ra) => ra.addonID) || [];
                 setRelationAddonsSnapshot(rel?.addons || []);
@@ -352,6 +371,38 @@ export function RelationsManager({ pageSize = 10 }: RelationsManagerProps) {
           }
         }}
         title="Agregar addon"
+      >
+        <Plus className="h-4 w-4" />
+      </button>
+      <button
+        className="p-1.5 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-orange-600 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/20 transition-colors"
+        onClick={async () => {
+          const rid = String(row.originalId || "");
+          try {
+            const rel = relations.find(r => r.relationID === rid);
+            if (rel) {
+              // Cargar withdrawal rules existentes para esta relación
+              try {
+                const latest = await challengeTemplatesApi.listRelationWithdrawalRules(rid);
+                const existingRuleIds = latest.map((rwr) => rwr.ruleID);
+                setRelationWithdrawalRulesSnapshot(latest);
+                setSelectedWithdrawalRuleIds(existingRuleIds);
+              } catch (_error) {
+                // Fallback a datos vacíos si falla la petición
+                setRelationWithdrawalRulesSnapshot([]);
+                setSelectedWithdrawalRuleIds([]);
+              }
+              setSelectedRelationIdForWithdrawalRules(rid);
+              setOpenWithdrawalRulesModal(true);
+            } else {
+              toast.error("No se pudo encontrar la relación");
+            }
+          } catch (e) {
+            console.error("Error cargando relación antes de abrir modal de withdrawal rules", e);
+            toast.error("No se pudo cargar la relación");
+          }
+        }}
+        title="Agregar withdrawal rules"
       >
         <Plus className="h-4 w-4" />
       </button>
@@ -667,6 +718,42 @@ export function RelationsManager({ pageSize = 10 }: RelationsManagerProps) {
         onOpenChange={setOpenStagesModal}
         relationID={selectedRelationForStages?.id}
         relationName={selectedRelationForStages?.name}
+      />
+
+      {/* Modal para gestionar withdrawal rules */}
+      <RelationWithdrawalRulesModal
+        open={openWithdrawalRulesModal}
+        onOpenChange={setOpenWithdrawalRulesModal}
+        withdrawalRules={withdrawalRules}
+        initialSelected={selectedWithdrawalRuleIds}
+        initialRelationWithdrawalRules={relationWithdrawalRulesSnapshot}
+        relationName={selectedRelationIdForWithdrawalRules || ""}
+        onConfirm={async (selectedRuleIds) => {
+          if (selectedRelationIdForWithdrawalRules) {
+            try {
+              await challengeTemplatesApi.updateRelationWithdrawalRules(
+                selectedRelationIdForWithdrawalRules,
+                selectedRuleIds.map(ruleID => ({ ruleID }))
+              );
+              toast.success("Withdrawal rules actualizadas correctamente");
+              setOpenWithdrawalRulesModal(false);
+              // Recargar datos
+              const refreshedRelations = await challengeTemplatesApi.listRelationsComplete();
+              setRelations(refreshedRelations);
+              // Actualizar snapshot
+              const refreshed = refreshedRelations.find(
+                (r) => r.relationID === selectedRelationIdForWithdrawalRules
+              );
+              setRelationWithdrawalRulesSnapshot(refreshed?.withdrawalRules || []);
+            } catch (e: any) {
+              console.error("Error al actualizar relation withdrawal rules:", e);
+              const msg = e?.response?.data?.message || "No se pudo actualizar la relación";
+              toast.error(msg);
+            } finally {
+              setSelectedRelationIdForWithdrawalRules(null);
+            }
+          }
+        }}
       />
 
       <Dialog open={openModal} onOpenChange={setOpenModal}>

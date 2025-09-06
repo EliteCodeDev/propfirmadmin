@@ -1,6 +1,6 @@
 // UI Component interfaces
 
-import type { ChallengeBalance, Addon } from "@/types";
+import type { ChallengeBalance, Addon, WithdrawalRule } from "@/types";
 
 // Challenge Templates Components
 export interface BalanceSelectorModalProps {
@@ -25,6 +25,28 @@ export interface BalanceSelectorModalProps {
       hasDiscount?: boolean;
       discount?: string;
       wooID?: number;
+    }>
+  ) => void;
+  relationName?: string;
+}
+
+// Withdrawal Rules selector modal props
+export interface WithdrawalRuleSelectorModalProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  withdrawalRules: WithdrawalRule[];
+  initialSelected?: string[];
+  initialRelationWithdrawalRules?: Array<{
+    ruleID: string;
+    ruleValue?: string | number | boolean;
+    isActive?: boolean;
+  }>;
+  onConfirm?: (selectedIds: string[]) => void;
+  onConfirmWithDetails?: (
+    items: Array<{
+      ruleID: string;
+      ruleValue?: string | number | boolean;
+      isActive?: boolean;
     }>
   ) => void;
   relationName?: string;

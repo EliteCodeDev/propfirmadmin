@@ -8,6 +8,7 @@ import {
   ChallengeRelation,
   ChallengeStage,
   StageRule,
+  WithdrawalRule,
   StageParameter,
   RelationStage,
   Addon,
@@ -55,6 +56,13 @@ export interface CreateRulePayload {
   ruleDescription?: string;
 }
 export type UpdateRulePayload = Partial<CreateRulePayload>;
+
+export interface CreateWithdrawalRulePayload {
+  ruleType: "number" | "percentage" | "boolean" | "string";
+  ruleName: string;
+  ruleDescription?: string;
+}
+export type UpdateWithdrawalRulePayload = Partial<CreateWithdrawalRulePayload>;
 
 export interface CreateParameterPayload {
   ruleID: string;
@@ -332,6 +340,47 @@ export const challengeTemplatesApi = {
   },
   deleteRule: async (id: string): Promise<{ success: boolean }> => {
     const { data } = await client.delete(`/challenge-templates/rules/${id}`);
+    return data;
+  },
+
+  // Withdrawal Rules
+  createWithdrawalRule: async (payload: CreateWithdrawalRulePayload): Promise<WithdrawalRule> => {
+    const { data } = await client.post("/challenge-templates/withdrawal-rules", payload);
+    return data;
+  },
+  listWithdrawalRules: async (): Promise<WithdrawalRule[]> => {
+    const { data } = await client.get("/challenge-templates/withdrawal-rules");
+    return data.data;
+  },
+  getWithdrawalRule: async (id: string): Promise<WithdrawalRule> => {
+    const { data } = await client.get(`/challenge-templates/withdrawal-rules/${id}`);
+    return data;
+  },
+  updateWithdrawalRule: async (
+    id: string,
+    payload: UpdateWithdrawalRulePayload
+  ): Promise<WithdrawalRule> => {
+    const { data } = await client.patch(
+      `/challenge-templates/withdrawal-rules/${id}`,
+      payload
+    );
+    return data;
+  },
+  deleteWithdrawalRule: async (id: string): Promise<{ success: boolean }> => {
+    const { data } = await client.delete(`/challenge-templates/withdrawal-rules/${id}`);
+    return data;
+  },
+
+  // Relation Withdrawal Rules
+  listRelationWithdrawalRules: async (relationID: string): Promise<Array<{ ruleID: string; ruleValue?: string | number | boolean; isActive?: boolean }>> => {
+    const { data } = await client.get(`/challenge-templates/relations/${relationID}/withdrawal-rules`);
+    return data.data ?? data;
+  },
+  updateRelationWithdrawalRules: async (
+    relationID: string,
+    withdrawalRules: Array<{ ruleID: string; ruleValue?: string | number | boolean; isActive?: boolean }>
+  ): Promise<{ success: boolean }> => {
+    const { data } = await client.put(`/challenge-templates/relations/${relationID}/withdrawal-rules`, { withdrawalRules });
     return data;
   },
 
