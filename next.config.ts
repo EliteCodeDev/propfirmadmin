@@ -27,6 +27,12 @@ const nextConfig: NextConfig = {
         port: '',
         pathname: '/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'storage.propfirm.com',
+        port: '',
+        pathname: '/**',
+      },
     ],
   },
 };

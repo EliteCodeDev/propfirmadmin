@@ -332,51 +332,55 @@ function VerificationDetails({
   selectedImage: string | null;
   setSelectedImage: (url: string | null) => void;
 }) {
-  return (
-    <div className="space-y-6">
-      {/* Información del usuario */}
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <h3 className="font-semibold mb-2">Información del Usuario</h3>
-          <div className="space-y-1 text-sm">
-            <p><strong>Nombre:</strong> {verification.user?.firstName} {verification.user?.lastName}</p>
-            <p><strong>Email:</strong> {verification.user?.email}</p>
-            <p><strong>Usuario:</strong> {verification.user?.username}</p>
-            <p><strong>Teléfono:</strong> {verification.user?.phone}</p>
-          </div>
-        </div>
-        <div>
-          <h3 className="font-semibold mb-2">Información del Documento</h3>
-          <div className="space-y-1 text-sm">
-            <p><strong>Tipo:</strong> {documentTypeLabels[verification.documentType]}</p>
-            <p><strong>Número:</strong> {verification.numDocument}</p>
-            <p><strong>Estado:</strong>
-              <Badge className={`ml-2 ${statusColors[verification.status]}`}>
-                {verification.status === "pending" && "Pendiente"}
-                {verification.status === "approved" && "Aprobado"}
-                {verification.status === "rejected" && "Rechazado"}
-              </Badge>
-            </p>
-            <p><strong>Enviado:</strong> {new Date(verification.submittedAt).toLocaleString("es-ES")}</p>
-            {verification.approvedAt && (
-              <p><strong>Aprobado:</strong> {new Date(verification.approvedAt).toLocaleString("es-ES")}</p>
-            )}
-            {verification.rejectedAt && (
-              <p><strong>Rechazado:</strong> {new Date(verification.rejectedAt).toLocaleString("es-ES")}</p>
-            )}
-          </div>
+  const fmt = (d: string | number | Date | undefined | null) =>
+    d ? new Date(d).toLocaleString("es-ES", { dateStyle: "short", timeStyle: "short" }) : "-";
+   return (
+    <div className="space-y-6 text-[13px] md:text-sm">
+       {/* Información del usuario */}
+
+      <div className="space-y-2">
+        <h3 className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400 font-semibold">Información del Usuario</h3>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+          <div className="flex gap-2"><span className="text-gray-500 dark:text-gray-400 w-28">Nombre</span><span className="font-medium">{verification.user?.firstName} {verification.user?.lastName}</span></div>
+          <div className="flex gap-2"><span className="text-gray-500 dark:text-gray-400 w-28">Email</span><span className="font-medium break-all">{verification.user?.email ?? '-'}</span></div>
+          <div className="flex gap-2"><span className="text-gray-500 dark:text-gray-400 w-28">Usuario</span><span className="font-medium">{verification.user?.username ?? '-'}</span></div>
+          <div className="flex gap-2"><span className="text-gray-500 dark:text-gray-400 w-28">Teléfono</span><span className="font-medium">{verification.user?.phone ?? '-'}</span></div>
         </div>
       </div>
 
-      {/* Razón de rechazo si existe */}
-      {verification.rejectionReason && (
-        <div>
-          <h3 className="font-semibold mb-2 text-red-600">Razón del Rechazo</h3>
-          <p className="text-sm bg-red-50 p-3 rounded border border-red-200">
-            {verification.rejectionReason}
-          </p>
+      <div className="border-t border-gray-200 dark:border-gray-700" />
+
+       {/* Información del documento (debajo) */}
+      <div className="space-y-2">
+        <h3 className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400 font-semibold">Información del Documento</h3>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+          <div className="flex gap-2"><span className="text-gray-500 dark:text-gray-400 w-28">Tipo</span><span className="font-medium">{documentTypeLabels[verification.documentType]}</span></div>
+          <div className="flex gap-2"><span className="text-gray-500 dark:text-gray-400 w-28">Número</span><span className="font-medium">{verification.numDocument}</span></div>
+          <div className="flex gap-2 items-center"><span className="text-gray-500 dark:text-gray-400 w-28">Estado</span>
+            <Badge className={`${statusColors[verification.status]}`}> 
+              {verification.status === "pending" && "Pendiente"}
+              {verification.status === "approved" && "Aprobado"}
+              {verification.status === "rejected" && "Rechazado"}
+            </Badge>
+          </div>
+          <div className="flex gap-2"><span className="text-gray-500 dark:text-gray-400 w-28">Enviado</span><span className="font-medium">{fmt(verification.submittedAt)}</span></div>
+          {verification.approvedAt && (
+            <div className="flex gap-2"><span className="text-gray-500 dark:text-gray-400 w-28">Aprobado</span><span className="font-medium">{fmt(verification.approvedAt)}</span></div>
+          )}
+          {verification.rejectedAt && (
+            <div className="flex gap-2"><span className="text-gray-500 dark:text-gray-400 w-28">Rechazado</span><span className="font-medium">{fmt(verification.rejectedAt)}</span></div>
+          )}
         </div>
-      )}
+      </div>
+       {/* Razón de rechazo si existe */}
+       {verification.rejectionReason && (
+         <div>
+          <h3 className="text-xs uppercase tracking-wide font-semibold mb-2 text-red-600">Razón del Rechazo</h3>
+          <p className="text-[13px] md:text-sm bg-red-50 p-3 rounded border border-red-200">
+             {verification.rejectionReason}
+           </p>
+         </div>
+       )}
 
       {/* Documentos */}
       <div>

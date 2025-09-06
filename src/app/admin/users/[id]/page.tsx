@@ -554,43 +554,76 @@ function UserDetailInner() {
                     <div className="flex items-center justify-between mb-2">
                       <div className="text-sm font-semibold text-gray-900 dark:text-gray-100">
                         {documentTypeLabels[v.documentType] || v.documentType.toUpperCase()}
+                        {v.numDocument ? (
+                          <span className="ml-2 text-xs font-normal text-gray-600 dark:text-gray-400">N° {v.numDocument}</span>
+                        ) : null}
                       </div>
                       <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${statusColors[v.status] || "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200"}`}>
                         {v.status}
                       </span>
                     </div>
-                    <div className="text-xs text-gray-600 dark:text-gray-400 space-y-1">
-                      <div><span className="font-medium">Documento:</span> {v.numDocument || "-"}</div>
-                      <div><span className="font-medium">Enviado:</span> {new Date(v.submittedAt).toLocaleString()}</div>
-                      {v.approvedAt && <div><span className="font-medium">Aprobado:</span> {new Date(v.approvedAt).toLocaleString()}</div>}
-                      {v.rejectedAt && <div><span className="font-medium">Rechazado:</span> {new Date(v.rejectedAt).toLocaleString()}</div>}
+                    
+                    {/* Detalles en grilla legible */}
+                    <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2 text-sm">
+                      <div className="flex items-start justify-between sm:block">
+                        <span className="text-gray-600 dark:text-gray-400 font-medium">Enviado:</span>
+                        <span className="text-gray-900 dark:text-gray-100 sm:ml-2">{new Date(v.submittedAt).toLocaleString()}</span>
+                      </div>
+                      {v.approvedAt && (
+                        <div className="flex items-start justify-between sm:block">
+                          <span className="text-gray-600 dark:text-gray-400 font-medium">Aprobado:</span>
+                          <span className="text-gray-900 dark:text-gray-100 sm:ml-2">{new Date(v.approvedAt).toLocaleString()}</span>
+                        </div>
+                      )}
+                      {v.rejectedAt && (
+                        <div className="flex items-start justify-between sm:block">
+                          <span className="text-gray-600 dark:text-gray-400 font-medium">Rechazado:</span>
+                          <span className="text-gray-900 dark:text-gray-100 sm:ml-2">{new Date(v.rejectedAt).toLocaleString()}</span>
+                        </div>
+                      )}
                       {v.rejectionReason && (
-                        <div className="mt-1 text-red-600 dark:text-red-400"><span className="font-medium">Motivo rechazo:</span> {v.rejectionReason}</div>
+                        <div className="sm:col-span-2">
+                          <span className="text-gray-600 dark:text-gray-400 font-medium">Motivo rechazo:</span>
+                          <span className="text-red-700 dark:text-red-400 sm:ml-2"> {v.rejectionReason}</span>
+                        </div>
                       )}
                     </div>
 
+                    {/* Separador y media */}
                     {Array.isArray(v.media) && v.media.length > 0 && (
-                      <div className="mt-3">
-                        <div className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Documentos</div>
+                      <div className="mt-4 pt-3 border-t border-gray-200 dark:border-gray-700">
+                        <div className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">Documentos</div>
                         <div className="grid grid-cols-3 gap-2">
-                          {v.media.slice(0, 6).map((m: MediaItem) => (
-                            <div key={m.mediaID} className="relative w-full aspect-video overflow-hidden rounded">
-                              {m.type === 'image' ? (
-                                <Image src={(m.url || '').replace(/[\s)]$/g, '')} alt="doc" fill className="object-cover" />
-                              ) : (
-                                <a
-                                  href={m.url}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="flex items-center justify-center w-full h-full bg-gray-100 dark:bg-gray-800 text-xs text-gray-700 dark:text-gray-300"
-                                  title="Abrir documento"
-                                >
-                                  Ver documento
-                                </a>
-                              )}
-                            </div>
-                          ))}
+                          {v.media.slice(0, 6).map((m: MediaItem, idx: number) => {
+                            const raw = m.url || '';
+                            const cleanUrl = raw.replace(/[\s)]+$/g, '');
+                            const isImage = m.type === 'image' && !!cleanUrl;
+                            return (
+                              <div key={m.mediaID} className="relative w-full aspect-[3/4] overflow-hidden rounded border border-gray-200 dark:border-gray-700 bg-white/30 dark:bg-gray-800/30">
+                                {isImage ? (
+                                  <a href={cleanUrl} target="_blank" rel="noreferrer" aria-label={`Abrir documento ${idx + 1}`}>
+                                    <Image src={cleanUrl} alt={`Documento ${idx + 1}`} fill className="object-cover" sizes="(max-width: 768px) 33vw, 200px" />
+                                  </a>
+                                ) : (
+                                  <a
+                                    href={cleanUrl || '#'}
+                                    target={cleanUrl ? "_blank" : undefined}
+                                    rel={cleanUrl ? "noreferrer" : undefined}
+                                    className="absolute inset-0 flex items-center justify-center text-[11px] px-2 text-blue-700 dark:text-blue-300 underline bg-white/40 dark:bg-gray-900/30"
+                                    aria-label={`Ver documento ${idx + 1}`}
+                                  >
+                                    Ver documento
+                                  </a>
+                                )}
+                              </div>
+                            );
+                          })}
                         </div>
+                        {v.media.length > 6 && (
+                          <div className="mt-2 text-right">
+                            <span className="text-xs text-gray-500 dark:text-gray-400">y {v.media.length - 6} más…</span>
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>
