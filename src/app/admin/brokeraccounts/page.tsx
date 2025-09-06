@@ -3,20 +3,15 @@
 import MainLayout from "@/components/layouts/MainLayout";
 import PaginatedCardTable from "@/components/common/PaginatedCardTable";
 import { ManagerHeader } from "@/components/challenge-templates/ManagerHeader";
-import type { ColumnConfig } from "@/types";
-import React, { useEffect, useMemo, useState } from "react";
+import type { ColumnConfig, BrokerAccount, PageResponse } from "@/types";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import useSWR from "swr";
-import { SessionProvider, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import type { BrokerAccount, PageResponse } from "@/types";
+import { useSession } from "next-auth/react";  // 👈 para obtener token
 import { apiBaseUrl } from "@/config";
 
 type LimitParam = number;
 type UsedFilter = "all" | "used" | "free";
-
-// [moved-to-src/types] Original inline types now live in src/types.
-// interface BrokerAccount { ... }
-// interface PageResponse<T> { ... }
 
 const API_BASE = apiBaseUrl.replace(/\/$/, "");
 
@@ -66,32 +61,39 @@ function unwrapPage<T = Record<string, unknown>>(raw: unknown): {
     typeof totalPagesVal === "number"
       ? totalPagesVal
       : limit > 0
-      ? Math.max(1, Math.ceil(total / limit))
-      : 1;
+        ? Math.max(1, Math.ceil(total / limit))
+        : 1;
 
   return { items, total, page, limit, totalPages };
 }
 
-function BrokerAccountsInner() {
+export default function BrokerAccountsPage() {
   const router = useRouter();
-  const { data: session, status: authStatus } = useSession();
+  const { data: session, status } = useSession(); // 👈 obtenemos la sesión
+  const accessToken = session?.accessToken as string | undefined;
 
   const [page, setPage] = useState<number>(1);
   const [limit, setLimit] = useState<LimitParam>(10);
   const [usedFilter, setUsedFilter] = useState<UsedFilter>("all");
+  const [search, setSearch] = useState<string>("");
 
-  const accessToken = session?.accessToken as string | undefined;
+  // debounce para búsqueda
+  const [debouncedSearch, setDebouncedSearch] = useState(search);
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(search), 500);
+    return () => clearTimeout(timer);
+  }, [search]);
 
   const query = useMemo(() => {
     const q = new URLSearchParams();
     q.set("page", String(page));
     q.set("limit", String(limit));
     if (usedFilter !== "all") q.set("isUsed", usedFilter === "used" ? "true" : "false");
+    if (debouncedSearch.trim()) q.set("login", debouncedSearch.trim());
     return q.toString();
-  }, [page, limit, usedFilter]);
+  }, [page, limit, usedFilter, debouncedSearch]);
 
-  const basePath = "/broker-accounts"; // requiere admin
-  const url = `${API_BASE}${basePath}?${query}`;
+  const url = `${API_BASE}/broker-accounts?${query}`;
 
   const fetcher = async (u: string) => {
     const res = await fetch(u, {
@@ -103,18 +105,19 @@ function BrokerAccountsInner() {
   };
 
   const { data, error, isLoading, mutate } = useSWR<PageResponse<BrokerAccount>>(
-    accessToken ? url : null,
-    fetcher
+    accessToken ? url : null, // 👈 evita llamadas si no hay token
+    fetcher,
+    { revalidateOnFocus: false, revalidateOnReconnect: false }
   );
 
-  // Redirección si no hay sesión
+  // si no está autenticado, redirigir
   useEffect(() => {
-    if (authStatus === "unauthenticated" || (!accessToken && authStatus !== "loading")) {
+    if (status === "unauthenticated") {
       router.replace("/auth/login");
     }
-  }, [authStatus, accessToken, router]);
+  }, [status, router]);
 
-  if (authStatus === "loading" || (!accessToken && authStatus !== "unauthenticated")) {
+  if (status === "loading") {
     return (
       <MainLayout>
         <div className="p-6">Verificando sesión…</div>
@@ -125,11 +128,12 @@ function BrokerAccountsInner() {
   if (!accessToken) {
     return (
       <MainLayout>
-        <div className="p-6">Redirigiendo al login…</div>
+        <div className="p-6">No autorizado. Redirigiendo…</div>
       </MainLayout>
     );
   }
 
+  // unwrap datos
   const pageObj = unwrapPage<BrokerAccount>(data as unknown);
   const accounts = pageObj.items;
   const totalPages = pageObj.totalPages;
@@ -165,27 +169,52 @@ function BrokerAccountsInner() {
           showTotalCount={true}
         />
 
+        {/* Filtros */}
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4">
-          <div className="flex flex-col sm:flex-row gap-3 items-end">
-            <div className="w-full sm:w-48">
-              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Used filter</label>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-3 items-end">
+            {/* Buscar */}
+            <div className="w-full">
+              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Search by Login</label>
+              <input
+                type="text"
+                placeholder="Enter login..."
+                className="block w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                value={search}
+                onChange={(e) => {
+                  setSearch(e.target.value);
+                  setPage(1);
+                }}
+              />
+            </div>
+
+            {/* Filtro estado */}
+            <div className="w-full">
+              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Status Filter</label>
               <select
-                className="block w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
+                className="block w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                 value={usedFilter}
-                onChange={(e) => { setPage(1); setUsedFilter(e.target.value as UsedFilter); }}
+                onChange={(e) => {
+                  setUsedFilter(e.target.value as UsedFilter);
+                  setPage(1);
+                }}
               >
-                <option value="all">All</option>
-                <option value="free">Free</option>
-                <option value="used">Used</option>
+                <option value="all">All Status</option>
+                <option value="free">Free Only</option>
+                <option value="used">Used Only</option>
               </select>
             </div>
 
-            <div className="w-full sm:w-48">
+            {/* Items por página */}
+            <div className="w-full">
               <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Items per page</label>
               <select
-                className="block w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
+                className="block w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                 value={String(limit)}
-                onChange={(e) => { const n = Number(e.target.value) as LimitParam; setPage(1); setLimit(n); }}
+                onChange={(e) => {
+                  const n = Number(e.target.value) as LimitParam;
+                  setLimit(n);
+                  setPage(1);
+                }}
               >
                 <option value="10">10 items</option>
                 <option value="20">20 items</option>
@@ -193,20 +222,10 @@ function BrokerAccountsInner() {
                 <option value="100">100 items</option>
               </select>
             </div>
-
-            <div className="w-full sm:w-auto">
-              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Actions</label>
-              <button
-                onClick={() => mutate()}
-                disabled={isLoading}
-                className="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50"
-              >
-                {isLoading ? "Refreshing..." : "Refresh"}
-              </button>
-            </div>
           </div>
         </div>
 
+        {/* Tabla */}
         <PaginatedCardTable
           columns={columns}
           rows={rows}
@@ -218,18 +237,13 @@ function BrokerAccountsInner() {
             totalItems: pageObj.total,
             pageSize: limit,
             onPageChange: (p) => setPage(p),
-            onPageSizeChange: (n) => { setPage(1); setLimit(n as LimitParam); },
+            onPageSizeChange: (n) => {
+              setPage(1);
+              setLimit(n as LimitParam);
+            },
           }}
         />
       </div>
     </MainLayout>
-  );
-}
-
-export default function BrokerAccountsPage() {
-  return (
-    <SessionProvider>
-      <BrokerAccountsInner />
-    </SessionProvider>
   );
 }
