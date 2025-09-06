@@ -122,8 +122,15 @@ function ChallengesInner() {
 
   const columns: ColumnConfig[] = [
     { key: "serial", label: "ID", type: "normal" },
-    { key: "user", label: "User", type: "normal" },
-    { key: "login", label: "Login", type: "normal" },
+    { key: "user", label: "User", type: "link", linkUrl: (_value, row) => `/admin/users/${(row as any)?.__raw?.userID ?? (row as any)?.userID ?? ""}` },
+    { key: "login", label: "Login", type: "link", linkUrl: (value, row) => {
+      const r: any = row as any;
+      const brokerAccountID = r?.__raw?.brokerAccount?.brokerAccountID ?? r?.brokerAccountID;
+      const loginVal = typeof value === "string" ? value : r?.login;
+      if (brokerAccountID) return `/admin/brokeraccounts/${brokerAccountID}`;
+      if (loginVal && loginVal !== "-") return `/admin/brokeraccounts?login=${encodeURIComponent(loginVal)}`;
+      return "#";
+    } },
     { key: "platform", label: "Platform", type: "normal" },
     { key: "numPhase", label: "Phase", type: "normal" },
     { key: "dynamicBalance", label: "Dyn. Balance", type: "normal" },
@@ -146,6 +153,8 @@ function ChallengesInner() {
     const end = c.endDate ? new Date(c.endDate).toLocaleDateString() : "-";
 
     return {
+      __raw: c,
+      userID: c.userID,
       serial,
       user: userName,
       login,

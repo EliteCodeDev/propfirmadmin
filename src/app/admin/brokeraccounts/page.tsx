@@ -150,6 +150,7 @@ export default function BrokerAccountsPage() {
   ];
 
   const rows = accounts.map((a, idx) => ({
+    __raw: a,
     serial: offset + idx + 1,
     login: a.login,
     server: a.server || "-",
@@ -231,6 +232,22 @@ export default function BrokerAccountsPage() {
           rows={rows}
           isLoading={isLoading}
           emptyText={error ? (error as Error).message : "No broker accounts found"}
+          actionsHeader="Acciones"
+          renderActions={(row) => {
+            const acc = row.__raw as BrokerAccount | undefined;
+            const id = acc?.brokerAccountID;
+            return (
+              <div className="flex items-center justify-center">
+                <button
+                  className="px-2 py-1 text-[11px] rounded bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-50"
+                  onClick={() => id && router.push(`/admin/brokeraccounts/${id}`)}
+                  disabled={!id}
+                >
+                  Ver
+                </button>
+              </div>
+            );
+          }}
           pagination={{
             currentPage: page,
             totalPages: Math.max(1, totalPages),
