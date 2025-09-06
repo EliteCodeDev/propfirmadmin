@@ -3,31 +3,17 @@
 import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { Eye, Check, X, Search } from "lucide-react";
 import { verificationApi } from "@/api/verification";
-import { VerificationItem, VerificationStatus, DocumentType, VerificationListResponse, VerificationDetailsProps } from "@/types/verification";
-import Image from "next/image";
+import { VerificationItem, VerificationStatus, DocumentType, VerificationListResponse } from "@/types/verification";
 import MainLayout from "@/components/layouts/MainLayout";
-
-const statusColors = {
-  pending: "bg-yellow-100 text-yellow-800",
-  approved: "bg-green-100 text-green-800",
-  rejected: "bg-red-100 text-red-800",
-};
-
-const documentTypeLabels = {
-  dni: "DNI",
-  passport: "Pasaporte",
-  driver_license: "Licencia de Conducir",
-  other: "Otro",
-};
+import {VerificationDetails, documentTypeLabels, statusColors} from "@/components/verifications/VerificationDetails";
+import CardImage from "@/components/verifications/CardImage";
 
 export default function VerificationsPage() {
   const [verifications, setVerifications] = useState<VerificationItem[]>([]);
@@ -219,11 +205,11 @@ export default function VerificationsPage() {
                         <TableCell>{verification.numDocument}</TableCell>
                         <TableCell>{documentTypeLabels[verification.documentType]}</TableCell>
                         <TableCell>
-                          <Badge className={statusColors[verification.status]}>
-                            {verification.status === "pending" && "Pendiente"}
-                            {verification.status === "approved" && "Aprobado"}
-                            {verification.status === "rejected" && "Rechazado"}
-                          </Badge>
+                          <span className={`font-medium ${statusColors[verification.status]}`}>
+                            {verification.status === "pending" && "pendiente"}
+                            {verification.status === "approved" && "aceptado"}
+                            {verification.status === "rejected" && "rechazado"}
+                          </span>
                         </TableCell>
                         <TableCell>{formatDate(verification.submittedAt)}</TableCell>
                         <TableCell>
@@ -295,21 +281,10 @@ export default function VerificationsPage() {
 
         {/* Modal para imagen ampliada */}
         {selectedImage && (
-          <Dialog open={!!selectedImage} onOpenChange={() => setSelectedImage(null)}>
-            <DialogContent className="max-w-4xl max-h-[90vh] p-2">
-              <DialogHeader>
-                <DialogTitle>Documento Ampliado</DialogTitle>
-              </DialogHeader>
-              <div className="relative w-full h-[70vh]">
-                <Image
-                  src={selectedImage}
-                  alt="Documento ampliado"
-                  fill
-                  className="object-contain"
-                />
-              </div>
-            </DialogContent>
-          </Dialog>
+          <CardImage
+            selectedImage={selectedImage}
+            onClose={() => setSelectedImage(null)}
+          />
         )}
       </div>
     </MainLayout>
@@ -317,131 +292,3 @@ export default function VerificationsPage() {
   );
 }
 
-
-
-function VerificationDetails({
-  verification,
-  onApprove,
-  onReject,
-  rejectionReason,
-  setRejectionReason,
-  actionLoading,
-  selectedImage,
-  setSelectedImage,
-}: VerificationDetailsProps & {
-  selectedImage: string | null;
-  setSelectedImage: (url: string | null) => void;
-}) {
-  const fmt = (d: string | number | Date | undefined | null) =>
-    d ? new Date(d).toLocaleString("es-ES", { dateStyle: "short", timeStyle: "short" }) : "-";
-   return (
-    <div className="space-y-6 text-[13px] md:text-sm">
-       {/* Información del usuario */}
-
-      <div className="space-y-2">
-        <h3 className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400 font-semibold">Información del Usuario</h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-          <div className="flex gap-2"><span className="text-gray-500 dark:text-gray-400 w-28">Nombre</span><span className="font-medium">{verification.user?.firstName} {verification.user?.lastName}</span></div>
-          <div className="flex gap-2"><span className="text-gray-500 dark:text-gray-400 w-28">Email</span><span className="font-medium break-all">{verification.user?.email ?? '-'}</span></div>
-          <div className="flex gap-2"><span className="text-gray-500 dark:text-gray-400 w-28">Usuario</span><span className="font-medium">{verification.user?.username ?? '-'}</span></div>
-          <div className="flex gap-2"><span className="text-gray-500 dark:text-gray-400 w-28">Teléfono</span><span className="font-medium">{verification.user?.phone ?? '-'}</span></div>
-        </div>
-      </div>
-
-      <div className="border-t border-gray-200 dark:border-gray-700" />
-
-       {/* Información del documento (debajo) */}
-      <div className="space-y-2">
-        <h3 className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400 font-semibold">Información del Documento</h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-          <div className="flex gap-2"><span className="text-gray-500 dark:text-gray-400 w-28">Tipo</span><span className="font-medium">{documentTypeLabels[verification.documentType]}</span></div>
-          <div className="flex gap-2"><span className="text-gray-500 dark:text-gray-400 w-28">Número</span><span className="font-medium">{verification.numDocument}</span></div>
-          <div className="flex gap-2 items-center"><span className="text-gray-500 dark:text-gray-400 w-28">Estado</span>
-            <Badge className={`${statusColors[verification.status]}`}> 
-              {verification.status === "pending" && "Pendiente"}
-              {verification.status === "approved" && "Aprobado"}
-              {verification.status === "rejected" && "Rechazado"}
-            </Badge>
-          </div>
-          <div className="flex gap-2"><span className="text-gray-500 dark:text-gray-400 w-28">Enviado</span><span className="font-medium">{fmt(verification.submittedAt)}</span></div>
-          {verification.approvedAt && (
-            <div className="flex gap-2"><span className="text-gray-500 dark:text-gray-400 w-28">Aprobado</span><span className="font-medium">{fmt(verification.approvedAt)}</span></div>
-          )}
-          {verification.rejectedAt && (
-            <div className="flex gap-2"><span className="text-gray-500 dark:text-gray-400 w-28">Rechazado</span><span className="font-medium">{fmt(verification.rejectedAt)}</span></div>
-          )}
-        </div>
-      </div>
-       {/* Razón de rechazo si existe */}
-       {verification.rejectionReason && (
-         <div>
-          <h3 className="text-xs uppercase tracking-wide font-semibold mb-2 text-red-600">Razón del Rechazo</h3>
-          <p className="text-[13px] md:text-sm bg-red-50 p-3 rounded border border-red-200">
-             {verification.rejectionReason}
-           </p>
-         </div>
-       )}
-
-      {/* Documentos */}
-      <div>
-        <h3 className="font-semibold mb-2">Documentos Adjuntos</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {verification.media?.map((media, index) => (
-            <div key={media.mediaID} className="border rounded-lg p-2">
-              <div 
-                className="aspect-video relative mb-2 cursor-pointer hover:opacity-80 transition-opacity"
-                onClick={() => setSelectedImage(media.url)}
-              >
-                <Image
-                  src={media.url}
-                  alt={`Documento ${index + 1}`}
-                  fill
-                  className="object-contain rounded"
-                />
-              </div>
-              <p className="text-xs text-gray-500 text-center">
-                Subido: {new Date(media.createdAt).toLocaleDateString("es-ES")}
-              </p>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Acciones */}
-      {verification.status === "pending" && (
-        <div className="border-t pt-4">
-          <h3 className="font-semibold mb-4">Acciones</h3>
-          <div className="space-y-4">
-            <div className="flex gap-2">
-              <Button
-                onClick={() => onApprove(verification.verificationID)}
-                disabled={actionLoading}
-                className="bg-green-600 hover:bg-green-700"
-              >
-                <Check className="h-4 w-4 mr-1" />
-                Aprobar
-              </Button>
-            </div>
-
-            <div className="space-y-2">
-              <Textarea
-                placeholder="Razón del rechazo (requerido)"
-                value={rejectionReason}
-                onChange={(e) => setRejectionReason(e.target.value)}
-                rows={3}
-              />
-              <Button
-                onClick={() => onReject(verification.verificationID)}
-                disabled={actionLoading || !rejectionReason.trim()}
-                variant="destructive"
-              >
-                <X className="h-4 w-4 mr-1" />
-                Rechazar
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
