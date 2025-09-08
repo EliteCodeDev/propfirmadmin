@@ -93,17 +93,18 @@ export interface ChallengeStage {
 }
 export interface StageRule {
   ruleID: string;
-  ruleSlug: string;
+  slugRule: string;
   ruleType: string;
-  ruleName?: string;
-  ruleDescription?: string;
+  nameRule?: string;
+  descriptionRule?: string;
 }
 
 export interface WithdrawalRule {
   ruleID: string;
   ruleType: string;
-  ruleName?: string;
-  ruleDescription?: string;
+  slugRule?: string;
+  nameRule?: string;
+  descriptionRule?: string;
 }
 
 export interface RelationStage {

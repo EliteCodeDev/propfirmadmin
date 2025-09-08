@@ -59,8 +59,8 @@ export type UpdateRulePayload = Partial<CreateRulePayload>;
 
 export interface CreateWithdrawalRulePayload {
   ruleType: "number" | "percentage" | "boolean" | "string";
-  ruleName: string;
-  ruleDescription?: string;
+  nameRule: string;
+  descriptionRule?: string;
 }
 export type UpdateWithdrawalRulePayload = Partial<CreateWithdrawalRulePayload>;
 

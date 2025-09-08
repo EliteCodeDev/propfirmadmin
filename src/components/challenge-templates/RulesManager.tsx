@@ -61,8 +61,8 @@ const ruleSchema = z.object({
   ruleType: z.enum(["number", "percentage", "boolean", "string"], {
     error: "El tipo de regla es requerido",
   }),
-  ruleName: z.string().optional(),
-  ruleDescription: z.string().optional(),
+  nameRule: z.string().optional(),
+  descriptionRule: z.string().optional(),
 });
 
 type RuleFormData = z.infer<typeof ruleSchema>;
@@ -86,8 +86,8 @@ export function RulesManager({ pageSize = 10 }: RulesManagerProps) {
     resolver: zodResolver(ruleSchema),
     defaultValues: {
       ruleType: "number",
-      ruleName: "",
-      ruleDescription: "",
+      nameRule: "",
+      descriptionRule: "",
     },
   });
 
@@ -118,8 +118,8 @@ export function RulesManager({ pageSize = 10 }: RulesManagerProps) {
     setEditItem(null);
     form.reset({
       ruleType: "number",
-      ruleName: "",
-      ruleDescription: "",
+      nameRule: "",
+      descriptionRule: "",
     });
     setSelectedSlug("");
     setOpenModal(true);
@@ -139,10 +139,10 @@ export function RulesManager({ pageSize = 10 }: RulesManagerProps) {
           | "percentage"
           | "boolean"
           | "string",
-        ruleName: rule.ruleName || "",
-        ruleDescription: rule.ruleDescription || "",
+        nameRule: rule.nameRule || "",
+        descriptionRule: rule.descriptionRule || "",
       });
-      setSelectedSlug(rule.ruleSlug || "");
+      setSelectedSlug(rule.slugRule || "");
       setOpenModal(true);
     }
   }
@@ -150,7 +150,7 @@ export function RulesManager({ pageSize = 10 }: RulesManagerProps) {
   async function onSubmit(formValues: RuleFormData) {
     try {
       // Determinar slug a enviar
-      const computedFromName = slugify(formValues.ruleName || "");
+      const computedFromName = slugify(formValues.nameRule || "");
       const finalSlug = selectedSlug || computedFromName;
 
       if (!finalSlug) {
@@ -160,8 +160,8 @@ export function RulesManager({ pageSize = 10 }: RulesManagerProps) {
 
       const payload = {
         ruleType: formValues.ruleType,
-        ruleName: formValues.ruleName || undefined,
-        ruleDescription: formValues.ruleDescription || undefined,
+        ruleName: formValues.nameRule || undefined,
+        ruleDescription: formValues.descriptionRule || undefined,
         ruleSlug: finalSlug,
       };
 
@@ -202,7 +202,7 @@ export function RulesManager({ pageSize = 10 }: RulesManagerProps) {
   // --------------------------------------------------
   const tableData = rulesValidation.safeMap((item, index) => {
     const typeLabelText = getRuleTypeLabel(item?.ruleType || "");
-    const nameText = item?.ruleName || "Sin nombre";
+    const nameText = item?.nameRule || "Sin nombre";
     const displayName = `${nameText} (${typeLabelText})`;
 
     return {
@@ -397,7 +397,7 @@ export function RulesManager({ pageSize = 10 }: RulesManagerProps) {
 
               <FormField
                 control={form.control}
-                name="ruleName"
+                name="nameRule"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-gray-700 dark:text-gray-300 text-sm font-medium">
@@ -417,7 +417,7 @@ export function RulesManager({ pageSize = 10 }: RulesManagerProps) {
 
               <FormField
                 control={form.control}
-                name="ruleDescription"
+                name="descriptionRule"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-gray-700 dark:text-gray-300 text-sm font-medium">

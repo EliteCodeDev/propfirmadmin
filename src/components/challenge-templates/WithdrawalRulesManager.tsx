@@ -46,8 +46,9 @@ const withdrawalRuleSchema = z.object({
   ruleType: z.enum(["number", "percentage", "boolean", "string"], {
     error: "El tipo de regla es requerido",
   }),
-  ruleName: z.string().min(1, "El nombre es requerido"),
-  ruleDescription: z.string().optional(),
+  nameRule: z.string().min(1, "El nombre es requerido"),
+  // slugRule se genera automáticamente a partir del nombre
+  descriptionRule: z.string().optional(),
 });
 
 type WithdrawalRuleFormData = z.infer<typeof withdrawalRuleSchema>;
@@ -70,8 +71,8 @@ export function WithdrawalRulesManager({ pageSize = 10 }: WithdrawalRulesManager
     resolver: zodResolver(withdrawalRuleSchema),
     defaultValues: {
       ruleType: "number",
-      ruleName: "",
-      ruleDescription: "",
+      nameRule: "",
+      descriptionRule: "",
     },
   });
 
@@ -102,8 +103,8 @@ export function WithdrawalRulesManager({ pageSize = 10 }: WithdrawalRulesManager
     setEditItem(null);
     form.reset({
       ruleType: "number",
-      ruleName: "",
-      ruleDescription: "",
+      nameRule: "",
+      descriptionRule: "",
     });
     setOpenModal(true);
   }
@@ -122,8 +123,8 @@ export function WithdrawalRulesManager({ pageSize = 10 }: WithdrawalRulesManager
           | "percentage"
           | "boolean"
           | "string",
-        ruleName: rule.ruleName || "",
-        ruleDescription: rule.ruleDescription || "",
+        nameRule: rule.nameRule || "",
+        descriptionRule: rule.descriptionRule || "",
       });
       setOpenModal(true);
     }
@@ -131,10 +132,12 @@ export function WithdrawalRulesManager({ pageSize = 10 }: WithdrawalRulesManager
 
   async function onSubmit(formValues: WithdrawalRuleFormData) {
     try {
+      const slug = slugify(formValues.nameRule || "");
       const payload = {
         ruleType: formValues.ruleType,
-        ruleName: formValues.ruleName,
-        ruleDescription: formValues.ruleDescription || undefined,
+        nameRule: formValues.nameRule,
+        slugRule: slug,
+        descriptionRule: formValues.descriptionRule || undefined,
       };
 
       if (editItem) {
@@ -159,7 +162,20 @@ export function WithdrawalRulesManager({ pageSize = 10 }: WithdrawalRulesManager
   // --------------------------------------------------
   const rulesValidation = useArrayValidation(rules);
 
-  const getRuleTypeLabel = (type: string) => {
+  // Helper para generar slugs desde el nombre
+  const slugify = (value: string) =>
+    value
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "") // quita acentos
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9]+/g, "-") // reemplaza no alfanum por '-'
+      .replace(/^-+|-+$/g, ""); // elimina guiones al inicio/fin
+
+  // Valor de slug derivado (solo lectura)
+  const nameValue = form.watch("nameRule");
+
+  const getslugRuleLabel = (type: string) => {
     const typeLabels = {
       number: "Número",
       percentage: "Porcentaje",
@@ -174,9 +190,9 @@ export function WithdrawalRulesManager({ pageSize = 10 }: WithdrawalRulesManager
   // --------------------------------------------------
   const tableData = rulesValidation.safeMap((item, index) => ({
     id: index + 1,
-    name: item?.ruleName || "Sin nombre",
-    type: getRuleTypeLabel(item?.ruleType || ""),
-    description: item?.ruleDescription || "Sin descripción",
+    name: item?.nameRule || "Sin nombre",
+    type: getslugRuleLabel(item?.ruleType || ""),
+    description: item?.descriptionRule || "Sin descripción",
     originalId: item?.ruleID || "",
   }));
 
@@ -266,7 +282,7 @@ export function WithdrawalRulesManager({ pageSize = 10 }: WithdrawalRulesManager
             >
               <FormField
                 control={form.control}
-                name="ruleName"
+                name="nameRule"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-gray-700 dark:text-gray-300 text-sm font-medium">
@@ -279,10 +295,23 @@ export function WithdrawalRulesManager({ pageSize = 10 }: WithdrawalRulesManager
                         className="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white text-sm placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       />
                     </FormControl>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">El slug se genera automáticamente.</p>
                     <FormMessage className="text-red-600 dark:text-red-400" />
                   </FormItem>
                 )}
               />
+              {/* Vista previa del slug (solo lectura) */}
+              <FormItem>
+                <FormLabel className="text-gray-700 dark:text-gray-300 text-sm font-medium">Slug</FormLabel>
+                <FormControl>
+                  <Input
+                    value={slugify(nameValue || "")}
+                    disabled
+                    readOnly
+                    className="bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 text-sm"
+                  />
+                </FormControl>
+              </FormItem>
 
               <FormField
                 control={form.control}
@@ -312,7 +341,7 @@ export function WithdrawalRulesManager({ pageSize = 10 }: WithdrawalRulesManager
 
               <FormField
                 control={form.control}
-                name="ruleDescription"
+                name="descriptionRule"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-gray-700 dark:text-gray-300 text-sm font-medium">
