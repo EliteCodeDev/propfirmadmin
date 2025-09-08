@@ -100,7 +100,7 @@ export default function RelationWithdrawalRulesModal({
     const q = search.trim().toLowerCase();
     if (!q) return available;
     return available.filter((wr) => 
-      `${wr.ruleName || ''} ${wr.ruleDescription || ''}`.toLowerCase().includes(q)
+  `${wr.nameRule || ''} ${wr.descriptionRule || ''}`.toLowerCase().includes(q)
     );
   }, [available, search]);
 
@@ -216,14 +216,14 @@ export default function RelationWithdrawalRulesModal({
                       <div key={wr.ruleID} className="flex items-center justify-between p-2 rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
                         <div className="flex-1 min-w-0">
                           <div className="text-sm font-medium text-gray-900 dark:text-white truncate">
-                            {wr.ruleName || `Rule ${wr.ruleID.slice(0, 8)}`}
+                            {wr.nameRule || `Rule ${wr.ruleID.slice(0, 8)}`}
                           </div>
                           <div className="text-xs text-gray-500 dark:text-gray-400">
                             {getRuleTypeLabel(wr.ruleType)}
                           </div>
-                          {wr.ruleDescription && (
+                          {wr.descriptionRule && (
                             <div className="text-xs text-gray-400 dark:text-gray-500 truncate">
-                              {wr.ruleDescription}
+                              {wr.descriptionRule}
                             </div>
                           )}
                         </div>
@@ -263,7 +263,7 @@ export default function RelationWithdrawalRulesModal({
                           <div className="flex items-center justify-between px-2 py-1.5">
                             <div>
                               <div className="text-sm font-medium text-gray-900 dark:text-white">
-                                {wr!.ruleName || `Rule ${wr!.ruleID.slice(0, 8)}`}
+                                {wr!.nameRule || `Rule ${wr!.ruleID.slice(0, 8)}`}
                               </div>
                               <div className="text-xs text-gray-500 dark:text-gray-400">
                                 {getRuleTypeLabel(wr!.ruleType)}

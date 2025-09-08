@@ -18,7 +18,8 @@ import { toast } from "sonner";
 import { Eye, Check, X, Search } from "lucide-react";
 import { verificationApi } from "@/api/verification";
 import { VerificationItem, VerificationStatus, DocumentType, VerificationListResponse } from "@/types/verification";
-import MainLayout from "@/components/layouts/MainLayout";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { apiBaseUrl } from "@/config";
 import {VerificationDetails, documentTypeLabels, statusColors} from "@/components/verifications/VerificationDetails";
 import CardImage from "@/components/verifications/CardImage";
 
@@ -66,7 +67,7 @@ function VerificationsPageContent() {
     if (documentTypeFilter !== "all")
       params.append("documentType", documentTypeFilter);
 
-    return `${apiBaseUrl}/verification?${params.toString()}`;
+  return `${apiBaseUrl}/verification?${params.toString()}`;
   }, [currentPage, pageSize, searchTerm, statusFilter, documentTypeFilter]);
 
   // Usar SWR para obtener los datos
@@ -78,6 +79,18 @@ function VerificationsPageContent() {
       revalidateOnReconnect: true,
     }
   );
+
+  const verifications: VerificationItem[] = data?.data ?? [];
+  const pagination = {
+    page: data?.page ?? currentPage,
+    limit: data?.limit ?? pageSize,
+    total: data?.total ?? 0,
+    totalPages: data?.totalPages ?? 1,
+  };
+
+  const handleSearch = useCallback(() => {
+    setCurrentPage(1);
+  }, []);
 
   const handleApprove = async (verificationId: string) => {
     try {
@@ -194,7 +207,7 @@ function VerificationsPageContent() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {loading ? (
+                  {isLoading ? (
                     <TableRow>
                       <TableCell colSpan={6} className="text-center py-8">
                         Cargando verificaciones...
@@ -264,7 +277,7 @@ function VerificationsPageContent() {
             </div>
 
             {/* Paginación */}
-            {pagination.totalPages > 1 && (
+      {pagination.totalPages > 1 && (
               <div className="flex items-center justify-between mt-4">
                 <div className="text-sm text-gray-500">
                   Mostrando {((pagination.page - 1) * pagination.limit) + 1} a {Math.min(pagination.page * pagination.limit, pagination.total)} de {pagination.total} verificaciones
@@ -274,7 +287,7 @@ function VerificationsPageContent() {
                     variant="outline"
                     size="sm"
                     disabled={pagination.page <= 1}
-                    onClick={() => setPagination(prev => ({ ...prev, page: prev.page - 1 }))}
+        onClick={() => setCurrentPage(Math.max(1, pagination.page - 1))}
                   >
                     Anterior
                   </Button>
@@ -282,7 +295,7 @@ function VerificationsPageContent() {
                     variant="outline"
                     size="sm"
                     disabled={pagination.page >= pagination.totalPages}
-                    onClick={() => setPagination(prev => ({ ...prev, page: prev.page + 1 }))}
+        onClick={() => setCurrentPage(Math.min(pagination.totalPages, pagination.page + 1))}
                   >
                     Siguiente
                   </Button>
@@ -301,6 +314,14 @@ function VerificationsPageContent() {
         )}
       </div>
     </MainLayout>
+  );
+}
+
+export default function VerificationsPage() {
+  return (
+    <SessionProvider>
+      <VerificationsPageContent />
+    </SessionProvider>
   );
 }
 
