@@ -72,8 +72,16 @@ function ChallengesInner() {
     q.set("page", String(page));
     q.set("limit", String(limit));
     if (status) q.set("status", status);
-    if (userFilter.trim()) q.set("user", userFilter.trim());
-    if (loginFilter.trim()) q.set("login", loginFilter.trim());
+    // Backend accepts: userID (UUID), search (email/username/fullname), login (broker login)
+    const userVal = userFilter.trim();
+    const uuidRegex = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
+    if (userVal && uuidRegex.test(userVal)) {
+      q.set("userID", userVal);
+    } else if (userVal) {
+      q.set("search", userVal);
+    }
+    const loginVal = loginFilter.trim();
+    if (loginVal) q.set("login", loginVal);
     return q.toString();
   }, [page, limit, status, userFilter, loginFilter]);
 
@@ -166,6 +174,9 @@ function ChallengesInner() {
       endDate: end,
     };
   });
+
+  // Backend now supports search and login; no need for client-side filtering
+  const rowsFiltered = rows;
 
   return (
     <MainLayout>
@@ -261,7 +272,7 @@ function ChallengesInner() {
 
         <PaginatedCardTable
           columns={columns}
-          rows={rows}
+          rows={rowsFiltered}
           isLoading={isLoading}
           emptyText={error ? (error as Error).message : "No challenges found."}
           pagination={{
