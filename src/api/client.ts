@@ -45,12 +45,15 @@ client.interceptors.response.use(
       let info: unknown = payload;
       try {
         const isEmptyObject =
-          payload && typeof payload === "object" && Object.keys(payload).length === 0;
+          payload &&
+          typeof payload === "object" &&
+          Object.keys(payload).length === 0;
         if (!payload || isEmptyObject) {
-          const msg = (error.response?.data && error.response.data.message)
-            || error.response?.statusText
-            || error.message
-            || "Unknown error";
+          const msg =
+            (error.response?.data && error.response.data.message) ||
+            error.response?.statusText ||
+            error.message ||
+            "Unknown error";
           info = { message: msg, status, url: error.config?.url };
         }
       } catch {}
@@ -60,7 +63,11 @@ client.interceptors.response.use(
     } else {
       console.error("API Error Message:", error.message);
     }
-    return Promise.reject(error instanceof Error ? error : new Error(error?.message || 'Unknown error'));
+    return Promise.reject(
+      error instanceof Error
+        ? error
+        : new Error(error?.message || "Unknown error")
+    );
   }
 );
 

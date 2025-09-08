@@ -26,7 +26,7 @@ export async function getAllVerifications(
   const res = await client.get("/verification", {
     params: query,
   });
-  return res.data as VerificationListResponse;
+  return res.data.data as VerificationListResponse;
 }
 
 // Get one verification by id (admin endpoint)

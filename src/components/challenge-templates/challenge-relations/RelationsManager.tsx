@@ -354,7 +354,7 @@ export function RelationsManager({ pageSize = 10 }: RelationsManagerProps) {
                 const existingAddonIds = latest.map((ra) => ra.addonID);
                 setRelationAddonsSnapshot(latest);
                 setSelectedAddonIds(existingAddonIds);
-              } catch (_error) {
+              } catch (error) {
                 // Fallback a datos ya cargados si falla la petición
                 const existingAddonIds = rel?.addons?.map((ra) => ra.addonID) || [];
                 setRelationAddonsSnapshot(rel?.addons || []);
@@ -387,7 +387,7 @@ export function RelationsManager({ pageSize = 10 }: RelationsManagerProps) {
                 const existingRuleIds = latest.map((rwr) => rwr.ruleID);
                 setRelationWithdrawalRulesSnapshot(latest);
                 setSelectedWithdrawalRuleIds(existingRuleIds);
-              } catch (_error) {
+              } catch (error) {
                 // Fallback a datos vacíos si falla la petición
                 setRelationWithdrawalRulesSnapshot([]);
                 setSelectedWithdrawalRuleIds([]);

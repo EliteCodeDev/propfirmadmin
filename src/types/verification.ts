@@ -1,72 +1,68 @@
-// Verification/KYC types aligned with backend enums
-export enum DocumentType {
-  DNI = 'dni',
-  PASSPORT = 'passport',
-  DRIVER_LICENSE = 'driver_license',
-  OTHER = 'other',
+// Enums que coinciden exactamente con el backend
+export enum VerificationStatus {
+  PENDING = "pending",
+  APPROVED = "approved",
+  REJECTED = "rejected",
 }
 
-export enum VerificationStatus {
-  PENDING = 'pending',
-  APPROVED = 'approved',
-  REJECTED = 'rejected',
+export enum DocumentType {
+  DNI = "dni",
+  PASSPORT = "passport",
+  DRIVER_LICENSE = "driver_license",
+  OTHER = "other",
 }
+
+// Tipos para compatibilidad
+export type VerificationStatusType = "pending" | "approved" | "rejected";
+export type DocumentTypeType = "dni" | "passport" | "driver_license" | "other";
 
 export interface MediaItem {
   mediaID: string;
   url: string;
-  type: 'image' | 'document' | string;
+  type: string;
   createdAt: string;
-  scope: string;
-  verificationID: string;
+  scope?: string;
+  verificationID?: string;
 }
 
-export interface VerificationUser {
+export interface UserAccount {
   userID: string;
   username: string;
-  email: string;
-  passwordHash: string;
   firstName: string;
   lastName: string;
-  confirmationToken?: string | null;
-  isConfirmed: boolean;
-  isBlocked: boolean;
+  email: string;
+  phone?: string;
+  country?: string;
+  city?: string;
+  address?: string;
+  postalCode?: string;
+  birthDate?: string;
   isVerified: boolean;
-  phone?: string | null;
-  googleId?: string | null;
-  provider?: string | null;
-  avatar?: string | null;
   createdAt: string;
   updatedAt: string;
-  refAffiliateID?: string | null;
 }
 
 export interface VerificationItem {
   verificationID: string;
   userID: string;
-  status: VerificationStatus;
-  documentType: DocumentType;
-  numDocument?: string | null;
-  rejectionReason?: string | null;
+  status: VerificationStatusType;
+  documentType: DocumentTypeType;
+  numDocument?: string;
+  rejectionReason?: string;
   submittedAt: string;
-  approvedAt?: string | null;
-  rejectedAt?: string | null;
-  user?: VerificationUser;
-  media?: MediaItem[];
+  approvedAt?: string;
+  rejectedAt?: string;
+  media: MediaItem[];
+  user: UserAccount;
 }
 
-export interface VerificationListData {
+// Backend response structure matches the service return type
+export interface VerificationListResponse {
   data: VerificationItem[];
   total: number;
   page: number;
   limit: number;
   totalPages: number;
-}
-
-export interface VerificationListResponse {
-  success: boolean;
-  message: string;
-  data: VerificationListData;
 }
 
 export interface VerificationDetailsProps {

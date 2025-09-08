@@ -47,7 +47,7 @@ async function proxy(req: NextRequest) {
     return NextResponse.json({ message: "Not allowed" }, { status: 403 });
   }
 
-  const target = backendUrl(`${subPath}`);
+  const target = backendUrl(`${subPath}${url.search}`);
   const method = req.method.toUpperCase();
   const headers = pickAllowedHeaders(req);
   headers["Authorization"] = `Bearer ${auth.session.accessToken}`;

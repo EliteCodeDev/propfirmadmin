@@ -229,12 +229,6 @@ export default function AssignmentPage() {
             setBalances(balancesData);
             setRelations(relationsData);
 
-            console.log("Challenge data loaded:", {
-                categories: categoriesData,
-                plans: plansData,
-                balances: balancesData,
-                relations: relationsData,
-            });
         } catch (error: unknown) {
             console.error("Error al cargar datos de challenge:", error);
             setError(error instanceof Error ? error.message : "Error desconocido");

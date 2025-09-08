@@ -1,0 +1,25 @@
+{
+  "user": {
+    "email": "juliancolmenares806@gmail.com",
+    "name": "Julian Colmenares",
+    "billing": {
+      "first_name": "Julian",
+      "last_name": "Colmenares",
+      "address_1": "asdfasfasdfasdfa",
+      "city": "qwerqwr",
+      "state": "MD",
+      "postcode": "12341",
+      "country": "US",
+      "phone": "1234123412341234"
+    }
+  },
+  "status": "completed",
+  "wooID": 1502,
+  "total": 569,
+  "product": {
+    "productID": 1273,
+    "variationID": 1278,
+    "name": "Algorithmic Affair - $100k",
+    "price": 569
+  }
+}

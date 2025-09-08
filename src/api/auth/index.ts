@@ -1,17 +1,11 @@
 import authClient from "@/api/auth-client";
-import {
-  AuthResponse,
-  LoginCredentials,
-  UserData,
-} from "../../types/auth";
+import { AuthResponse, LoginCredentials, UserData } from "../../types/auth";
 // Registro manejado en el front público. API removida del admin.
 
 export async function login(
   credentials: LoginCredentials
 ): Promise<AuthResponse> {
-  console.log("Logging in user:", credentials);
   const { data } = await authClient.post("/auth/admin/login", credentials);
-  console.log("Login response:", data);
   // Si la respuesta del backend tiene un formato como { success, message, data },
   // y en caso de éxito devuelve los datos del usuario dentro de 'data',
   // y en caso de error no lo hace, debemos manejarlo.

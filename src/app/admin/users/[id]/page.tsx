@@ -223,9 +223,9 @@ function UserDetailInner() {
    );
 
    const verifications: VerificationItem[] = useMemo(() => {
-     const list = verificationsResp?.data?.data ?? [];
-     return Array.isArray(list) ? list : [];
-   }, [verificationsResp]);
+      const list = verificationsResp?.data ?? [];
+      return Array.isArray(list) ? list : [];
+    }, [verificationsResp]);
 
   // Estados de carga específicos
   const isInitialLoading = isAuthLoading || !token;
@@ -630,9 +630,9 @@ function UserDetailInner() {
                 ))}
               </div>
 
-              {(verificationsResp?.data?.totalPages ?? 0) > 1 && (
+              {verifications.length > 0 && (
                 <div className="mt-4 text-xs text-gray-500 dark:text-gray-400">
-                  Mostrando {verifications.length} de {verificationsResp?.data?.total} verificaciones. Usa la sección Verifications para gestión completa.
+                  Mostrando {verifications.length} verificaciones. Usa la sección Verifications para gestión completa.
                 </div>
               )}
             </div>
