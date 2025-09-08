@@ -373,15 +373,23 @@ export const challengeTemplatesApi = {
 
   // Relation Withdrawal Rules
   listRelationWithdrawalRules: async (relationID: string): Promise<Array<{ ruleID: string; ruleValue?: string | number | boolean; isActive?: boolean }>> => {
-    const { data } = await client.get(`/challenge-templates/relations/${relationID}/withdrawal-rules`);
+    const { data } = await client.get(`/challenge-templates/withdrawal-rules-relations/by-relation/${relationID}`);
     return data.data ?? data;
   },
   updateRelationWithdrawalRules: async (
     relationID: string,
     withdrawalRules: Array<{ ruleID: string; ruleValue?: string | number | boolean; isActive?: boolean }>
   ): Promise<{ success: boolean }> => {
-    const { data } = await client.put(`/challenge-templates/relations/${relationID}/withdrawal-rules`, { withdrawalRules });
-    return data;
+    // Update each withdrawal rule individually using the correct backend endpoint
+    const updatePromises = withdrawalRules.map(rule => 
+      client.patch(`/challenge-templates/withdrawal-rules-relations/${rule.ruleID}/${relationID}`, {
+        value: rule.ruleValue,
+        isActive: rule.isActive
+      })
+    );
+    
+    await Promise.all(updatePromises);
+    return { success: true };
   },
 
   // Parameters

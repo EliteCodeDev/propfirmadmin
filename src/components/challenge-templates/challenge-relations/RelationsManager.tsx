@@ -113,8 +113,10 @@ export function RelationsManager({ pageSize = 10 }: RelationsManagerProps) {
   const [relationWithdrawalRulesSnapshot, setRelationWithdrawalRulesSnapshot] = useState<
     Array<{
       ruleID: string;
-      ruleValue?: string | number | boolean;
-      isActive?: boolean;
+      relationID: string;
+      value: string;
+      rule?: WithdrawalRule;
+      relation?: any;
     }>
   >([]);
   // Form
@@ -385,7 +387,15 @@ export function RelationsManager({ pageSize = 10 }: RelationsManagerProps) {
               try {
                 const latest = await challengeTemplatesApi.listRelationWithdrawalRules(rid);
                 const existingRuleIds = latest.map((rwr) => rwr.ruleID);
-                setRelationWithdrawalRulesSnapshot(latest);
+                // Transformar los datos al formato esperado
+                const transformedData = latest.map(item => ({
+                  ruleID: item.ruleID,
+                  relationID: rid,
+                  value: String(item.ruleValue || ''),
+                  rule: undefined,
+                  relation: undefined
+                }));
+                setRelationWithdrawalRulesSnapshot(transformedData);
                 setSelectedWithdrawalRuleIds(existingRuleIds);
               } catch (error) {
                 // Fallback a datos vacíos si falla la petición
@@ -728,6 +738,7 @@ export function RelationsManager({ pageSize = 10 }: RelationsManagerProps) {
         initialSelected={selectedWithdrawalRuleIds}
         initialRelationWithdrawalRules={relationWithdrawalRulesSnapshot}
         relationName={selectedRelationIdForWithdrawalRules || ""}
+        relationID={selectedRelationIdForWithdrawalRules || ""}
         onConfirm={async (selectedRuleIds) => {
           if (selectedRelationIdForWithdrawalRules) {
             try {

@@ -82,8 +82,10 @@ export interface ChallengeRelation {
   addons?: RelationAddon[];
   withdrawalRules?: Array<{
     ruleID: string;
-    ruleValue?: string | number | boolean;
-    isActive?: boolean;
+    relationID: string;
+    value: string;
+    rule?: WithdrawalRule;
+    relation?: ChallengeRelation;
   }>;
 }
 
@@ -101,10 +103,10 @@ export interface StageRule {
 
 export interface WithdrawalRule {
   ruleID: string;
-  ruleType: string;
+  nameRule: string;
   slugRule?: string;
-  nameRule?: string;
   descriptionRule?: string;
+  ruleType: string;
 }
 
 export interface RelationStage {

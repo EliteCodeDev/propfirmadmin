@@ -10,6 +10,7 @@ import { SessionProvider, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -18,9 +19,9 @@ import { toast } from "sonner";
 import { Eye, Check, X, Search } from "lucide-react";
 import { verificationApi } from "@/api/verification";
 import { VerificationItem, VerificationStatus, DocumentType, VerificationListResponse } from "@/types/verification";
-import MainLayout from "@/components/layouts/MainLayout";
 import {VerificationDetails, documentTypeLabels, statusColors} from "@/components/verifications/VerificationDetails";
 import CardImage from "@/components/verifications/CardImage";
+import { apiBaseUrl } from "@/config";
 
 // Función para obtener las verificaciones
 const fetchVerifications = async (url: string) => {
@@ -149,9 +150,8 @@ function VerificationsPageContent() {
                     placeholder="Buscar por usuario, email o documento..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    onKeyPress={(e) => e.key === "Enter" && handleSearch()}
                   />
-                  <Button onClick={handleSearch} size="icon">
+                  <Button size="icon" disabled>
                     <Search className="h-4 w-4" />
                   </Button>
                 </div>
@@ -194,20 +194,20 @@ function VerificationsPageContent() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {loading ? (
+                  {isLoading ? (
                     <TableRow>
                       <TableCell colSpan={6} className="text-center py-8">
                         Cargando verificaciones...
                       </TableCell>
                     </TableRow>
-                  ) : verifications.length === 0 ? (
+                  ) : !data?.data || data.data.length === 0 ? (
                     <TableRow>
                       <TableCell colSpan={6} className="text-center py-8">
                         No se encontraron verificaciones
                       </TableCell>
                     </TableRow>
                   ) : (
-                    verifications.map((verification) => (
+                    data.data.map((verification) => (
                       <TableRow key={verification.verificationID}>
                         <TableCell>
                           <div>
@@ -264,25 +264,25 @@ function VerificationsPageContent() {
             </div>
 
             {/* Paginación */}
-            {pagination.totalPages > 1 && (
+            {data && data.totalPages > 1 && (
               <div className="flex items-center justify-between mt-4">
                 <div className="text-sm text-gray-500">
-                  Mostrando {((pagination.page - 1) * pagination.limit) + 1} a {Math.min(pagination.page * pagination.limit, pagination.total)} de {pagination.total} verificaciones
+                  Mostrando {((data.page - 1) * data.limit) + 1} a {Math.min(data.page * data.limit, data.total)} de {data.total} verificaciones
                 </div>
                 <div className="flex gap-2">
                   <Button
                     variant="outline"
                     size="sm"
-                    disabled={pagination.page <= 1}
-                    onClick={() => setPagination(prev => ({ ...prev, page: prev.page - 1 }))}
+                    disabled={data.page <= 1}
+                    onClick={() => setCurrentPage(prev => prev - 1)}
                   >
                     Anterior
                   </Button>
                   <Button
                     variant="outline"
                     size="sm"
-                    disabled={pagination.page >= pagination.totalPages}
-                    onClick={() => setPagination(prev => ({ ...prev, page: prev.page + 1 }))}
+                    disabled={data.page >= data.totalPages}
+                    onClick={() => setCurrentPage(prev => prev + 1)}
                   >
                     Siguiente
                   </Button>
@@ -304,3 +304,10 @@ function VerificationsPageContent() {
   );
 }
 
+export default function VerificationsPage() {
+  return (
+    <SessionProvider>
+      <VerificationsPageContent />
+    </SessionProvider>
+  );
+}

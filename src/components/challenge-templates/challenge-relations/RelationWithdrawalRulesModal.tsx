@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useState, useEffect } from "react";
+import React, { useMemo, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -14,7 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { Plus, X, ChevronDown, ChevronUp } from "lucide-react";
+import { Check, Plus, X } from "lucide-react";
 import type { WithdrawalRule } from "@/types/challenge-template";
 import type { WithdrawalRuleSelectorModalProps } from "@/types";
 
@@ -42,6 +42,7 @@ export default function RelationWithdrawalRulesModal({
   onConfirm = () => {},
   onConfirmWithDetails,
   relationName = "",
+  relationID,
 }: WithdrawalRuleSelectorModalProps) {
   const [search, setSearch] = useState("");
   const [selected, setSelected] = useState<string[]>(initialSelected);
@@ -50,38 +51,57 @@ export default function RelationWithdrawalRulesModal({
     Record<
       string,
       {
-        ruleValue?: string | number | boolean;
-        isActive?: boolean;
+        value: string;
       }
     >
   >({});
-  const [isLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const sourceWithdrawalRules = withdrawalRules;
 
-  useEffect(() => {
+  // Sincroniza selección cuando cambia initialSelected mientras está abierto
+  React.useEffect(() => {
     if (open) setSelected(initialSelected);
   }, [initialSelected, open]);
 
-  useEffect(() => {
+  // Sincronizar configs default para seleccionados y limpiar los removidos
+  React.useEffect(() => {
     setConfigs((prev) => {
-      const next = { ...prev } as typeof prev;
+      const next = { ...prev };
       const selSet = new Set(selected);
+      // Limpiar no seleccionados
       Object.keys(next).forEach((k) => {
         if (!selSet.has(k)) delete (next as any)[k];
       });
+      // Añadir defaults
       selected.forEach((id) => {
         if (!next[id]) {
-          const existing = initialRelationWithdrawalRules.find((rwr) => rwr.ruleID === id);
-          if (existing) {
+          // Buscar primero en los RelationWithdrawalRules existentes
+          const existingRelationRule = initialRelationWithdrawalRules.find(
+            (rwr) => rwr.ruleID === id
+          );
+          if (existingRelationRule) {
             next[id] = {
-              ruleValue: existing.ruleValue,
-              isActive: existing.isActive,
+              value: existingRelationRule.value,
             };
           } else {
+            // Si no existe, usar defaults basados en el tipo de regla
+            const rule = sourceWithdrawalRules.find((wr) => wr.ruleID === id);
+            let defaultValue: string;
+
+            if (rule?.ruleType === "boolean") {
+              defaultValue = "false";
+            } else if (
+              rule?.ruleType === "number" ||
+              rule?.ruleType === "percentage"
+            ) {
+              defaultValue = "0";
+            } else {
+              defaultValue = "";
+            }
+
             next[id] = {
-              isActive: true,
-              ruleValue: "",
+              value: defaultValue,
             };
           }
         }
@@ -90,28 +110,40 @@ export default function RelationWithdrawalRulesModal({
     });
   }, [selected, sourceWithdrawalRules, initialRelationWithdrawalRules]);
 
-  const { available } = useMemo(() => {
+  const { available, selectedList } = useMemo(() => {
     const set = new Set(selected);
     const available = sourceWithdrawalRules.filter((wr) => !set.has(wr.ruleID));
-    return { available };
+    const selectedList = sourceWithdrawalRules.filter((wr) =>
+      set.has(wr.ruleID)
+    );
+    return { available, selectedList };
   }, [sourceWithdrawalRules, selected]);
+
+  // Ordenar las reglas seleccionadas alfabéticamente por nombre
+  const selectedListSorted = useMemo(() => {
+    return [...selectedList].sort((a, b) =>
+      (a.nameRule || a.ruleID).localeCompare(b.nameRule || b.ruleID)
+    );
+  }, [selectedList]);
 
   const filteredAvailable = useMemo(() => {
     const q = search.trim().toLowerCase();
     if (!q) return available;
-    return available.filter((wr) => 
-      `${wr.ruleName || ''} ${wr.ruleDescription || ''}`.toLowerCase().includes(q)
+    return available.filter((wr) =>
+      `${wr.nameRule || ""} ${wr.descriptionRule || ""}`
+        .toLowerCase()
+        .includes(q)
     );
   }, [available, search]);
 
   function add(id: string) {
     setSelected((prev) => (prev.includes(id) ? prev : [...prev, id]));
   }
-  
+
   function remove(id: string) {
     setSelected((prev) => prev.filter((x) => x !== id));
     setConfigs((prev) => {
-      const n = { ...prev } as typeof prev;
+      const n = { ...prev };
       delete (n as any)[id];
       return n;
     });
@@ -124,56 +156,47 @@ export default function RelationWithdrawalRulesModal({
     }));
   }
 
-  function handleConfirm() {
-    if (onConfirmWithDetails) {
-      const items = selected.map((id) => ({
-        ruleID: id,
-        ruleValue: configs[id]?.ruleValue,
-        isActive: configs[id]?.isActive ?? true,
-      }));
-      onConfirmWithDetails(items);
-    } else {
-      onConfirm(selected);
-    }
-    onOpenChange(false);
-  }
-
   const renderRuleValue = (rule: WithdrawalRule, id: string) => {
     const config = configs[id] || {};
-    
+
     switch (rule.ruleType) {
       case "boolean":
         return (
           <div className="flex items-center space-x-2">
             <Switch
-              checked={Boolean(config.ruleValue)}
-              onCheckedChange={(checked) => updateConfig(id, "ruleValue", checked)}
+              checked={config.value === "true"}
+              onCheckedChange={(checked) =>
+                updateConfig(id, "value", checked ? "true" : "false")
+              }
             />
-            <Label className="text-xs">{config.ruleValue ? "Sí" : "No"}</Label>
+            <Label className="text-xs font-medium text-gray-700 dark:text-gray-300">
+              {config.value === "true" ? "Sí" : "No"}
+            </Label>
           </div>
         );
       case "number":
       case "percentage":
         return (
           <Input
-              type="number"
-              placeholder={rule.ruleType === "percentage" ? "0-100" : "Valor"}
-              value={typeof config.ruleValue === 'boolean' ? '' : (config.ruleValue || "")}
-              onChange={(e) => {
-                const val = e.target.value === "" ? "" : Number(e.target.value);
-                updateConfig(id, "ruleValue", val);
-              }}
-            className="h-8 text-xs"
+            type="number"
+            placeholder={
+              rule.ruleType === "percentage" ? "0-100" : "Valor numérico"
+            }
+            value={config.value || ""}
+            onChange={(e) => {
+              updateConfig(id, "value", e.target.value);
+            }}
+            className="mt-0.5 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
           />
         );
       default:
         return (
           <Input
             type="text"
-            placeholder="Valor"
-            value={String(config.ruleValue || "")}
-            onChange={(e) => updateConfig(id, "ruleValue", e.target.value)}
-            className="h-8 text-xs"
+            placeholder="Valor de texto"
+            value={config.value || ""}
+            onChange={(e) => updateConfig(id, "value", e.target.value)}
+            className="mt-0.5 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500"
           />
         );
     }
@@ -181,145 +204,275 @@ export default function RelationWithdrawalRulesModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
+      <DialogContent className="w-[95vw] sm:w-[90vw] md:w-auto sm:!max-w-3xl md:!max-w-5xl lg:!max-w-6xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700 shadow-lg rounded-xl">
         <DialogHeader>
-          <DialogTitle>Gestionar Withdrawal Rules</DialogTitle>
-          <DialogDescription>
-            {relationName ? `Configurar withdrawal rules para: ${relationName}` : "Selecciona y configura las withdrawal rules"}
+          <DialogTitle className="text-gray-900 dark:text-white text-base md:text-lg font-semibold">
+            {relationName
+              ? `Withdrawal Rules para: ${relationName}`
+              : "Seleccionar Withdrawal Rules"}
+          </DialogTitle>
+          <DialogDescription className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm">
+            Elige withdrawal rules disponibles y muévelas a la lista de
+            agregadas. Puedes buscar por nombre o descripción.
           </DialogDescription>
         </DialogHeader>
 
-        <div className="flex-1 overflow-hidden">
-          <div className="grid grid-cols-2 gap-4 h-full">
-            {/* Columna izquierda: Disponibles */}
-            <div className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden flex flex-col">
-              <div className="bg-gray-50 dark:bg-gray-800 px-3 py-2 border-b border-gray-200 dark:border-gray-700">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-medium text-gray-900 dark:text-white">Disponibles</span>
-                  <span className="text-xs text-gray-500 dark:text-gray-400">{filteredAvailable.length}</span>
-                </div>
-                <Input
-                  placeholder="Buscar withdrawal rules..."
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  className="h-8 text-xs"
-                />
-              </div>
-              <div className="p-2 flex-1 overflow-auto">
-                <div className="space-y-1 max-h-72 overflow-auto pr-1">
-                  {filteredAvailable.length === 0 ? (
-                    <div className="text-xs text-gray-500 dark:text-gray-400">
-                      {search ? "No se encontraron withdrawal rules" : "No hay withdrawal rules disponibles"}
-                    </div>
-                  ) : (
-                    filteredAvailable.map((wr) => (
-                      <div key={wr.ruleID} className="flex items-center justify-between p-2 rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
-                        <div className="flex-1 min-w-0">
-                          <div className="text-sm font-medium text-gray-900 dark:text-white truncate">
-                            {wr.ruleName || `Rule ${wr.ruleID.slice(0, 8)}`}
-                          </div>
-                          <div className="text-xs text-gray-500 dark:text-gray-400">
-                            {getRuleTypeLabel(wr.ruleType)}
-                          </div>
-                          {wr.ruleDescription && (
-                            <div className="text-xs text-gray-400 dark:text-gray-500 truncate">
-                              {wr.ruleDescription}
-                            </div>
-                          )}
-                        </div>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="h-7 px-2 ml-2 border-green-300 dark:border-green-600 bg-white dark:bg-gray-700 text-green-700 dark:text-green-300 hover:bg-green-50 dark:hover:bg-green-900/20"
-                          onClick={() => add(wr.ruleID)}
-                        >
-                          <Plus className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    ))
-                  )}
-                </div>
-              </div>
+        <div
+          className={`grid gap-3 mt-2 ${
+            Object.values(detailsOpen).some(Boolean)
+              ? "grid-cols-1 md:grid-cols-3"
+              : "grid-cols-1 md:grid-cols-2"
+          }`}
+        >
+          {/* Columna izquierda: disponibles */}
+          <div className="md:col-span-1 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden bg-white dark:bg-gray-800">
+            <div className="px-2 py-1.5 bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+              <span className="text-sm font-medium text-gray-900 dark:text-white">
+                Disponibles
+              </span>
+              <span className="text-xs text-gray-500 dark:text-gray-400">
+                {available.length}
+              </span>
             </div>
-
-            {/* Columna derecha: Seleccionadas */}
-            <div className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden flex flex-col">
-              <div className="bg-gray-50 dark:bg-gray-800 px-3 py-2 border-b border-gray-200 dark:border-gray-700">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-gray-900 dark:text-white">Seleccionadas</span>
-                  <span className="text-xs text-gray-500 dark:text-gray-400">{selected.length}</span>
-                </div>
-              </div>
-              <div className="p-2 flex-1 overflow-auto">
-                  <div className="space-y-1 max-h-72 overflow-auto pr-1">
-                    {selected.length === 0 ? (
-                      <div className="text-xs text-gray-500 dark:text-gray-400">No has agregado withdrawal rules</div>
-                    ) : (
-                      selected
-                        .map((id) => sourceWithdrawalRules.find((wr) => wr.ruleID === id))
-                        .filter(Boolean)
-                      .map((wr) => (
-                        <div key={wr!.ruleID} className="rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
-                          <div className="flex items-center justify-between px-2 py-1.5">
-                            <div>
-                              <div className="text-sm font-medium text-gray-900 dark:text-white">
-                                {wr!.ruleName || `Rule ${wr!.ruleID.slice(0, 8)}`}
-                              </div>
-                              <div className="text-xs text-gray-500 dark:text-gray-400">
-                                {getRuleTypeLabel(wr!.ruleType)}
-                              </div>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className="h-7 px-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600"
-                                onClick={() => setDetailsOpen((prev) => ({ ...prev, [wr!.ruleID]: !prev[wr!.ruleID] }))}
-                              >
-                                {detailsOpen[wr!.ruleID] ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-                              </Button>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className="h-7 px-2 border-red-300 dark:border-red-600 bg-white dark:bg-gray-700 text-red-700 dark:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20"
-                                onClick={() => remove(wr!.ruleID)}
-                              >
-                                <X className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          </div>
-                          {detailsOpen[wr!.ruleID] && (
-                            <div className="px-2 pb-2">
-                              <Separator className="mb-2" />
-                              <div className="space-y-2">
-                                <div>
-                                  <Label className="text-xs font-medium text-gray-700 dark:text-gray-300">Valor de la regla</Label>
-                                  {renderRuleValue(wr!, wr!.ruleID)}
-                                </div>
-                                <div className="flex items-center space-x-2">
-                                  <Switch
-                                    checked={configs[wr!.ruleID]?.isActive ?? true}
-                                    onCheckedChange={(checked) => updateConfig(wr!.ruleID, "isActive", checked)}
-                                  />
-                                  <Label className="text-xs">Activo</Label>
-                                </div>
-                              </div>
-                            </div>
-                          )}
+            <div className="p-2">
+              <Input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Buscar withdrawal rules..."
+                className="mb-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+              <div className="space-y-1 max-h-64 overflow-auto pr-1">
+                {filteredAvailable.length === 0 ? (
+                  <div className="text-xs text-gray-500 dark:text-gray-400">
+                    Sin resultados
+                  </div>
+                ) : (
+                  filteredAvailable.map((wr) => (
+                    <div
+                      key={wr.ruleID}
+                      className="flex items-center justify-between px-2 py-1.5 rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                    >
+                      <div>
+                        <div className="text-sm font-medium text-gray-900 dark:text-white">
+                          {wr.nameRule || `Rule ${wr.ruleID.slice(0, 8)}`}
                         </div>
-                      ))
-                  )}
-                </div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400">
+                          {getRuleTypeLabel(wr.ruleType)}
+                        </div>
+                        {wr.descriptionRule && (
+                          <div className="text-xs text-gray-400 dark:text-gray-500 truncate max-w-[200px]">
+                            {wr.descriptionRule}
+                          </div>
+                        )}
+                      </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-7 px-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600"
+                        onClick={() => add(wr.ruleID)}
+                      >
+                        <Plus className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))
+                )}
               </div>
             </div>
           </div>
+
+          {/* Columna derecha: agregadas */}
+          <div className="md:col-span-1 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden bg-white dark:bg-gray-800">
+            <div className="px-2 py-1.5 bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+              <span className="text-sm font-medium text-gray-900 dark:text-white">
+                Agregadas
+              </span>
+              <span className="text-xs text-gray-500 dark:text-gray-400">
+                {selectedList.length}
+              </span>
+            </div>
+            <div className="p-2">
+              <div className="space-y-1 max-h-64 overflow-auto pr-1">
+                {selectedList.length === 0 ? (
+                  <div className="text-xs text-gray-500 dark:text-gray-400">
+                    Sin withdrawal rules agregadas
+                  </div>
+                ) : (
+                  selectedListSorted.map((wr) => (
+                    <div
+                      key={wr.ruleID}
+                      className={`flex items-center justify-between px-2 py-1.5 rounded-md border transition-colors cursor-pointer ${
+                        detailsOpen[wr.ruleID]
+                          ? "border-blue-300 dark:border-blue-600 bg-blue-50 dark:bg-blue-900/20"
+                          : "border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700"
+                      }`}
+                      onClick={() =>
+                        setDetailsOpen({
+                          ...detailsOpen,
+                          [wr.ruleID]: !detailsOpen[wr.ruleID]
+                        })
+                      }
+                    >
+                      <div>
+                        <div className="text-sm font-medium text-gray-900 dark:text-white">
+                          {wr.nameRule || `Rule ${wr.ruleID.slice(0, 8)}`}
+                        </div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400">
+                          {getRuleTypeLabel(wr.ruleType)}
+                        </div>
+                        {wr.descriptionRule && (
+                          <div className="text-xs text-gray-400 dark:text-gray-500 truncate max-w-[200px]">
+                            {wr.descriptionRule}
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-1">
+                        {detailsOpen[wr.ruleID] && (
+                          <Check className="h-4 w-4 text-blue-500 dark:text-blue-400" />
+                        )}
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-7 px-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            remove(wr.ruleID);
+                          }}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          </div>
+          {/* Columna de detalles */}
+          {Object.values(detailsOpen).some(Boolean) && (
+            <div className="md:col-span-1 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden bg-white dark:bg-gray-800">
+              <div className="px-2 py-1.5 bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-700">
+                <span className="text-sm font-medium text-gray-900 dark:text-white">
+                  Configuración
+                </span>
+              </div>
+              <div className="p-3 space-y-3">
+                {(() => {
+                  const openRuleID = Object.keys(detailsOpen).find(key => detailsOpen[key]);
+                  const wr = selectedList.find((w) => w.ruleID === openRuleID);
+                  if (!wr) return null;
+                  return (
+                    <>
+                      <div>
+                        <div className="text-sm font-medium text-gray-900 dark:text-white mb-1">
+                          {wr.nameRule || `Rule ${wr.ruleID.slice(0, 8)}`}
+                        </div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400 mb-2">
+                          {getRuleTypeLabel(wr.ruleType)}
+                        </div>
+                        {wr.descriptionRule && (
+                          <div className="text-xs text-gray-400 dark:text-gray-500 mb-3">
+                            {wr.descriptionRule}
+                          </div>
+                        )}
+                      </div>
+                      <div>
+                        <Label className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1 block">
+                          Valor de la regla
+                        </Label>
+                        {renderRuleValue(wr, wr.ruleID)}
+                      </div>
+                    </>
+                  );
+                })()}
+              </div>
+            </div>
+          )}
         </div>
 
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isLoading}>
+        <DialogFooter className="border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-4 py-3">
+          <Button
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+            disabled={isLoading}
+            className="border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600"
+          >
             Cancelar
           </Button>
-          <Button onClick={handleConfirm} disabled={isLoading}>
+          <Button
+            onClick={async () => {
+              setIsLoading(true);
+              try {
+                // Verificar si hay cambios
+                const hasChanges =
+                  selectedList.length !== initialSelected.length ||
+                  selectedList.some(
+                    (wr) => !initialSelected.includes(wr.ruleID)
+                  ) ||
+                  Object.keys(configs).some((ruleID) => {
+                    const config = configs[ruleID];
+                    const initial = initialRelationWithdrawalRules.find(
+                      (r) => r.ruleID === ruleID
+                    );
+                    return (
+                      !initial ||
+                      config.value !== initial.value
+                    );
+                  });
+
+                if (!hasChanges) {
+                  onOpenChange(false);
+                  return;
+                }
+
+                // Preparar datos
+                const data = selectedList.map((wr) => {
+                  const config = configs[wr.ruleID];
+                  let value = config?.value || "";
+
+                  // Convertir el valor según el tipo de regla para envío al backend
+                  if (wr.ruleType === "boolean") {
+                    value = config?.value ? "true" : "false";
+                  } else if (
+                    wr.ruleType === "number" ||
+                    wr.ruleType === "percentage"
+                  ) {
+                    value = config?.value || "0";
+                  }
+
+                  return {
+                     ruleID: wr.ruleID,
+                     relationID,
+                     value: value
+                   };
+                });
+
+                // Validar campos requeridos
+                const invalidRules = selectedList.filter(rule => {
+                  const config = configs[rule.ruleID];
+                  return !config?.value || config.value.trim() === '';
+                });
+                
+                if (invalidRules.length > 0) {
+                  console.warn('Hay reglas sin valor configurado:', invalidRules.map(r => r.nameRule));
+                  return;
+                }
+                
+                if (onConfirmWithDetails) {
+                  await onConfirmWithDetails(data, configs);
+                } else if (onConfirm) {
+                  await onConfirm(selected);
+                }
+                
+                onOpenChange(false);
+              } catch (error) {
+                console.error('Error al confirmar:', error);
+              } finally {
+                setIsLoading(false);
+              }
+            }}
+            disabled={isLoading}
+            className="bg-blue-600 dark:bg-blue-700 text-white hover:bg-blue-700 dark:hover:bg-blue-800"
+          >
             {isLoading ? "Guardando..." : "Confirmar"}
           </Button>
         </DialogFooter>

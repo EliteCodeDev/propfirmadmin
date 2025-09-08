@@ -38,18 +38,22 @@ export interface WithdrawalRuleSelectorModalProps {
   initialSelected?: string[];
   initialRelationWithdrawalRules?: Array<{
     ruleID: string;
-    ruleValue?: string | number | boolean;
-    isActive?: boolean;
+    relationID: string;
+    value: string;
+    rule?: WithdrawalRule;
+    relation?: Record<string, unknown>;
   }>;
   onConfirm?: (selectedIds: string[]) => void;
   onConfirmWithDetails?: (
     items: Array<{
       ruleID: string;
-      ruleValue?: string | number | boolean;
-      isActive?: boolean;
-    }>
+      relationID: string;
+      value: string;
+    }>,
+    configs?: Record<string, { value: string }>
   ) => void;
   relationName?: string;
+  relationID: string;
 }
 
 // New: Addon selector modal props
