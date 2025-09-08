@@ -67,7 +67,7 @@ function VerificationsPageContent() {
     if (documentTypeFilter !== "all")
       params.append("documentType", documentTypeFilter);
 
-    return `${apiBaseUrl}/verification?${params.toString()}`;
+  return `${apiBaseUrl}/verification?${params.toString()}`;
   }, [currentPage, pageSize, searchTerm, statusFilter, documentTypeFilter]);
 
   // Usar SWR para obtener los datos
@@ -79,6 +79,18 @@ function VerificationsPageContent() {
       revalidateOnReconnect: true,
     }
   );
+
+  const verifications: VerificationItem[] = data?.data ?? [];
+  const pagination = {
+    page: data?.page ?? currentPage,
+    limit: data?.limit ?? pageSize,
+    total: data?.total ?? 0,
+    totalPages: data?.totalPages ?? 1,
+  };
+
+  const handleSearch = useCallback(() => {
+    setCurrentPage(1);
+  }, []);
 
   const handleApprove = async (verificationId: string) => {
     try {
@@ -194,6 +206,7 @@ function VerificationsPageContent() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
+                  {isLoading ? (
                   {isLoading ? (
                     <TableRow>
                       <TableCell colSpan={6} className="text-center py-8">
