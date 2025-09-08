@@ -179,11 +179,9 @@ export default function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
         <div className="flex-1 min-h-0 py-4 overflow-x-visible overflow-y-auto">
           <nav className={classNames("space-y-2", isCollapsed ? "px-2" : "px-3")}>
             {navigation.map((item, index) => {
-              // ✅ Condición corregida
               const isActive =
-                item.href === "/admin/dashboard"
-                  ? pathname === "/admin/dashboard"
-                  : pathname === item.href || pathname.startsWith(item.href + "/");
+                pathname === item.href ||
+                (pathname.startsWith(item.href + "/") && item.href !== "/admin/dashboard");
 
               const showDivider = index === 0 || index === 2;
 
@@ -191,7 +189,6 @@ export default function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
                 <div key={item.href}>
                   <Link
                     href={item.href}
-                    prefetch={false} // ✅ evita redirecciones raras
                     className={classNames(
                       "group flex items-center text-sm font-medium rounded-xl transition-all duration-300 ease-out relative overflow-hidden",
                       isCollapsed ? "p-3 justify-center" : "px-4 py-3",
@@ -284,7 +281,10 @@ export default function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
               <div className="h-px bg-gray-200 dark:bg-gray-600 my-2" />
 
               <button
-                onClick={() => signOut({ callbackUrl: "/auth/login" })}
+                onClick={async () => {
+                  await signOut({ redirect: false });
+                  window.location.href = "/auth/login";
+                }}
                 className="w-full flex items-center px-4 py-3 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all rounded-lg"
               >
                 <ArrowRightOnRectangleIcon className="h-4 w-4 mr-3" />

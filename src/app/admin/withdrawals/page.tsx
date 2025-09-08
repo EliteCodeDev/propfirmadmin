@@ -216,6 +216,7 @@ export default function WithdrawalsInner() {
   const [rejectionDetail, setRejectionDetail] = useState("");
 
   const [logins, setLogins] = useState<Record<string, string>>({});
+  const [brokerAccountIds, setBrokerAccountIds] = useState<Record<string, string>>({});
 
   const accessToken = session?.accessToken as string | undefined;
 
@@ -280,15 +281,19 @@ export default function WithdrawalsInner() {
   useEffect(() => {
     async function fetchLogins() {
       const newLogins: Record<string, string> = {};
+      const newIds: Record<string, string> = {};
       for (const w of withdrawals) {
-        if (w.challengeID && !logins[w.challengeID]) {
+        if (w.challengeID && (!logins[w.challengeID] || !brokerAccountIds[w.challengeID])) {
           try {
             const res = await fetch(`${API_BASE}/challenges/${w.challengeID}`, {
               headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
             });
             if (res.ok) {
               const json = await res.json();
-              newLogins[w.challengeID] = json.data?.brokerAccount?.login || "-";
+              const login = json.data?.brokerAccount?.login || "-";
+              const accountId = json.data?.brokerAccount?.brokerAccountID || json.data?.brokerAccountID || "";
+              newLogins[w.challengeID] = login;
+              if (accountId) newIds[w.challengeID] = accountId;
             } else {
               newLogins[w.challengeID] = "-";
             }
@@ -297,9 +302,10 @@ export default function WithdrawalsInner() {
           }
         }
       }
-      if (Object.keys(newLogins).length) {
-        setLogins((prev) => ({ ...prev, ...newLogins }));
-      }
+      const hasLogins = Object.keys(newLogins).length > 0;
+      const hasIds = Object.keys(newIds).length > 0;
+      if (hasLogins) setLogins((prev) => ({ ...prev, ...newLogins }));
+      if (hasIds) setBrokerAccountIds((prev) => ({ ...prev, ...newIds }));
     }
     if (withdrawals.length) fetchLogins();
   }, [withdrawals, accessToken, logins]);
@@ -402,15 +408,31 @@ export default function WithdrawalsInner() {
 
         {(() => {
           const columns: ColumnConfig[] = [
-            { key: "userName", label: "Usuario", type: "normal" },
-            { key: "login", label: "Login", type: "normal" },
+            {
+              key: "userName",
+              label: "Usuario",
+              type: "link",
+              linkUrl: (_value, row) => `/admin/users/${(row as any)?.__raw?.userID ?? (row as any)?.userID}`,
+            },
+            {
+              key: "login",
+              label: "Login",
+              type: "link",
+              linkUrl: (value, row) => {
+                const w = (row as any)?.__raw as Withdrawal | undefined;
+                const id = w?.challengeID ? brokerAccountIds[w.challengeID] : undefined;
+                return id
+                  ? `/admin/brokeraccounts/${id}`
+                  : `/admin/brokeraccounts?login=${encodeURIComponent(String(value ?? ""))}`;
+              },
+            },
             // 🔹 Columna wallet con ancho reducido
-            { 
-              key: "wallet", 
-              label: "Wallet", 
+            {
+              key: "wallet",
+              label: "Wallet",
               type: "normal",
               //width: "140px", // Ancho fijo reducido
-              render: (value) => <WalletCell wallet={String(value)} />
+              render: (value) => <WalletCell wallet={String(value)} />,
             },
             { key: "amount", label: "Monto", type: "normal" },
             {
