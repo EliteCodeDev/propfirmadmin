@@ -512,9 +512,7 @@ export function TemplateVisualizer({}: TemplateVisualizerProps) {
                   <CardContent>
                     <div className="space-y-2 text-sm">
                       {/* Eliminado: Precio base, no existe en Addon */}
-                      <div>
-                        <span className="font-medium">Balance asociado:</span> {selectedAddon.balance != null ? selectedAddon.balance : "—"}
-                      </div>
+                      {/* Eliminado: Balance asociado, no existe en Addon */}
                       <div>
                         <span className="font-medium">Activo:</span> {selectedAddon.isActive ? "Sí" : "No"}
                       </div>
@@ -539,7 +537,7 @@ export function TemplateVisualizer({}: TemplateVisualizerProps) {
                       <CardContent>
                         <div className="space-y-2 text-sm">
                           <div>
-                            <span className="font-medium">Precio:</span> {cfg.price != null ? cfg.price : "—"}
+                            <span className="font-medium">Valor:</span> {cfg.value != null ? cfg.value : "—"}
                           </div>
                           <div>
                             <span className="font-medium">Activo:</span> {cfg.isActive ? "Sí" : "No"}

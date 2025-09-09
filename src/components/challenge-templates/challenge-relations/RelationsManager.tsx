@@ -576,7 +576,7 @@ export function RelationsManager({ pageSize = 10 }: RelationsManagerProps) {
         initialRelationAddons={
           relationAddonsSnapshot?.map((ra) => ({
             addonID: ra.addonID,
-            price: ra.price,
+            value: ra.value,
             isActive: ra.isActive,
             hasDiscount: ra.hasDiscount,
             discount: ra.discount,
@@ -603,7 +603,7 @@ export function RelationsManager({ pageSize = 10 }: RelationsManagerProps) {
                 .filter((i) => {
                   const ex = latest.find((ra) => ra.addonID === i.addonID);
                   return (
-                    ex?.price !== i.price ||
+                    ex?.value !== i.value ||
                     ex?.isActive !== i.isActive ||
                     ex?.hasDiscount !== i.hasDiscount ||
                     ex?.discount !== i.discount ||
@@ -644,7 +644,7 @@ export function RelationsManager({ pageSize = 10 }: RelationsManagerProps) {
                     await challengeTemplatesApi.createRelationAddon({
                       addonID: id,
                       relationID: selectedRelationIdForAddons,
-                      price: cfg?.price,
+                      value: cfg?.value ?? undefined,
                       isActive: cfg?.isActive,
                       hasDiscount: cfg?.hasDiscount,
                       discount: cfg?.discount,
@@ -662,7 +662,7 @@ export function RelationsManager({ pageSize = 10 }: RelationsManagerProps) {
                         id,
                         selectedRelationIdForAddons,
                         {
-                          price: cfg?.price,
+                          value: cfg?.value ?? undefined,
                           isActive: cfg?.isActive,
                           hasDiscount: cfg?.hasDiscount,
                           discount: cfg?.discount,
@@ -684,7 +684,7 @@ export function RelationsManager({ pageSize = 10 }: RelationsManagerProps) {
                     i.addonID,
                     selectedRelationIdForAddons,
                     {
-                      price: i.price,
+                      value: i.value ?? undefined,
                       isActive: i.isActive,
                       hasDiscount: i.hasDiscount,
                       discount: i.discount,

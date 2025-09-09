@@ -121,14 +121,13 @@ export interface CreateAddonPayload {
   isActive: boolean;
   hasDiscount: boolean;
   discount: number;
-  balance: number;
 }
 export type UpdateAddonPayload = Partial<CreateAddonPayload>;
 
 export interface CreateRelationAddonPayload {
   addonID: string;
   relationID: string;
-  price?: number;
+  value?: number | boolean;
   isActive?: boolean;
   hasDiscount?: boolean;
   discount?: number;
@@ -344,8 +343,13 @@ export const challengeTemplatesApi = {
   },
 
   // Withdrawal Rules
-  createWithdrawalRule: async (payload: CreateWithdrawalRulePayload): Promise<WithdrawalRule> => {
-    const { data } = await client.post("/challenge-templates/withdrawal-rules", payload);
+  createWithdrawalRule: async (
+    payload: CreateWithdrawalRulePayload
+  ): Promise<WithdrawalRule> => {
+    const { data } = await client.post(
+      "/challenge-templates/withdrawal-rules",
+      payload
+    );
     return data;
   },
   listWithdrawalRules: async (): Promise<WithdrawalRule[]> => {
@@ -353,7 +357,9 @@ export const challengeTemplatesApi = {
     return data.data;
   },
   getWithdrawalRule: async (id: string): Promise<WithdrawalRule> => {
-    const { data } = await client.get(`/challenge-templates/withdrawal-rules/${id}`);
+    const { data } = await client.get(
+      `/challenge-templates/withdrawal-rules/${id}`
+    );
     return data;
   },
   updateWithdrawalRule: async (
@@ -367,27 +373,46 @@ export const challengeTemplatesApi = {
     return data;
   },
   deleteWithdrawalRule: async (id: string): Promise<{ success: boolean }> => {
-    const { data } = await client.delete(`/challenge-templates/withdrawal-rules/${id}`);
+    const { data } = await client.delete(
+      `/challenge-templates/withdrawal-rules/${id}`
+    );
     return data;
   },
 
   // Relation Withdrawal Rules
-  listRelationWithdrawalRules: async (relationID: string): Promise<Array<{ ruleID: string; ruleValue?: string | number | boolean; isActive?: boolean }>> => {
-    const { data } = await client.get(`/challenge-templates/withdrawal-rules-relations/by-relation/${relationID}`);
+  listRelationWithdrawalRules: async (
+    relationID: string
+  ): Promise<
+    Array<{
+      ruleID: string;
+      ruleValue?: string | number | boolean;
+      isActive?: boolean;
+    }>
+  > => {
+    const { data } = await client.get(
+      `/challenge-templates/withdrawal-rules-relations/by-relation/${relationID}`
+    );
     return data.data ?? data;
   },
   updateRelationWithdrawalRules: async (
     relationID: string,
-    withdrawalRules: Array<{ ruleID: string; ruleValue?: string | number | boolean; isActive?: boolean }>
+    withdrawalRules: Array<{
+      ruleID: string;
+      ruleValue?: string | number | boolean;
+      isActive?: boolean;
+    }>
   ): Promise<{ success: boolean }> => {
     // Update each withdrawal rule individually using the correct backend endpoint
-    const updatePromises = withdrawalRules.map(rule => 
-      client.patch(`/challenge-templates/withdrawal-rules-relations/${rule.ruleID}/${relationID}`, {
-        value: rule.ruleValue,
-        isActive: rule.isActive
-      })
+    const updatePromises = withdrawalRules.map((rule) =>
+      client.patch(
+        `/challenge-templates/withdrawal-rules-relations/${rule.ruleID}/${relationID}`,
+        {
+          value: rule.ruleValue,
+          isActive: rule.isActive,
+        }
+      )
     );
-    
+
     await Promise.all(updatePromises);
     return { success: true };
   },
@@ -472,7 +497,9 @@ export const challengeTemplatesApi = {
     return data?.data ?? data;
   },
   getRelationStage: async (id: string): Promise<RelationStage> => {
-    const { data } = await client.get(`/challenge-templates/relation-stages/${id}`);
+    const { data } = await client.get(
+      `/challenge-templates/relation-stages/${id}`
+    );
     return data;
   },
   updateRelationStage: async (
@@ -509,10 +536,7 @@ export const challengeTemplatesApi = {
     id: string,
     payload: UpdateAddonPayload
   ): Promise<Addon> => {
-    const { data } = await client.patch(
-      `/addons/${id}`,
-      payload
-    );
+    const { data } = await client.patch(`/addons/${id}`, payload);
     return data;
   },
   deleteAddon: async (id: string): Promise<{ success: boolean }> => {
@@ -524,15 +548,10 @@ export const challengeTemplatesApi = {
   createRelationAddon: async (
     payload: CreateRelationAddonPayload
   ): Promise<RelationAddon> => {
-    const { data } = await client.post(
-      "/relation-addons",
-      payload
-    );
+    const { data } = await client.post("/relation-addons", payload);
     return data;
   },
-  listRelationAddons: async (
-    relationID?: string
-  ): Promise<RelationAddon[]> => {
+  listRelationAddons: async (relationID?: string): Promise<RelationAddon[]> => {
     const { data } = await client.get(
       relationID
         ? `/relation-addons/relation/${relationID}`
@@ -572,7 +591,11 @@ export const challengeTemplatesApi = {
       return { success: true };
     }
     // Si no hay data pero el status es 2xx, asumir éxito.
-    if (res.status >= 200 && res.status < 300 && (res.data === undefined || res.data === null)) {
+    if (
+      res.status >= 200 &&
+      res.status < 300 &&
+      (res.data === undefined || res.data === null)
+    ) {
       return { success: true };
     }
     return res.data ?? { success: res.status >= 200 && res.status < 300 };

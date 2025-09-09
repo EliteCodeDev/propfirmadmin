@@ -64,7 +64,7 @@ export interface AddonSelectorModalProps {
   initialSelected?: string[];
   initialRelationAddons?: Array<{
     addonID: string;
-    price?: number;
+    value: number | boolean | null;
     isActive?: boolean;
     hasDiscount?: boolean;
     discount?: number;
@@ -74,7 +74,7 @@ export interface AddonSelectorModalProps {
   onConfirmWithDetails?: (
     items: Array<{
       addonID: string;
-      price?: number;
+      value: number | boolean | null;
       isActive?: boolean;
       hasDiscount?: boolean;
       discount?: number;

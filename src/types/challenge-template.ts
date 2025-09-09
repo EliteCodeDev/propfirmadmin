@@ -130,18 +130,19 @@ export interface StageParameter {
 export interface Addon {
   addonID: string;
   name: string;
+  slugRule?: string;
+  valueType?: 'number' | 'boolean' | 'percentage';
   isActive: boolean;
   hasDiscount: boolean;
   discount?: number;
-  balance?: number;
 }
 
 export interface RelationAddon {
   addonID: string;
   relationID: string;
-  price?: number;
-  isActive?: boolean;
-  hasDiscount?: boolean;
+  value: number | boolean | null;
+  isActive: boolean;
+  hasDiscount: boolean;
   discount?: number;
   wooID?: number;
   addon?: Addon;
