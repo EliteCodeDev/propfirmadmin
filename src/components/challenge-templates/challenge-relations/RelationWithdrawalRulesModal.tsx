@@ -13,8 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
-import { Check, Plus, X } from "lucide-react";
+import { Check, Plus, X, ChevronDown, ChevronUp } from "lucide-react";
 import type { WithdrawalRule } from "@/types/challenge-template";
 import type { WithdrawalRuleSelectorModalProps } from "@/types";
 
@@ -164,6 +163,7 @@ export default function RelationWithdrawalRulesModal({
         return (
           <div className="flex items-center space-x-2">
             <Switch
+              name="value"
               checked={config.value === "true"}
               onCheckedChange={(checked) =>
                 updateConfig(id, "value", checked ? "true" : "false")
@@ -217,13 +217,7 @@ export default function RelationWithdrawalRulesModal({
           </DialogDescription>
         </DialogHeader>
 
-        <div
-          className={`grid gap-3 mt-2 ${
-            Object.values(detailsOpen).some(Boolean)
-              ? "grid-cols-1 md:grid-cols-3"
-              : "grid-cols-1 md:grid-cols-2"
-          }`}
-        >
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mt-2">
           {/* Columna izquierda: disponibles */}
           <div className="md:col-span-1 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden bg-white dark:bg-gray-800">
             <div className="px-2 py-1.5 bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
@@ -281,7 +275,7 @@ export default function RelationWithdrawalRulesModal({
           </div>
 
           {/* Columna derecha: agregadas */}
-          <div className="md:col-span-1 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden bg-white dark:bg-gray-800">
+          <div className="md:col-span-2 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden bg-white dark:bg-gray-800">
             <div className="px-2 py-1.5 bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
               <span className="text-sm font-medium text-gray-900 dark:text-white">
                 Agregadas
@@ -291,7 +285,7 @@ export default function RelationWithdrawalRulesModal({
               </span>
             </div>
             <div className="p-2">
-              <div className="space-y-1 max-h-64 overflow-auto pr-1">
+              <div className="space-y-1 max-h-72 overflow-auto pr-1">
                 {selectedList.length === 0 ? (
                   <div className="text-xs text-gray-500 dark:text-gray-400">
                     Sin withdrawal rules agregadas
@@ -300,93 +294,73 @@ export default function RelationWithdrawalRulesModal({
                   selectedListSorted.map((wr) => (
                     <div
                       key={wr.ruleID}
-                      className={`flex items-center justify-between px-2 py-1.5 rounded-md border transition-colors cursor-pointer ${
-                        detailsOpen[wr.ruleID]
-                          ? "border-blue-300 dark:border-blue-600 bg-blue-50 dark:bg-blue-900/20"
-                          : "border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700"
-                      }`}
-                      onClick={() =>
-                        setDetailsOpen({
-                          ...detailsOpen,
-                          [wr.ruleID]: !detailsOpen[wr.ruleID]
-                        })
-                      }
+                      className="rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800"
                     >
-                      <div>
-                        <div className="text-sm font-medium text-gray-900 dark:text-white">
-                          {wr.nameRule || `Rule ${wr.ruleID.slice(0, 8)}`}
-                        </div>
-                        <div className="text-xs text-gray-500 dark:text-gray-400">
-                          {getRuleTypeLabel(wr.ruleType)}
-                        </div>
-                        {wr.descriptionRule && (
-                          <div className="text-xs text-gray-400 dark:text-gray-500 truncate max-w-[200px]">
-                            {wr.descriptionRule}
+                      <div className="flex items-center justify-between px-2 py-1.5">
+                        <div>
+                          <div className="text-sm font-medium text-gray-900 dark:text-white">
+                            {wr.nameRule || `Rule ${wr.ruleID.slice(0, 8)}`}
                           </div>
-                        )}
+                          <div className="text-xs text-gray-500 dark:text-gray-400">
+                            {getRuleTypeLabel(wr.ruleType)}
+                          </div>
+                          {wr.descriptionRule && (
+                            <div className="text-xs text-gray-400 dark:text-gray-500 truncate max-w-[200px]">
+                              {wr.descriptionRule}
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="h-7 px-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600"
+                            onClick={() =>
+                              setDetailsOpen((prev) => ({
+                                ...prev,
+                                [wr.ruleID]: !prev[wr.ruleID],
+                              }))
+                            }
+                            title="Detalles"
+                          >
+                            {detailsOpen[wr.ruleID] ? (
+                              <ChevronUp className="h-4 w-4" />
+                            ) : (
+                              <ChevronDown className="h-4 w-4" />
+                            )}
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="h-7 px-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600"
+                            onClick={() => remove(wr.ruleID)}
+                            title="Quitar"
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </div>
-                      <div className="flex items-center gap-1">
-                        {detailsOpen[wr.ruleID] && (
-                          <Check className="h-4 w-4 text-blue-500 dark:text-blue-400" />
-                        )}
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="h-7 px-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            remove(wr.ruleID);
-                          }}
-                        >
-                          <X className="h-4 w-4" />
-                        </Button>
-                      </div>
+                      {detailsOpen[wr.ruleID] && (
+                        <div className="px-2 pb-2 border-t border-gray-200 dark:border-gray-700 pt-2 mt-1">
+                          <div>
+                            <Label
+                              htmlFor={`value-${wr.ruleID}`}
+                              className="text-xs font-medium text-gray-700 dark:text-gray-300"
+                            >
+                              Valor de la regla
+                            </Label>
+                            <div className="mt-0.5">
+                              {renderRuleValue(wr, wr.ruleID)}
+                            </div>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   ))
                 )}
               </div>
             </div>
           </div>
-          {/* Columna de detalles */}
-          {Object.values(detailsOpen).some(Boolean) && (
-            <div className="md:col-span-1 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden bg-white dark:bg-gray-800">
-              <div className="px-2 py-1.5 bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-700">
-                <span className="text-sm font-medium text-gray-900 dark:text-white">
-                  Configuración
-                </span>
-              </div>
-              <div className="p-3 space-y-3">
-                {(() => {
-                  const openRuleID = Object.keys(detailsOpen).find(key => detailsOpen[key]);
-                  const wr = selectedList.find((w) => w.ruleID === openRuleID);
-                  if (!wr) return null;
-                  return (
-                    <>
-                      <div>
-                        <div className="text-sm font-medium text-gray-900 dark:text-white mb-1">
-                          {wr.nameRule || `Rule ${wr.ruleID.slice(0, 8)}`}
-                        </div>
-                        <div className="text-xs text-gray-500 dark:text-gray-400 mb-2">
-                          {getRuleTypeLabel(wr.ruleType)}
-                        </div>
-                        {wr.descriptionRule && (
-                          <div className="text-xs text-gray-400 dark:text-gray-500 mb-3">
-                            {wr.descriptionRule}
-                          </div>
-                        )}
-                      </div>
-                      <div>
-                        <Label className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1 block">
-                          Valor de la regla
-                        </Label>
-                        {renderRuleValue(wr, wr.ruleID)}
-                      </div>
-                    </>
-                  );
-                })()}
-              </div>
-            </div>
-          )}
         </div>
 
         <DialogFooter className="border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-4 py-3">
@@ -413,10 +387,7 @@ export default function RelationWithdrawalRulesModal({
                     const initial = initialRelationWithdrawalRules.find(
                       (r) => r.ruleID === ruleID
                     );
-                    return (
-                      !initial ||
-                      config.value !== initial.value
-                    );
+                    return !initial || config.value !== initial.value;
                   });
 
                 if (!hasChanges) {
@@ -427,45 +398,59 @@ export default function RelationWithdrawalRulesModal({
                 // Preparar datos
                 const data = selectedList.map((wr) => {
                   const config = configs[wr.ruleID];
-                  let value = config?.value || "";
+                  let value = config?.value;
 
                   // Convertir el valor según el tipo de regla para envío al backend
                   if (wr.ruleType === "boolean") {
-                    value = config?.value ? "true" : "false";
+                    value = config?.value === "true" ? "true" : "false";
                   } else if (
                     wr.ruleType === "number" ||
                     wr.ruleType === "percentage"
                   ) {
                     value = config?.value || "0";
+                  } else {
+                    // Para string, asegurar que no esté vacío
+                    value = config?.value || "";
                   }
 
                   return {
-                     ruleID: wr.ruleID,
-                     relationID,
-                     value: value
-                   };
+                    ruleID: wr.ruleID,
+                    relationID,
+                    value: value,
+                  };
                 });
 
+                console.log("Datos a enviar:", data);
+                console.log("Configs actuales:", configs);
+
                 // Validar campos requeridos
-                const invalidRules = selectedList.filter(rule => {
+                const invalidRules = selectedList.filter((rule) => {
                   const config = configs[rule.ruleID];
-                  return !config?.value || config.value.trim() === '';
+                  // Para booleanos, siempre hay un valor válido (true/false)
+                  if (rule.ruleType === "boolean") {
+                    return false;
+                  }
+                  // Para otros tipos, verificar que no esté vacío
+                  return !config?.value || config.value.trim() === "";
                 });
-                
+
                 if (invalidRules.length > 0) {
-                  console.warn('Hay reglas sin valor configurado:', invalidRules.map(r => r.nameRule));
+                  console.warn(
+                    "Hay reglas sin valor configurado:",
+                    invalidRules.map((r) => r.nameRule)
+                  );
                   return;
                 }
-                
+
                 if (onConfirmWithDetails) {
                   await onConfirmWithDetails(data, configs);
                 } else if (onConfirm) {
                   await onConfirm(selected);
                 }
-                
+
                 onOpenChange(false);
               } catch (error) {
-                console.error('Error al confirmar:', error);
+                console.error("Error al confirmar:", error);
               } finally {
                 setIsLoading(false);
               }

@@ -135,6 +135,14 @@ export interface CreateRelationAddonPayload {
 }
 export type UpdateRelationAddonPayload = Partial<CreateRelationAddonPayload>;
 
+export interface CreateRelationWithdrawalRulePayload {
+  ruleID: string;
+  relationID: string;
+  value?: string | number | boolean;
+  isActive?: boolean;
+}
+export type UpdateRelationWithdrawalRulePayload = Partial<CreateRelationWithdrawalRulePayload>;
+
 export const challengeTemplatesApi = {
   // Categories
   createCategory: async (
@@ -394,6 +402,31 @@ export const challengeTemplatesApi = {
     );
     return data.data ?? data;
   },
+  createRelationWithdrawalRules: async (
+    relationID: string,
+    withdrawalRules: Array<{
+      ruleID: string;
+      ruleValue?: string | number | boolean;
+      isActive?: boolean;
+    }>
+  ): Promise<{ success: boolean }> => {
+    // Create each withdrawal rule relation individually
+    const createPromises = withdrawalRules.map((rule) =>
+      client.post(
+        `/challenge-templates/withdrawal-rules-relations`,
+        {
+          ruleID: rule.ruleID,
+          relationID: relationID,
+          value: rule.ruleValue,
+          isActive: rule.isActive,
+        }
+      )
+    );
+
+    await Promise.all(createPromises);
+    return { success: true };
+  },
+
   updateRelationWithdrawalRules: async (
     relationID: string,
     withdrawalRules: Array<{
@@ -414,6 +447,28 @@ export const challengeTemplatesApi = {
     );
 
     await Promise.all(updatePromises);
+    return { success: true };
+  },
+
+  updateRelationWithdrawalRule: async (
+    ruleID: string,
+    relationID: string,
+    payload: UpdateRelationWithdrawalRulePayload
+  ): Promise<{ success: boolean }> => {
+    await client.patch(
+      `/challenge-templates/withdrawal-rules-relations/${ruleID}/${relationID}`,
+      payload
+    );
+    return { success: true };
+  },
+
+  deleteRelationWithdrawalRule: async (
+    ruleID: string,
+    relationID: string
+  ): Promise<{ success: boolean }> => {
+    await client.delete(
+      `/challenge-templates/withdrawal-rules-relations/${ruleID}/${relationID}`
+    );
     return { success: true };
   },
 
