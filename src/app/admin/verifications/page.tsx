@@ -39,6 +39,7 @@ function VerificationsPageContent() {
   const { data: session } = useSession();
   const router = useRouter();
   const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<VerificationStatus | "all">(
     "all"
   );
@@ -55,6 +56,12 @@ function VerificationsPageContent() {
   const [rejectionReason, setRejectionReason] = useState("");
   const [actionLoading, setActionLoading] = useState(false);
 
+  // Debounce search to avoid excessive requests
+  useEffect(() => {
+    const id = setTimeout(() => setDebouncedSearch(searchTerm.trim()), 350);
+    return () => clearTimeout(id);
+  }, [searchTerm]);
+
   // Construir la URL de la API con filtros
   const apiUrl = useMemo(() => {
     const params = new URLSearchParams({
@@ -62,13 +69,13 @@ function VerificationsPageContent() {
       limit: pageSize.toString(),
     });
 
-    if (searchTerm) params.append("search", searchTerm);
+    if (debouncedSearch) params.append("search", debouncedSearch);
     if (statusFilter !== "all") params.append("status", statusFilter);
     if (documentTypeFilter !== "all")
       params.append("documentType", documentTypeFilter);
 
   return `${apiBaseUrl}/verification?${params.toString()}`;
-  }, [currentPage, pageSize, searchTerm, statusFilter, documentTypeFilter]);
+  }, [currentPage, pageSize, debouncedSearch, statusFilter, documentTypeFilter]);
 
   // Usar SWR para obtener los datos
   const { data, error, isLoading, mutate } = useSWR<VerificationListResponse>(
@@ -80,7 +87,7 @@ function VerificationsPageContent() {
     }
   );
 
-  const verifications: VerificationItem[] = data?.data ?? [];
+  const verifications: VerificationItem[] = Array.isArray(data?.data) ? data!.data : [];
   const pagination = {
     page: data?.page ?? currentPage,
     limit: data?.limit ?? pageSize,
@@ -89,8 +96,10 @@ function VerificationsPageContent() {
   };
 
   const handleSearch = useCallback(() => {
+    // Force debounce update immediately and reset to page 1
+    setDebouncedSearch(searchTerm.trim());
     setCurrentPage(1);
-  }, []);
+  }, [searchTerm]);
 
   const handleApprove = async (verificationId: string) => {
     try {
@@ -151,9 +160,17 @@ function VerificationsPageContent() {
       <div className="container mx-auto p-6">
         <Card>
           <CardHeader>
-            <CardTitle className="text-2xl font-bold">Gestión de Verificaciones</CardTitle>
+            <div className="flex items-center justify-between gap-2">
+              <CardTitle className="text-2xl font-bold">Gestión de Verificaciones</CardTitle>
+              <span className="text-sm text-gray-500">{isLoading ? "Cargando..." : `Total: ${pagination.total}`}</span>
+            </div>
           </CardHeader>
           <CardContent>
+            {error && (
+              <div className="mb-4 rounded-md border border-red-300 bg-red-50 p-3 text-sm text-red-800">
+                Error al cargar verificaciones
+              </div>
+            )}
             {/* Filtros */}
             <div className="flex flex-wrap gap-4 mb-6">
               <div className="flex-1 min-w-[200px]">
@@ -162,9 +179,28 @@ function VerificationsPageContent() {
                     placeholder="Buscar por usuario, email o documento..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        handleSearch();
+                      }
+                    }}
                   />
-                  <Button size="icon" disabled>
+                  <Button size="icon" onClick={handleSearch} variant="outline" title="Buscar">
                     <Search className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    onClick={() => {
+                      setSearchTerm("");
+                      setDebouncedSearch("");
+                      setStatusFilter("all");
+                      setDocumentTypeFilter("all");
+                      setCurrentPage(1);
+                    }}
+                    title="Restablecer filtros"
+                  >
+                    Reset
                   </Button>
                 </div>
               </div>
@@ -187,7 +223,7 @@ function VerificationsPageContent() {
                   <SelectItem value="all">Todos</SelectItem>
                   <SelectItem value="dni">DNI</SelectItem>
                   <SelectItem value="passport">Pasaporte</SelectItem>
-                  <SelectItem value="license">Licencia</SelectItem>
+                  <SelectItem value="driver_license">Licencia</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -212,14 +248,14 @@ function VerificationsPageContent() {
                         Cargando verificaciones...
                       </TableCell>
                     </TableRow>
-                  ) : !data?.data || data.data.length === 0 ? (
+                  ) : verifications.length === 0 ? (
                     <TableRow>
                       <TableCell colSpan={6} className="text-center py-8">
                         No se encontraron verificaciones
                       </TableCell>
                     </TableRow>
                   ) : (
-                    data.data.map((verification) => (
+                    verifications.map((verification) => (
                       <TableRow key={verification.verificationID}>
                         <TableCell>
                           <div>
@@ -279,13 +315,13 @@ function VerificationsPageContent() {
             {data && data.totalPages > 1 && (
               <div className="flex items-center justify-between mt-4">
                 <div className="text-sm text-gray-500">
-                  Mostrando {((data.page - 1) * data.limit) + 1} a {Math.min(data.page * data.limit, data.total)} de {data.total} verificaciones
+                  Mostrando {((pagination.page - 1) * pagination.limit) + 1} a {Math.min(pagination.page * pagination.limit, pagination.total)} de {pagination.total} verificaciones
                 </div>
                 <div className="flex gap-2">
                   <Button
                     variant="outline"
                     size="sm"
-                    disabled={data.page <= 1}
+                    disabled={pagination.page <= 1}
                     onClick={() => setCurrentPage(prev => prev - 1)}
                   >
                     Anterior
@@ -293,7 +329,7 @@ function VerificationsPageContent() {
                   <Button
                     variant="outline"
                     size="sm"
-                    disabled={data.page >= data.totalPages}
+                    disabled={pagination.page >= pagination.totalPages}
                     onClick={() => setCurrentPage(prev => prev + 1)}
                   >
                     Siguiente

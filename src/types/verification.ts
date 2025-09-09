@@ -81,6 +81,7 @@ export interface VerificationQuery {
   status?: VerificationStatus;
   userID?: string;
   documentType?: DocumentType;
+  search?: string;
 }
 
 export interface ApproveVerificationPayload {
