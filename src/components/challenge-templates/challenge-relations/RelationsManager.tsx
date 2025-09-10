@@ -490,7 +490,7 @@ export function RelationsManager({ pageSize = 10 }: RelationsManagerProps) {
 
       {/* Modal selector de balances */}
       <BalanceSelectorModal
-        key={selectedRelationIdForBalances || "relation-balances-modal"}
+        key={`balances-modal-${selectedRelationIdForBalances || 'default'}-${Date.now()}`}
         open={openBalanceModal}
         relationName={
           selectedRelationIdForBalances
@@ -573,7 +573,7 @@ export function RelationsManager({ pageSize = 10 }: RelationsManagerProps) {
 
       {/* Modal selector de addons */}
       <RelationAddonsModal
-        key={selectedRelationIdForAddons || "relation-addons-modal"}
+        key={`addons-modal-${selectedRelationIdForAddons || 'default'}-${Date.now()}`}
         open={openAddonsModal}
         relationName={
           selectedRelationIdForAddons
@@ -770,7 +770,25 @@ export function RelationsManager({ pageSize = 10 }: RelationsManagerProps) {
         withdrawalRules={withdrawalRules}
         initialSelected={selectedWithdrawalRuleIds}
         initialRelationWithdrawalRules={relationWithdrawalRulesSnapshot}
-        relationName={selectedRelationIdForWithdrawalRules || ""}
+        relationName={
+          selectedRelationIdForWithdrawalRules
+            ? (() => {
+                const relation = relations.find(
+                  (r) => r.relationID === selectedRelationIdForWithdrawalRules
+                );
+                const categoryName = getCategoryName(
+                  relation?.categoryID || ""
+                );
+                const planName = getPlanName(relation?.planID || "");
+                const rulesText = relation?.withdrawalRules?.length
+                  ? ` (${relation.withdrawalRules.length} reglas)`
+                  : "";
+                return categoryName && categoryName !== "N/A"
+                  ? `${planName} - ${categoryName}${rulesText}`
+                  : `${planName}${rulesText}`;
+              })()
+            : ""
+        }
         relationID={selectedRelationIdForWithdrawalRules || ""}
         onConfirmWithDetails={async (data, configs) => {
           if (selectedRelationIdForWithdrawalRules) {
@@ -956,10 +974,10 @@ export function RelationsManager({ pageSize = 10 }: RelationsManagerProps) {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
-                        {plansValidation.safeMap((plan) =>
+                        {plansValidation.safeMap((plan, index) =>
                           plan?.planID ? (
                             <SelectItem
-                              key={plan.planID}
+                              key={`plan-${plan.planID}-${index}`}
                               value={plan.planID}
                               className="text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700"
                             >
@@ -1013,10 +1031,10 @@ export function RelationsManager({ pageSize = 10 }: RelationsManagerProps) {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
-                        {categoriesValidation.safeMap((category) =>
+                        {categoriesValidation.safeMap((category, index) =>
                           category?.categoryID ? (
                             <SelectItem
-                              key={category.categoryID}
+                              key={`category-${category.categoryID}-${index}`}
                               value={category.categoryID}
                               className="text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700"
                             >

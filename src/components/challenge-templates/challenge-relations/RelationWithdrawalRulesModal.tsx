@@ -244,29 +244,32 @@ export default function RelationWithdrawalRulesModal({
                   filteredAvailable.map((wr) => (
                     <div
                       key={wr.ruleID}
-                      className="flex items-center justify-between px-2 py-1.5 rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                      className="grid grid-cols-[auto,1fr] items-start gap-2 px-2 py-1.5 rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                     >
-                      <div>
-                        <div className="text-sm font-medium text-gray-900 dark:text-white">
+                      <div className="flex-shrink-0 self-start">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-7 px-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600"
+                          onClick={() => add(wr.ruleID)}
+                          title="Agregar"
+                        >
+                          <Plus className="h-4 w-4" />
+                        </Button>
+                      </div>
+                      <div className="min-w-0">
+                        <div className="text-sm font-medium text-gray-900 dark:text-white truncate">
                           {wr.nameRule || `Rule ${wr.ruleID.slice(0, 8)}`}
                         </div>
-                        <div className="text-xs text-gray-500 dark:text-gray-400">
+                        <div className="text-xs text-gray-500 dark:text-gray-400 truncate">
                           {getRuleTypeLabel(wr.ruleType)}
                         </div>
                         {wr.descriptionRule && (
-                          <div className="text-xs text-gray-400 dark:text-gray-500 truncate max-w-[200px]">
+                          <div className="text-xs text-gray-400 dark:text-gray-500 truncate">
                             {wr.descriptionRule}
                           </div>
                         )}
                       </div>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="h-7 px-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600"
-                        onClick={() => add(wr.ruleID)}
-                      >
-                        <Plus className="h-4 w-4" />
-                      </Button>
                     </div>
                   ))
                 )}

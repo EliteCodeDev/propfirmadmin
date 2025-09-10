@@ -61,7 +61,7 @@ const ruleSchema = z.object({
   ruleType: z.enum(["number", "percentage", "boolean", "string"], {
     error: "El tipo de regla es requerido",
   }),
-  nameRule: z.string().optional(),
+  ruleName: z.string().optional(),
   descriptionRule: z.string().optional(),
 });
 
@@ -86,7 +86,7 @@ export function RulesManager({ pageSize = 10 }: RulesManagerProps) {
     resolver: zodResolver(ruleSchema),
     defaultValues: {
       ruleType: "number",
-      nameRule: "",
+      ruleName: "",
       descriptionRule: "",
     },
   });
@@ -118,7 +118,7 @@ export function RulesManager({ pageSize = 10 }: RulesManagerProps) {
     setEditItem(null);
     form.reset({
       ruleType: "number",
-      nameRule: "",
+      ruleName: "",
       descriptionRule: "",
     });
     setSelectedSlug("");
@@ -139,7 +139,7 @@ export function RulesManager({ pageSize = 10 }: RulesManagerProps) {
           | "percentage"
           | "boolean"
           | "string",
-        nameRule: rule.nameRule || "",
+        ruleName: rule.ruleName || "",
         descriptionRule: rule.descriptionRule || "",
       });
       setSelectedSlug(rule.slugRule || "");
@@ -150,7 +150,7 @@ export function RulesManager({ pageSize = 10 }: RulesManagerProps) {
   async function onSubmit(formValues: RuleFormData) {
     try {
       // Determinar slug a enviar
-      const computedFromName = slugify(formValues.nameRule || "");
+      const computedFromName = slugify(formValues.ruleName || "");
       const finalSlug = selectedSlug || computedFromName;
 
       if (!finalSlug) {
@@ -160,7 +160,7 @@ export function RulesManager({ pageSize = 10 }: RulesManagerProps) {
 
       const payload = {
         ruleType: formValues.ruleType,
-        ruleName: formValues.nameRule || undefined,
+        ruleName: formValues.ruleName || undefined,
         ruleDescription: formValues.descriptionRule || undefined,
         ruleSlug: finalSlug,
       };
@@ -202,7 +202,7 @@ export function RulesManager({ pageSize = 10 }: RulesManagerProps) {
   // --------------------------------------------------
   const tableData = rulesValidation.safeMap((item, index) => {
     const typeLabelText = getRuleTypeLabel(item?.ruleType || "");
-    const nameText = item?.nameRule || "Sin nombre";
+    const nameText = item?.ruleName || "Sin nombre";
     const displayName = `${nameText} (${typeLabelText})`;
 
     return {
@@ -397,7 +397,7 @@ export function RulesManager({ pageSize = 10 }: RulesManagerProps) {
 
               <FormField
                 control={form.control}
-                name="nameRule"
+                name="ruleName"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-gray-700 dark:text-gray-300 text-sm font-medium">
