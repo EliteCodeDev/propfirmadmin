@@ -16,6 +16,46 @@ type LimitParam = number;
 
 const API_BASE = apiBaseUrl.replace(/\/$/, "");
 
+// Función para calcular la posición inteligente del dropdown
+const calculateDropdownPosition = (buttonRect: DOMRect, dropdownWidth = 200, dropdownHeight = 150) => {
+  const viewportWidth = window.innerWidth;
+  const viewportHeight = window.innerHeight;
+  const scrollY = window.scrollY;
+  const scrollX = window.scrollX;
+  
+  let top = buttonRect.bottom + scrollY + 4;
+  let left = buttonRect.left + scrollX;
+  
+  // Verificar si el dropdown se sale por la derecha
+  if (left + dropdownWidth > viewportWidth + scrollX) {
+    // Alinear a la derecha del botón
+    left = buttonRect.right + scrollX - dropdownWidth;
+    
+    // Si aún se sale por la derecha, alinear con el borde derecho de la ventana
+    if (left + dropdownWidth > viewportWidth + scrollX) {
+      left = viewportWidth + scrollX - dropdownWidth - 8;
+    }
+  }
+  
+  // Verificar si el dropdown se sale por la izquierda
+  if (left < scrollX) {
+    left = scrollX + 8;
+  }
+  
+  // Verificar si el dropdown se sale por abajo
+  if (top + dropdownHeight > viewportHeight + scrollY) {
+    // Mostrar arriba del botón
+    top = buttonRect.top + scrollY - dropdownHeight - 4;
+    
+    // Si aún se sale por arriba, ajustar al espacio disponible
+    if (top < scrollY) {
+      top = scrollY + 8;
+    }
+  }
+  
+  return { top, left };
+};
+
 function unwrapPage<T = Record<string, unknown>>(raw: unknown): {
   items: T[];
   total: number;
@@ -65,6 +105,22 @@ function ChallengesInner() {
   const [userFilter, setUserFilter] = useState<string>("");
   const [loginFilter, setLoginFilter] = useState<string>("");
 
+  // Estados para modales y dropdown de acciones
+  const [showDisapprovalModal, setShowDisapprovalModal] = useState(false);
+  const [showCredentialsModal, setShowCredentialsModal] = useState(false);
+  const [showApprovalModal, setShowApprovalModal] = useState(false);
+
+  const [selectedChallenge, setSelectedChallenge] = useState<Challenge | null>(null);
+  const [disapprovalReason, setDisapprovalReason] = useState("");
+  const [dropdownOpen, setDropdownOpen] = useState<string | null>(null);
+  const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
+
+  
+  // Estados de loading para cada acción
+  const [isLoadingCredentials, setIsLoadingCredentials] = useState(false);
+  const [isLoadingApproval, setIsLoadingApproval] = useState(false);
+  const [isLoadingDisapproval, setIsLoadingDisapproval] = useState(false);
+
   const accessToken = session?.accessToken as string | undefined;
 
   const query = useMemo(() => {
@@ -96,7 +152,7 @@ function ChallengesInner() {
     return res.json();
   };
 
-  const { data, error, isLoading } = useSWR<PageResponse<Challenge>>(
+  const { data, error, isLoading, mutate } = useSWR<PageResponse<Challenge>>(
     accessToken ? url : null,
     fetcher
   );
@@ -106,6 +162,186 @@ function ChallengesInner() {
       router.replace("/auth/login");
     }
   }, [authStatus, accessToken, router]);
+
+  // Funciones de manejo de acciones
+  const handleSendCredentials = async (challenge: Challenge) => {
+    if (!accessToken) return;
+    
+    console.log('Enviando credenciales para challenge:', challenge.challengeID);
+    console.log('API_BASE:', API_BASE);
+    console.log('URL completa:', `${API_BASE}/challenges/${challenge.challengeID}/send-credentials`);
+    
+    setIsLoadingCredentials(true);
+    try {
+      const response = await fetch(`${API_BASE}/challenges/${challenge.challengeID}/send-credentials`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include'
+      });
+      
+      console.log('Response status:', response.status);
+      console.log('Response headers:', response.headers);
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Error al enviar credenciales: ${response.status} - ${errorText}`);
+      }
+      
+      // Mostrar notificación de éxito
+      toast.success('Credenciales enviadas exitosamente');
+      
+      // Recargar datos
+      mutate();
+    } catch (error) {
+      console.error('Error:', error);
+      toast.error('Error al enviar credenciales');
+    } finally {
+      setIsLoadingCredentials(false);
+      setShowCredentialsModal(false);
+    }
+  };
+
+  const handleApprove = async (challenge: Challenge) => {
+    if (!accessToken) return;
+    
+    console.log('Aprobando challenge:', challenge.challengeID);
+    console.log('URL completa:', `${API_BASE}/challenges/${challenge.challengeID}/approve`);
+    
+    setIsLoadingApproval(true);
+    try {
+      const response = await fetch(`${API_BASE}/challenges/${challenge.challengeID}/approve`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include'
+      });
+      
+      console.log('Response status:', response.status);
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Error al aprobar challenge: ${response.status} - ${errorText}`);
+      }
+      
+      // Mostrar notificación de éxito
+      toast.success('Challenge aprobado exitosamente');
+      
+      // Recargar datos
+      mutate();
+    } catch (error) {
+      console.error('Error:', error);
+      toast.error('Error al aprobar challenge');
+    } finally {
+      setIsLoadingApproval(false);
+      setShowApprovalModal(false);
+    }
+  };
+
+  const confirmDisapproval = async () => {
+    if (!selectedChallenge || !accessToken || !disapprovalReason.trim()) return;
+    
+    console.log('Desaprobando challenge:', selectedChallenge.challengeID);
+    console.log('Razón:', disapprovalReason.trim());
+    console.log('URL completa:', `${API_BASE}/challenges/${selectedChallenge.challengeID}/disapprove`);
+    
+    setIsLoadingDisapproval(true);
+    try {
+      const response = await fetch(`${API_BASE}/challenges/${selectedChallenge.challengeID}/disapprove`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ observation: disapprovalReason.trim() }),
+        credentials: 'include'
+      });
+      
+      console.log('Response status:', response.status);
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Error al desaprobar challenge: ${response.status} - ${errorText}`);
+      }
+      
+      // Mostrar notificación de éxito
+      toast.success('Challenge desaprobado exitosamente');
+      
+      // Recargar datos
+      mutate();
+    } catch (error) {
+      console.error('Error:', error);
+      toast.error('Error al desaprobar challenge');
+    } finally {
+      setIsLoadingDisapproval(false);
+      closeDisapprovalModal();
+    }
+  };
+
+  // Funciones auxiliares para cerrar modales
+  const closeCredentialsModal = () => {
+    setShowCredentialsModal(false);
+    setSelectedChallenge(null);
+  };
+
+  const closeApprovalModal = () => {
+    setShowApprovalModal(false);
+    setSelectedChallenge(null);
+  };
+
+  const closeDisapprovalModal = () => {
+    setShowDisapprovalModal(false);
+    setSelectedChallenge(null);
+    setDisapprovalReason("");
+  };
+
+
+
+  // useEffect para manejo de eventos de dropdown
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Element;
+      if (!target.closest('.dropdown-container')) {
+        setDropdownOpen(null);
+      }
+    };
+
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setDropdownOpen(null);
+      }
+    };
+
+    const handleScroll = () => {
+      if (dropdownOpen) {
+        setDropdownOpen(null);
+      }
+    };
+
+    const handleResize = () => {
+      if (dropdownOpen) {
+        setDropdownOpen(null);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('keydown', handleEscape);
+    window.addEventListener('scroll', handleScroll, true);
+    window.addEventListener('resize', handleResize);
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleEscape);
+      window.removeEventListener('scroll', handleScroll, true);
+      window.removeEventListener('resize', handleResize);
+    };
+  }, [dropdownOpen]);
+
+
 
   if (authStatus === "loading" || (!accessToken && authStatus !== "unauthenticated")) {
     return (
@@ -141,10 +377,11 @@ function ChallengesInner() {
     } },
     { key: "platform", label: "Platform", type: "normal" },
     { key: "numPhase", label: "Phase", type: "normal" },
-    { key: "dynamicBalance", label: "Dyn. Balance", type: "normal" },
+    //{ key: "dynamicBalance", label: "Dyn. Balance", type: "normal" },
     { key: "status", label: "Status", type: "normal" },
     { key: "startDate", label: "Start", type: "normal" },
     { key: "endDate", label: "End", type: "normal" },
+    { key: "actions", label: "Acciones", type: "normal", render: (value, row) => value as React.ReactNode },
   ];
 
   const rows: Record<string, unknown>[] = challenges.map((c, idx) => {
@@ -160,6 +397,126 @@ function ChallengesInner() {
     const start = c.startDate ? new Date(c.startDate).toLocaleDateString() : "-";
     const end = c.endDate ? new Date(c.endDate).toLocaleDateString() : "-";
 
+    const challengeId = c.challengeID;
+    const isDropdownOpen = dropdownOpen === challengeId;
+
+    const actionsComponent = (
+      <div className="dropdown-container relative">
+        <button
+          data-challenge-id={c.challengeID}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            if (dropdownOpen === c.challengeID) {
+              setDropdownOpen(null);
+            } else {
+              const rect = e.currentTarget.getBoundingClientRect();
+              const position = calculateDropdownPosition(rect);
+              setDropdownPosition(position);
+              setDropdownOpen(c.challengeID);
+            }
+          }}
+          className="inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+          type="button"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zM12 13a1 1 0 110-2 1 1 0 010 2zM12 20a1 1 0 110-2 1 1 0 010 2z" />
+          </svg>
+          Acciones
+          <svg 
+            className={`w-4 h-4 transform transition-transform duration-200 ${dropdownOpen === c.challengeID ? 'rotate-180' : ''}`} 
+            fill="none" 
+            stroke="currentColor" 
+            viewBox="0 0 24 24"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+        
+        {/* Dropdown menu mejorado con posicionamiento inteligente */}
+        {dropdownOpen && (
+          <div 
+            className="fixed inset-0 z-40"
+            onClick={() => setDropdownOpen(null)}
+          >
+            <div 
+              className="absolute bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg shadow-2xl z-50 min-w-[200px] max-w-[250px] dropdown-container animate-in fade-in-0 zoom-in-95 duration-100"
+              style={{
+                top: `${dropdownPosition.top}px`,
+                left: `${dropdownPosition.left}px`,
+                maxHeight: '200px',
+                overflowY: 'auto'
+              }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="py-1">
+                <button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const challenge = challenges.find(c => c.challengeID === dropdownOpen);
+                    if (challenge) {
+                      setSelectedChallenge(challenge);
+                      setShowCredentialsModal(true);
+                    }
+                    setDropdownOpen(null);
+                  }}
+                  className="flex items-center gap-3 w-full px-4 py-3 text-sm text-gray-700 dark:text-gray-200 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-300 transition-colors duration-150"
+                  type="button"
+                >
+                  <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                  </svg>
+                  <span className="truncate">Enviar Credenciales</span>
+                </button>
+                
+                <button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const challenge = challenges.find(c => c.challengeID === dropdownOpen);
+                    if (challenge) {
+                      setSelectedChallenge(challenge);
+                      setShowApprovalModal(true);
+                    }
+                    setDropdownOpen(null);
+                  }}
+                  className="flex items-center gap-3 w-full px-4 py-3 text-sm text-gray-700 dark:text-gray-200 hover:bg-green-50 dark:hover:bg-green-900/20 hover:text-green-600 dark:hover:text-green-300 transition-colors duration-150"
+                  type="button"
+                >
+                  <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  <span className="truncate">Aprobar Challenge</span>
+                </button>
+                
+                <button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const challenge = challenges.find(c => c.challengeID === dropdownOpen);
+                    if (challenge) {
+                      setSelectedChallenge(challenge);
+                      setShowDisapprovalModal(true);
+                    }
+                    setDropdownOpen(null);
+                  }}
+                  className="flex items-center gap-3 w-full px-4 py-3 text-sm text-gray-700 dark:text-gray-200 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-300 transition-colors duration-150"
+                  type="button"
+                >
+                  <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                  <span className="truncate">Desaprobar Challenge</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+
     return {
       __raw: c,
       userID: c.userID,
@@ -172,6 +529,7 @@ function ChallengesInner() {
       status: c.status ?? "-",
       startDate: start,
       endDate: end,
+      actions: actionsComponent,
     };
   });
 
@@ -187,6 +545,105 @@ function ChallengesInner() {
           totalCount={pageObj.total}
           showTotalCount={true}
         />
+
+
+
+        {/* Modal de Enviar Credenciales */}
+        {showCredentialsModal && selectedChallenge && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+              <h3 className="text-lg font-semibold mb-4">Enviar Credenciales</h3>
+              <p className="text-gray-600 mb-4">¿Confirmas el envío de credenciales para este challenge?</p>
+              <div className="mb-4 p-3 bg-gray-50 rounded">
+                <p><strong>Challenge ID:</strong> {selectedChallenge.challengeID}</p>
+                <p><strong>Usuario:</strong> {selectedChallenge.user ? `${selectedChallenge.user.firstName || ''} ${selectedChallenge.user.lastName || ''}`.trim() || selectedChallenge.user.email : selectedChallenge.userID}</p>
+              </div>
+              <div className="flex justify-end space-x-3">
+                <button
+                  onClick={closeCredentialsModal}
+                  disabled={isLoadingCredentials}
+                  className="px-4 py-2 text-gray-600 border border-gray-300 rounded hover:bg-gray-50 transition-colors disabled:opacity-50"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={() => handleSendCredentials(selectedChallenge)}
+                  disabled={isLoadingCredentials}
+                  className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 transition-colors disabled:opacity-50"
+                >
+                  {isLoadingCredentials ? 'Enviando...' : 'Enviar Credenciales'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Modal de Aprobar Challenge */}
+        {showApprovalModal && selectedChallenge && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+              <h3 className="text-lg font-semibold mb-4">Aprobar Challenge</h3>
+              <p className="text-gray-600 mb-4">¿Confirmas la aprobación de este challenge?</p>
+              <div className="mb-4 p-3 bg-gray-50 rounded">
+                <p><strong>Challenge ID:</strong> {selectedChallenge.challengeID}</p>
+                <p><strong>Usuario:</strong> {selectedChallenge.user ? `${selectedChallenge.user.firstName || ''} ${selectedChallenge.user.lastName || ''}`.trim() || selectedChallenge.user.email : selectedChallenge.userID}</p>
+              </div>
+              <div className="flex justify-end space-x-3">
+                <button
+                  onClick={closeApprovalModal}
+                  disabled={isLoadingApproval}
+                  className="px-4 py-2 text-gray-600 border border-gray-300 rounded hover:bg-gray-50 transition-colors disabled:opacity-50"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={() => handleApprove(selectedChallenge)}
+                  disabled={isLoadingApproval}
+                  className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 transition-colors disabled:opacity-50"
+                >
+                  {isLoadingApproval ? 'Aprobando...' : 'Aprobar Challenge'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Modal de Desaprobar Challenge */}
+        {showDisapprovalModal && selectedChallenge && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+              <h3 className="text-lg font-semibold mb-4">Desaprobar Challenge</h3>
+              <p className="text-gray-600 mb-4">Proporciona una razón para la desaprobación:</p>
+              <div className="mb-4 p-3 bg-gray-50 rounded">
+                <p><strong>Challenge ID:</strong> {selectedChallenge.challengeID}</p>
+                <p><strong>Usuario:</strong> {selectedChallenge.user ? `${selectedChallenge.user.firstName || ''} ${selectedChallenge.user.lastName || ''}`.trim() || selectedChallenge.user.email : selectedChallenge.userID}</p>
+              </div>
+              <textarea
+                value={disapprovalReason}
+                onChange={(e) => setDisapprovalReason(e.target.value)}
+                placeholder="Escribe la razón de la desaprobación..."
+                className="w-full p-3 border border-gray-300 rounded-lg mb-4 min-h-[100px] resize-vertical"
+                disabled={isLoadingDisapproval}
+              />
+              <div className="flex justify-end space-x-3">
+                <button
+                  onClick={closeDisapprovalModal}
+                  disabled={isLoadingDisapproval}
+                  className="px-4 py-2 text-gray-600 border border-gray-300 rounded hover:bg-gray-50 transition-colors disabled:opacity-50"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={confirmDisapproval}
+                  disabled={isLoadingDisapproval || !disapprovalReason.trim()}
+                  className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition-colors disabled:opacity-50"
+                >
+                  {isLoadingDisapproval ? 'Desaprobando...' : 'Desaprobar Challenge'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Filtros */}
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4">
