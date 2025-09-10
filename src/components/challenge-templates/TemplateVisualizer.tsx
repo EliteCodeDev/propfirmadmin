@@ -16,7 +16,13 @@ import { useArrayValidation } from "@/hooks/useArrayValidation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { Loader2, RefreshCw, CheckCircle, DollarSign, Gift } from "lucide-react";
+import {
+  Loader2,
+  RefreshCw,
+  CheckCircle,
+  DollarSign,
+  Gift,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 
 import type { TemplateVisualizerProps } from "@/types/component";
@@ -475,13 +481,15 @@ export function TemplateVisualizer({}: TemplateVisualizerProps) {
                 <Gift className="w-5 h-5 text-purple-600 dark:text-purple-400" />
               </div>
               <CardTitle className="text-xl font-semibold text-gray-900 dark:text-gray-100">
-                Addons de la relación
+                Addons del Challenge
               </CardTitle>
             </div>
           </CardHeader>
           <CardContent className="pt-6">
             {availableAddons.length === 0 ? (
-              <div className="text-sm text-muted-foreground">No hay addons asociados a esta relación.</div>
+              <div className="text-sm text-muted-foreground">
+                No hay addons asociados a esta relación.
+              </div>
             ) : (
               <div className="flex flex-wrap gap-2">
                 {availableAddons.map((a) => (
@@ -506,7 +514,8 @@ export function TemplateVisualizer({}: TemplateVisualizerProps) {
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
-                      <Gift className="h-5 w-5 text-purple-500" /> {selectedAddon.name}
+                      <Gift className="h-5 w-5 text-purple-500" />{" "}
+                      {selectedAddon.name}
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
@@ -514,10 +523,14 @@ export function TemplateVisualizer({}: TemplateVisualizerProps) {
                       {/* Eliminado: Precio base, no existe en Addon */}
                       {/* Eliminado: Balance asociado, no existe en Addon */}
                       <div>
-                        <span className="font-medium">Activo:</span> {selectedAddon.isActive ? "Sí" : "No"}
+                        <span className="font-medium">Activo:</span>{" "}
+                        {selectedAddon.isActive ? "Sí" : "No"}
                       </div>
                       <div>
-                        <span className="font-medium">Descuento:</span> {selectedAddon.hasDiscount ? `${selectedAddon.discount ?? 0}%` : "No"}
+                        <span className="font-medium">Descuento:</span>{" "}
+                        {selectedAddon.hasDiscount
+                          ? `${selectedAddon.discount ?? 0}%`
+                          : "No"}
                       </div>
                       {/* Eliminado: WooCommerce ID, no existe en Addon */}
                     </div>
@@ -526,7 +539,10 @@ export function TemplateVisualizer({}: TemplateVisualizerProps) {
 
                 {(() => {
                   const cfg = relationAddons.find(
-                    (ra) => currentRelation && ra.relationID === currentRelation.relationID && ra.addonID === selectedAddon.addonID
+                    (ra) =>
+                      currentRelation &&
+                      ra.relationID === currentRelation.relationID &&
+                      ra.addonID === selectedAddon.addonID
                   );
                   if (!cfg) return null;
                   return (
@@ -537,16 +553,20 @@ export function TemplateVisualizer({}: TemplateVisualizerProps) {
                       <CardContent>
                         <div className="space-y-2 text-sm">
                           <div>
-                            <span className="font-medium">Valor:</span> {cfg.value != null ? cfg.value : "—"}
+                            <span className="font-medium">Valor:</span>{" "}
+                            {cfg.value != null ? cfg.value : "—"}
                           </div>
                           <div>
-                            <span className="font-medium">Activo:</span> {cfg.isActive ? "Sí" : "No"}
+                            <span className="font-medium">Activo:</span>{" "}
+                            {cfg.isActive ? "Sí" : "No"}
                           </div>
                           <div>
-                            <span className="font-medium">Descuento:</span> {cfg.hasDiscount ? `${cfg.discount ?? 0}%` : "No"}
+                            <span className="font-medium">Descuento:</span>{" "}
+                            {cfg.hasDiscount ? `${cfg.discount ?? 0}%` : "No"}
                           </div>
                           <div>
-                            <span className="font-medium">WooCommerce ID:</span> {cfg.wooID ?? "—"}
+                            <span className="font-medium">WooCommerce ID:</span>{" "}
+                            {cfg.wooID ?? "—"}
                           </div>
                         </div>
                       </CardContent>

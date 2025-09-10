@@ -97,7 +97,7 @@ export interface StageRule {
   ruleID: string;
   slugRule: string;
   ruleType: string;
-  nameRule?: string;
+  ruleName?: string;
   descriptionRule?: string;
 }
 
@@ -131,7 +131,7 @@ export interface Addon {
   addonID: string;
   name: string;
   slugRule?: string;
-  valueType?: 'number' | 'boolean' | 'percentage';
+  valueType?: "number" | "boolean" | "percentage";
   isActive: boolean;
   hasDiscount: boolean;
   discount?: number;
