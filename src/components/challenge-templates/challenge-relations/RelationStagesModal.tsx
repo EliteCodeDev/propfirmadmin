@@ -165,7 +165,7 @@ export default function RelationStagesModal({
   // Helpers para obtener nombres
   const getRuleName = (ruleID: string) => {
     const rule = rulesValidation.safeFind((r) => r?.ruleID === ruleID);
-    return rule?.nameRule || rule?.slugRule || "N/A";
+    return rule?.ruleName || rule?.slugRule || "N/A";
   };
 
   const getStageName = (relationStageID: string) => {
@@ -700,7 +700,7 @@ export default function RelationStagesModal({
                               value={rule.ruleID}
                               className="text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700"
                             >
-                              {rule.nameRule || rule.slugRule || "Sin nombre"}
+                              {rule.ruleName || rule.slugRule || "Sin nombre"}
                             </SelectItem>
                           ) : null
                         )}
