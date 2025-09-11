@@ -483,7 +483,7 @@ export default function UserDetailInner() {
             </div>
           </div>
           {/* Verificaciones KYC del usuario */}
-          <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
+          {/* <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
             <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
               <div>
                 <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100">User Verifications (KYC)</h2>
@@ -527,7 +527,7 @@ export default function UserDetailInner() {
                       </span>
                     </div>
 
-                    {/* Detalles en grilla legible */}
+                    {/* Detalles en grilla legible 
                     <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2 text-sm">
                       <div className="flex items-start justify-between sm:block">
                         <span className="text-gray-600 dark:text-gray-400 font-medium">Enviado:</span>
@@ -553,7 +553,7 @@ export default function UserDetailInner() {
                       )}
                     </div>
 
-                    {/* Separador y media */}
+                    {/* Separador y media 
                     {Array.isArray(v.media) && v.media.length > 0 && (
                       <div className="mt-4 pt-3 border-t border-gray-200 dark:border-gray-700">
                         <div className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">Documentos</div>
@@ -600,7 +600,7 @@ export default function UserDetailInner() {
                 </div>
               )}
             </div>
-          </div>
+          </div> */}
 
           {/* Tabla de challenges */}
           <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
