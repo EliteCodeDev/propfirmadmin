@@ -13,6 +13,7 @@ export interface ChallengeBrokerAccount {
   login?: string | null;
   platform?: string | null;
   initialBalance?: number | null;
+  innitialBalance?: number | null;
 }
 
 export interface ChallengeUserRef {

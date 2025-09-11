@@ -143,7 +143,7 @@ export const challengesApi = {
     return data;
   },
   // New methods for fetching detailed challenge data
-  getChallengesWithDetails: async (): Promise<{
+  getChallengesWithDetails: async (userId?: string): Promise<{
     success: boolean;
     message: string;
     data: {
@@ -154,7 +154,8 @@ export const challengesApi = {
       totalPages: number;
     };
   }> => {
-    const { data } = await client.get("/challenges/me");
+    const params = userId ? { userID: userId, limit: 1000 } : { limit: 1000 };
+    const { data } = await client.get("/challenges", { params });
     return data;
   },
   getChallengeDetails: async (challengeId: string): Promise<{
@@ -162,7 +163,7 @@ export const challengesApi = {
     message: string;
     data: ChallengeDetailedData;
   }> => {
-    const { data } = await client.get(`/challenges/me/${challengeId}`);
+    const { data } = await client.get(`/challenges/${challengeId}`);
     return data;
   },
 };
