@@ -8,26 +8,30 @@ const PROTECTED_ROOT = "/admin/dashboard";
 
 export async function middleware(req: NextRequest) {
   const { pathname, search } = req.nextUrl;
-
   const token = await getToken({ req, secret: NEXTAUTH_SECRET });
   const isAuthenticated = !!token;
 
-  if (isAuthenticated) {
-    // Redirigir al dashboard si entra a /auth/*
-    if (AUTH_PATHS.some((p) => pathname.startsWith(p))) {
-      return NextResponse.redirect(new URL(PROTECTED_ROOT, req.url));
+  // 🟢 Caso especial: raíz "/"
+  if (pathname === "/") {
+    if (isAuthenticated) {
+      return NextResponse.redirect(new URL(PROTECTED_ROOT, req.nextUrl.origin));
+    } else {
+      return NextResponse.redirect(new URL("/auth/login", req.nextUrl.origin));
     }
-    // Redirigir al dashboard si entra a la raíz
-    if (pathname === "/") {
-      return NextResponse.redirect(new URL(PROTECTED_ROOT, req.url));
+  }
+
+  if (isAuthenticated) {
+    // Si entra a /auth/* lo mando al dashboard
+    if (AUTH_PATHS.some((p) => pathname.startsWith(p))) {
+      return NextResponse.redirect(new URL(PROTECTED_ROOT, req.nextUrl.origin));
     }
   } else {
-    // Bloquear solo rutas protegidas (ej: /admin)
-    const isPublic = AUTH_PATHS.some((p) => pathname.startsWith(p)) || pathname === "/";
+    // Bloquear cualquier ruta que no sea pública
+    const isPublic = AUTH_PATHS.some((p) => pathname.startsWith(p));
     if (!isPublic) {
       const url = req.nextUrl.clone();
       url.pathname = "/auth/login";
-      url.searchParams.set("callbackUrl", pathname + search); // guarda path + query
+      url.searchParams.set("callbackUrl", pathname + search); // guarda la ruta original
       return NextResponse.redirect(url);
     }
   }

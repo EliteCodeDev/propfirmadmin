@@ -17,7 +17,7 @@ import {
   ArrowLeftIcon,
 } from "@heroicons/react/24/outline";
 import type { User, Challenge } from "@/types";
-import { challengesApi, type ChallengeWithDetails, type ChallengeDetailedData } from "@/api/challenges";
+import { challengesApi, type ChallengeWithDetails } from "@/api/challenges";
 import { verificationApi } from "@/api/verification";
 import type { VerificationItem, VerificationStatus, DocumentType, MediaItem } from "@/types/verification";
 import Image from "next/image";
@@ -111,7 +111,7 @@ const documentTypeLabels: Record<DocumentType | string, string> = {
 } as const;
 
 /* ========= Página interna ========= */
-function UserDetailInner() {
+export default function UserDetailInner() {
   const router = useRouter();
   const { id: userId } = useParams<{ id: string }>();
 
@@ -150,10 +150,10 @@ function UserDetailInner() {
     isLoading: chLoading,
     error: chErr,
   } = useSWR(
-    canFetch && hasUserData ? [`challenges-with-details`, token!] : null,
+    canFetch && hasUserData && userId ? [`challenges-with-details-${userId}`, token!] : null,
     async () => {
       try {
-        const response = await challengesApi.getChallengesWithDetails();
+        const response = await challengesApi.getChallengesWithDetails(userId);
         return response.data.data;
       } catch (error) {
         console.error('Error fetching challenges with details:', error);
@@ -164,74 +164,51 @@ function UserDetailInner() {
   );
 
   const challengesWithDetails: ChallengeWithDetails[] = useMemo(() => {
-    const list = Array.isArray(challengesWithDetailsRaw) ? challengesWithDetailsRaw : [];
-    return userId ? list.filter(c => c.userID === userId) : [];
-  }, [challengesWithDetailsRaw, userId]);
+    return Array.isArray(challengesWithDetailsRaw) ? challengesWithDetailsRaw : [];
+  }, [challengesWithDetailsRaw]);
 
-  // Fetch detailed data for each challenge
+  const challenges: Challenge[] = useMemo(() => {
+    return challengesWithDetails.map((c): Challenge => ({
+      challengeID: c.challengeID,
+      userID: c.userID ?? undefined,
+      status: c.status ?? null,
+      isActive: c.isActive ?? null,
+      numPhase: c.numPhase ?? null,
+      dynamicBalance: c.dynamicBalance != null ? Number(c.dynamicBalance) : null,
+      brokerAccount: {
+        login: c.brokerAccount?.login ?? null,
+        platform: c.brokerAccount?.platform ?? null,
+        innitialBalance: c.brokerAccount?.innitialBalance != null ? Number(c.brokerAccount.innitialBalance) : null,
+      },
+      startDate: c.startDate ?? null,
+      endDate: c.endDate ?? null,
+    }));
+  }, [challengesWithDetails]);
+
+  /* ---- Verificaciones del usuario ---- */
   const {
-    data: challengeDetailsMap,
-    isLoading: detailsLoading,
-    error: detailsErr,
+    data: verificationsResp,
+    isLoading: verifLoading,
+    error: verifErr,
   } = useSWR(
-    canFetch && challengesWithDetails.length > 0 ? [`challenge-details-${challengesWithDetails.map(c => c.challengeID).join(',')}`, token!] : null,
+    canFetch && userId ? ["user-verifications", userId] : null,
     async () => {
-      const detailsMap: Record<string, ChallengeDetailedData> = {};
-      
-      for (const challenge of challengesWithDetails) {
-        try {
-          const response = await challengesApi.getChallengeDetails(challenge.challengeID);
-          detailsMap[challenge.challengeID] = response.data;
-        } catch (error) {
-          console.error(`Error fetching details for challenge ${challenge.challengeID}:`, error);
-          // Continue with other challenges even if one fails
-        }
-      }
-      
-      return detailsMap;
+      const res = await verificationApi.getByUserId(String(userId), { page: 1, limit: 10 });
+      return res;
     },
     { revalidateOnFocus: false }
   );
 
-  const challenges: Challenge[] = useMemo(() => {
-    // Convert ChallengeWithDetails to Challenge format for backward compatibility
-    return challengesWithDetails.map(c => ({
-      challengeID: c.challengeID,
-      userID: c.userID,
-      status: c.status,
-      isActive: c.isActive,
-      numPhase: c.numPhase,
-      dynamicBalance: c.dynamicBalance,
-      brokerAccount: c.brokerAccount,
-      startDate: c.startDate,
-      endDate: c.endDate,
-    } as Challenge));
-  }, [challengesWithDetails]);
-
-   /* ---- Verificaciones del usuario ---- */
-   const {
-     data: verificationsResp,
-     isLoading: verifLoading,
-     error: verifErr,
-   } = useSWR(
-     canFetch && userId ? ["user-verifications", userId] : null,
-     async () => {
-       const res = await verificationApi.getByUserId(String(userId), { page: 1, limit: 10 });
-       return res;
-     },
-     { revalidateOnFocus: false }
-   );
-
-   const verifications: VerificationItem[] = useMemo(() => {
-      const list = verificationsResp?.data ?? [];
-      return Array.isArray(list) ? list : [];
-    }, [verificationsResp]);
+  const verifications: VerificationItem[] = useMemo(() => {
+    const list = verificationsResp?.data ?? [];
+    return Array.isArray(list) ? list : [];
+  }, [verificationsResp]);
 
   // Estados de carga específicos
   const isInitialLoading = isAuthLoading || !token;
   const isUserDataLoading = userLoading && !hasUserData;
-  const isChallengesLoading = chLoading || detailsLoading;
-  const hasErrors = userErr || chErr || detailsErr;
+  const isChallengesLoading = chLoading;
+  const hasErrors = userErr || chErr;
 
   /* ---- Cards ---- */
   const fullName =
@@ -292,7 +269,7 @@ function UserDetailInner() {
     { key: "accountNumber", label: "Account", type: "normal" },
     { key: "accountType", label: "Type", type: "normal" },
     { key: "accountSize", label: "Size", type: "normal" },
-    { key: "balance", label: "Balance", type: "normal" },
+    //{ key: "balance", label: "Balance", type: "normal" },
     { key: "equity", label: "Equity", type: "normal" },
     { key: "platform", label: "Platform", type: "normal" },
     { key: "status", label: "Status", type: "badge" },
@@ -304,22 +281,12 @@ function UserDetailInner() {
       (challenges || []).map((c) => {
         const login = c?.brokerAccount?.login ?? "-";
         const platform = c?.brokerAccount?.platform ?? "-";
-        
-        // Get detailed challenge data for real balance information
-        const detailedData = challengeDetailsMap?.[c.challengeID];
-        
-        // Use real balance data if available, fallback to initial balance
-        const currentBalance = detailedData?.balance?.currentBalance;
-        const initialBalance = detailedData?.balance?.initialBalance ?? c?.brokerAccount?.initialBalance;
-        const equity = detailedData?.equity;
-        
-        // Parse balance values
-        const currentBalanceNum = currentBalance ? parseFloat(currentBalance) : null;
-        const initialBalanceNum = initialBalance ? parseFloat(String(initialBalance)) : null;
-        
-        // Use current balance for display, fallback to initial balance
-        const displayBalance = currentBalanceNum ?? initialBalanceNum;
-        const accountSize = initialBalanceNum; // Account size is the initial balance
+
+        // Size: From brokerAccount.initialBalance
+        const accountSize = c?.brokerAccount?.innitialBalance ? parseFloat(String(c.brokerAccount.innitialBalance)) : null;
+
+        // Equity: From dynamicBalance
+        const equityNum = c?.dynamicBalance ? parseFloat(String(c.dynamicBalance)) : null;
 
         const whenRaw =
           (c as { startDate?: unknown; createdAt?: unknown }).startDate ??
@@ -327,8 +294,8 @@ function UserDetailInner() {
           null;
         const whenDate =
           typeof whenRaw === "string" ||
-          typeof whenRaw === "number" ||
-          whenRaw instanceof Date
+            typeof whenRaw === "number" ||
+            whenRaw instanceof Date
             ? new Date(whenRaw)
             : null;
 
@@ -336,14 +303,13 @@ function UserDetailInner() {
           accountNumber: login || `${c.challengeID.slice(0, 8)}...`,
           accountType: c?.numPhase ? `${c.numPhase}-step` : "Challenge",
           accountSize: accountSize != null ? `$${accountSize.toLocaleString()}` : "-",
-          balance: displayBalance != null ? `$${displayBalance.toLocaleString()}` : "-",
-          equity: equity != null ? `$${equity.toLocaleString()}` : "-",
+          equity: equityNum != null ? `$${equityNum.toLocaleString()}` : "-",
           platform,
           status: c?.status ?? (c?.isActive ? "Active" : "Inactive"),
           dateReceived: whenDate ? whenDate.toLocaleDateString() : "-",
         };
       }),
-    [challenges, challengeDetailsMap]
+    [challenges]
   );
 
   const totalItems = mapped.length;
@@ -380,17 +346,17 @@ function UserDetailInner() {
     return (
       <MainLayout>
         <LoadingSpinner
-        size="md"
-        text="Cargando Challenges"
-        subtitle="Obteniendo información del usuario y challenges..."
-        showProgress
-        steps={[
-          "Consultando datos del usuario...",
-          "Cargando challenges del usuario...",
-          "Obteniendo balances y detalles...",
-          "Preparando vista de detalles...",
-        ]}
-      />
+          size="md"
+          text="Cargando Challenges"
+          subtitle="Obteniendo información del usuario y challenges..."
+          showProgress
+          steps={[
+            "Consultando datos del usuario...",
+            "Cargando challenges del usuario...",
+            "Obteniendo balances y detalles...",
+            "Preparando vista de detalles...",
+          ]}
+        />
       </MainLayout>
     );
   }
@@ -488,8 +454,6 @@ function UserDetailInner() {
               </div>
             </div>
 
-          
-
             {/* Recent Activity */}
             <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 shadow-sm">
               <div className="flex items-center mb-3">
@@ -518,8 +482,8 @@ function UserDetailInner() {
               </div>
             </div>
           </div>
-            {/* Verificaciones KYC del usuario */}
-          <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
+          {/* Verificaciones KYC del usuario */}
+          {/* <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
             <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
               <div>
                 <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100">User Verifications (KYC)</h2>
@@ -562,8 +526,8 @@ function UserDetailInner() {
                         {v.status}
                       </span>
                     </div>
-                    
-                    {/* Detalles en grilla legible */}
+
+                    {/* Detalles en grilla legible 
                     <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2 text-sm">
                       <div className="flex items-start justify-between sm:block">
                         <span className="text-gray-600 dark:text-gray-400 font-medium">Enviado:</span>
@@ -589,7 +553,7 @@ function UserDetailInner() {
                       )}
                     </div>
 
-                    {/* Separador y media */}
+                    {/* Separador y media 
                     {Array.isArray(v.media) && v.media.length > 0 && (
                       <div className="mt-4 pt-3 border-t border-gray-200 dark:border-gray-700">
                         <div className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">Documentos</div>
@@ -636,7 +600,7 @@ function UserDetailInner() {
                 </div>
               )}
             </div>
-          </div>
+          </div> */}
 
           {/* Tabla de challenges */}
           <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
@@ -682,18 +646,8 @@ function UserDetailInner() {
               }}
             />
           </div>
-
-          
         </div>
       </div>
     </MainLayout>
-  );
-}
-
-export default function Page() {
-  return (
-    <SessionProvider>
-      <UserDetailInner />
-    </SessionProvider>
   );
 }
