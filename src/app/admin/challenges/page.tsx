@@ -17,46 +17,52 @@ type LimitParam = number;
 const API_BASE = apiBaseUrl.replace(/\/$/, "");
 
 // Función para calcular la posición inteligente del dropdown
-const calculateDropdownPosition = (buttonRect: DOMRect, dropdownWidth = 200, dropdownHeight = 150) => {
+const calculateDropdownPosition = (
+  buttonRect: DOMRect,
+  dropdownWidth = 200,
+  dropdownHeight = 150
+) => {
   const viewportWidth = window.innerWidth;
   const viewportHeight = window.innerHeight;
   const scrollY = window.scrollY;
   const scrollX = window.scrollX;
-  
+
   let top = buttonRect.bottom + scrollY + 4;
   let left = buttonRect.left + scrollX;
-  
+
   // Verificar si el dropdown se sale por la derecha
   if (left + dropdownWidth > viewportWidth + scrollX) {
     // Alinear a la derecha del botón
     left = buttonRect.right + scrollX - dropdownWidth;
-    
+
     // Si aún se sale por la derecha, alinear con el borde derecho de la ventana
     if (left + dropdownWidth > viewportWidth + scrollX) {
       left = viewportWidth + scrollX - dropdownWidth - 8;
     }
   }
-  
+
   // Verificar si el dropdown se sale por la izquierda
   if (left < scrollX) {
     left = scrollX + 8;
   }
-  
+
   // Verificar si el dropdown se sale por abajo
   if (top + dropdownHeight > viewportHeight + scrollY) {
     // Mostrar arriba del botón
     top = buttonRect.top + scrollY - dropdownHeight - 4;
-    
+
     // Si aún se sale por arriba, ajustar al espacio disponible
     if (top < scrollY) {
       top = scrollY + 8;
     }
   }
-  
+
   return { top, left };
 };
 
-function unwrapPage<T = Record<string, unknown>>(raw: unknown): {
+function unwrapPage<T = Record<string, unknown>>(
+  raw: unknown
+): {
   items: T[];
   total: number;
   page: number;
@@ -110,12 +116,13 @@ function ChallengesInner() {
   const [showCredentialsModal, setShowCredentialsModal] = useState(false);
   const [showApprovalModal, setShowApprovalModal] = useState(false);
 
-  const [selectedChallenge, setSelectedChallenge] = useState<Challenge | null>(null);
+  const [selectedChallenge, setSelectedChallenge] = useState<Challenge | null>(
+    null
+  );
   const [disapprovalReason, setDisapprovalReason] = useState("");
   const [dropdownOpen, setDropdownOpen] = useState<string | null>(null);
   const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
 
-  
   // Estados de loading para cada acción
   const [isLoadingCredentials, setIsLoadingCredentials] = useState(false);
   const [isLoadingApproval, setIsLoadingApproval] = useState(false);
@@ -130,7 +137,8 @@ function ChallengesInner() {
     if (status) q.set("status", status);
     // Backend accepts: userID (UUID), search (email/username/fullname), login (broker login)
     const userVal = userFilter.trim();
-    const uuidRegex = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
+    const uuidRegex =
+      /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
     if (userVal && uuidRegex.test(userVal)) {
       q.set("userID", userVal);
     } else if (userVal) {
@@ -145,7 +153,9 @@ function ChallengesInner() {
 
   const fetcher = async (u: string) => {
     const res = await fetch(u, {
-      headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
+      headers: accessToken
+        ? { Authorization: `Bearer ${accessToken}` }
+        : undefined,
       credentials: "include",
     });
     if (!res.ok) throw new Error((await res.text()) || `Error ${res.status}`);
@@ -158,7 +168,10 @@ function ChallengesInner() {
   );
 
   useEffect(() => {
-    if (authStatus === "unauthenticated" || (!accessToken && authStatus !== "loading")) {
+    if (
+      authStatus === "unauthenticated" ||
+      (!accessToken && authStatus !== "loading")
+    ) {
       router.replace("/auth/login");
     }
   }, [authStatus, accessToken, router]);
@@ -166,38 +179,46 @@ function ChallengesInner() {
   // Funciones de manejo de acciones
   const handleSendCredentials = async (challenge: Challenge) => {
     if (!accessToken) return;
-    
-    console.log('Enviando credenciales para challenge:', challenge.challengeID);
-    console.log('API_BASE:', API_BASE);
-    console.log('URL completa:', `${API_BASE}/challenges/${challenge.challengeID}/send-credentials`);
-    
+
+    console.log("Enviando credenciales para challenge:", challenge.challengeID);
+    console.log("API_BASE:", API_BASE);
+    console.log(
+      "URL completa:",
+      `${API_BASE}/challenges/${challenge.challengeID}/send-credentials`
+    );
+
     setIsLoadingCredentials(true);
     try {
-      const response = await fetch(`${API_BASE}/challenges/${challenge.challengeID}/send-credentials`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${accessToken}`,
-          'Content-Type': 'application/json'
-        },
-        credentials: 'include'
-      });
-      
-      console.log('Response status:', response.status);
-      console.log('Response headers:', response.headers);
-      
+      const response = await fetch(
+        `${API_BASE}/challenges/${challenge.challengeID}/send-credentials`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+        }
+      );
+
+      console.log("Response status:", response.status);
+      console.log("Response headers:", response.headers);
+
       if (!response.ok) {
         const errorText = await response.text();
-        throw new Error(`Error al enviar credenciales: ${response.status} - ${errorText}`);
+        throw new Error(
+          `Error al enviar credenciales: ${response.status} - ${errorText}`
+        );
       }
-      
+
       // Mostrar notificación de éxito
-      toast.success('Credenciales enviadas exitosamente');
-      
+      toast.success("Credenciales enviadas exitosamente");
+
       // Recargar datos
       mutate();
     } catch (error) {
-      console.error('Error:', error);
-      toast.error('Error al enviar credenciales');
+      console.error("Error:", error);
+      toast.error("Error al enviar credenciales");
     } finally {
       setIsLoadingCredentials(false);
       setShowCredentialsModal(false);
@@ -206,36 +227,44 @@ function ChallengesInner() {
 
   const handleApprove = async (challenge: Challenge) => {
     if (!accessToken) return;
-    
-    console.log('Aprobando challenge:', challenge.challengeID);
-    console.log('URL completa:', `${API_BASE}/challenges/${challenge.challengeID}/approve`);
-    
+
+    console.log("Aprobando challenge:", challenge.challengeID);
+    console.log(
+      "URL completa:",
+      `${API_BASE}/challenges/${challenge.challengeID}/approve`
+    );
+
     setIsLoadingApproval(true);
     try {
-      const response = await fetch(`${API_BASE}/challenges/${challenge.challengeID}/approve`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${accessToken}`,
-          'Content-Type': 'application/json'
-        },
-        credentials: 'include'
-      });
-      
-      console.log('Response status:', response.status);
-      
+      const response = await fetch(
+        `${API_BASE}/challenges/${challenge.challengeID}/approve`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+        }
+      );
+
+      console.log("Response status:", response.status);
+
       if (!response.ok) {
         const errorText = await response.text();
-        throw new Error(`Error al aprobar challenge: ${response.status} - ${errorText}`);
+        throw new Error(
+          `Error al aprobar challenge: ${response.status} - ${errorText}`
+        );
       }
-      
+
       // Mostrar notificación de éxito
-      toast.success('Challenge aprobado exitosamente');
-      
+      toast.success("Challenge aprobado exitosamente");
+
       // Recargar datos
       mutate();
     } catch (error) {
-      console.error('Error:', error);
-      toast.error('Error al aprobar challenge');
+      console.error("Error:", error);
+      toast.error("Error al aprobar challenge");
     } finally {
       setIsLoadingApproval(false);
       setShowApprovalModal(false);
@@ -244,38 +273,46 @@ function ChallengesInner() {
 
   const confirmDisapproval = async () => {
     if (!selectedChallenge || !accessToken || !disapprovalReason.trim()) return;
-    
-    console.log('Desaprobando challenge:', selectedChallenge.challengeID);
-    console.log('Razón:', disapprovalReason.trim());
-    console.log('URL completa:', `${API_BASE}/challenges/${selectedChallenge.challengeID}/disapprove`);
-    
+
+    console.log("Desaprobando challenge:", selectedChallenge.challengeID);
+    console.log("Razón:", disapprovalReason.trim());
+    console.log(
+      "URL completa:",
+      `${API_BASE}/challenges/${selectedChallenge.challengeID}/disapprove`
+    );
+
     setIsLoadingDisapproval(true);
     try {
-      const response = await fetch(`${API_BASE}/challenges/${selectedChallenge.challengeID}/disapprove`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${accessToken}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ observation: disapprovalReason.trim() }),
-        credentials: 'include'
-      });
-      
-      console.log('Response status:', response.status);
-      
+      const response = await fetch(
+        `${API_BASE}/challenges/${selectedChallenge.challengeID}/disapprove`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ observation: disapprovalReason.trim() }),
+          credentials: "include",
+        }
+      );
+
+      console.log("Response status:", response.status);
+
       if (!response.ok) {
         const errorText = await response.text();
-        throw new Error(`Error al desaprobar challenge: ${response.status} - ${errorText}`);
+        throw new Error(
+          `Error al desaprobar challenge: ${response.status} - ${errorText}`
+        );
       }
-      
+
       // Mostrar notificación de éxito
-      toast.success('Challenge desaprobado exitosamente');
-      
+      toast.success("Challenge desaprobado exitosamente");
+
       // Recargar datos
       mutate();
     } catch (error) {
-      console.error('Error:', error);
-      toast.error('Error al desaprobar challenge');
+      console.error("Error:", error);
+      toast.error("Error al desaprobar challenge");
     } finally {
       setIsLoadingDisapproval(false);
       closeDisapprovalModal();
@@ -299,19 +336,17 @@ function ChallengesInner() {
     setDisapprovalReason("");
   };
 
-
-
   // useEffect para manejo de eventos de dropdown
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as Element;
-      if (!target.closest('.dropdown-container')) {
+      if (!target.closest(".dropdown-container")) {
         setDropdownOpen(null);
       }
     };
 
     const handleEscape = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
+      if (event.key === "Escape") {
         setDropdownOpen(null);
       }
     };
@@ -328,22 +363,23 @@ function ChallengesInner() {
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
-    document.addEventListener('keydown', handleEscape);
-    window.addEventListener('scroll', handleScroll, true);
-    window.addEventListener('resize', handleResize);
+    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("keydown", handleEscape);
+    window.addEventListener("scroll", handleScroll, true);
+    window.addEventListener("resize", handleResize);
 
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-      document.removeEventListener('keydown', handleEscape);
-      window.removeEventListener('scroll', handleScroll, true);
-      window.removeEventListener('resize', handleResize);
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleEscape);
+      window.removeEventListener("scroll", handleScroll, true);
+      window.removeEventListener("resize", handleResize);
     };
   }, [dropdownOpen]);
 
-
-
-  if (authStatus === "loading" || (!accessToken && authStatus !== "unauthenticated")) {
+  if (
+    authStatus === "loading" ||
+    (!accessToken && authStatus !== "unauthenticated")
+  ) {
     return (
       <MainLayout>
         <div className="p-6">Verificando sesión…</div>
@@ -366,22 +402,42 @@ function ChallengesInner() {
 
   const columns: ColumnConfig[] = [
     { key: "serial", label: "ID", type: "normal" },
-    { key: "user", label: "User", type: "link", linkUrl: (_value, row) => `/admin/users/${(row as any)?.__raw?.userID ?? (row as any)?.userID ?? ""}` },
-    { key: "login", label: "Login", type: "link", linkUrl: (value, row) => {
-      const r: any = row as any;
-      const brokerAccountID = r?.__raw?.brokerAccount?.brokerAccountID ?? r?.brokerAccountID;
-      const loginVal = typeof value === "string" ? value : r?.login;
-      if (brokerAccountID) return `/admin/brokeraccounts/${brokerAccountID}`;
-      if (loginVal && loginVal !== "-") return `/admin/brokeraccounts?login=${encodeURIComponent(loginVal)}`;
-      return "#";
-    } },
+    {
+      key: "user",
+      label: "User",
+      type: "link",
+      linkUrl: (_value, row) =>
+        `/admin/users/${
+          (row as any)?.__raw?.userID ?? (row as any)?.userID ?? ""
+        }`,
+    },
+    {
+      key: "login",
+      label: "Login",
+      type: "link",
+      linkUrl: (value, row) => {
+        const r: any = row as any;
+        const brokerAccountID =
+          r?.__raw?.brokerAccount?.brokerAccountID ?? r?.brokerAccountID;
+        const loginVal = typeof value === "string" ? value : r?.login;
+        if (brokerAccountID) return `/admin/brokeraccounts/${brokerAccountID}`;
+        if (loginVal && loginVal !== "-")
+          return `/admin/brokeraccounts?login=${encodeURIComponent(loginVal)}`;
+        return "#";
+      },
+    },
     { key: "platform", label: "Platform", type: "normal" },
     { key: "numPhase", label: "Phase", type: "normal" },
     //{ key: "dynamicBalance", label: "Dyn. Balance", type: "normal" },
     { key: "status", label: "Status", type: "normal" },
     { key: "startDate", label: "Start", type: "normal" },
     { key: "endDate", label: "End", type: "normal" },
-    { key: "actions", label: "Acciones", type: "normal", render: (value, row) => value as React.ReactNode },
+    {
+      key: "actions",
+      label: "Acciones",
+      type: "normal",
+      render: (value, row) => value as React.ReactNode,
+    },
   ];
 
   const rows: Record<string, unknown>[] = challenges.map((c, idx) => {
@@ -394,7 +450,9 @@ function ChallengesInner() {
     const login = c.brokerAccount?.login ?? "-";
     const platform = c.brokerAccount?.platform ?? "-";
     const dynBal = c.dynamicBalance != null ? String(c.dynamicBalance) : "-";
-    const start = c.startDate ? new Date(c.startDate).toLocaleDateString() : "-";
+    const start = c.startDate
+      ? new Date(c.startDate).toLocaleDateString()
+      : "-";
     const end = c.endDate ? new Date(c.endDate).toLocaleDateString() : "-";
 
     const challengeId = c.challengeID;
@@ -407,7 +465,7 @@ function ChallengesInner() {
           onClick={(e) => {
             e.preventDefault();
             e.stopPropagation();
-            
+
             if (dropdownOpen === c.challengeID) {
               setDropdownOpen(null);
             } else {
@@ -420,33 +478,50 @@ function ChallengesInner() {
           className="inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
           type="button"
         >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zM12 13a1 1 0 110-2 1 1 0 010 2zM12 20a1 1 0 110-2 1 1 0 010 2z" />
-          </svg>
-          Acciones
-          <svg 
-            className={`w-4 h-4 transform transition-transform duration-200 ${dropdownOpen === c.challengeID ? 'rotate-180' : ''}`} 
-            fill="none" 
-            stroke="currentColor" 
+          <svg
+            className="w-4 h-4"
+            fill="none"
+            stroke="currentColor"
             viewBox="0 0 24 24"
           >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zM12 13a1 1 0 110-2 1 1 0 010 2zM12 20a1 1 0 110-2 1 1 0 010 2z"
+            />
+          </svg>
+          Acciones
+          <svg
+            className={`w-4 h-4 transform transition-transform duration-200 ${
+              dropdownOpen === c.challengeID ? "rotate-180" : ""
+            }`}
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M19 9l-7 7-7-7"
+            />
           </svg>
         </button>
-        
+
         {/* Dropdown menu mejorado con posicionamiento inteligente */}
         {dropdownOpen && (
-          <div 
+          <div
             className="fixed inset-0 z-40"
             onClick={() => setDropdownOpen(null)}
           >
-            <div 
-              className="absolute bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg shadow-2xl z-50 min-w-[200px] max-w-[250px] dropdown-container animate-in fade-in-0 zoom-in-95 duration-100"
+            <div
+              className="absolute bg-white dark:bg-gray-800 border border-gray-200  dark:border-gray-600 rounded-lg shadow-sm z-50 min-w-[200px] max-w-[250px] dropdown-container animate-in fade-in-0 zoom-in-95 duration-100"
               style={{
                 top: `${dropdownPosition.top}px`,
                 left: `${dropdownPosition.left}px`,
-                maxHeight: '200px',
-                overflowY: 'auto'
+                maxHeight: "200px",
+                overflowY: "auto",
               }}
               onClick={(e) => e.stopPropagation()}
             >
@@ -455,7 +530,9 @@ function ChallengesInner() {
                   onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
-                    const challenge = challenges.find(c => c.challengeID === dropdownOpen);
+                    const challenge = challenges.find(
+                      (c) => c.challengeID === dropdownOpen
+                    );
                     if (challenge) {
                       setSelectedChallenge(challenge);
                       setShowCredentialsModal(true);
@@ -465,17 +542,29 @@ function ChallengesInner() {
                   className="flex items-center gap-3 w-full px-4 py-3 text-sm text-gray-700 dark:text-gray-200 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-300 transition-colors duration-150"
                   type="button"
                 >
-                  <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                  <svg
+                    className="w-4 h-4 flex-shrink-0"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                    />
                   </svg>
                   <span className="truncate">Enviar Credenciales</span>
                 </button>
-                
+
                 <button
                   onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
-                    const challenge = challenges.find(c => c.challengeID === dropdownOpen);
+                    const challenge = challenges.find(
+                      (c) => c.challengeID === dropdownOpen
+                    );
                     if (challenge) {
                       setSelectedChallenge(challenge);
                       setShowApprovalModal(true);
@@ -485,17 +574,29 @@ function ChallengesInner() {
                   className="flex items-center gap-3 w-full px-4 py-3 text-sm text-gray-700 dark:text-gray-200 hover:bg-green-50 dark:hover:bg-green-900/20 hover:text-green-600 dark:hover:text-green-300 transition-colors duration-150"
                   type="button"
                 >
-                  <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  <svg
+                    className="w-4 h-4 flex-shrink-0"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M5 13l4 4L19 7"
+                    />
                   </svg>
                   <span className="truncate">Aprobar Challenge</span>
                 </button>
-                
+
                 <button
                   onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
-                    const challenge = challenges.find(c => c.challengeID === dropdownOpen);
+                    const challenge = challenges.find(
+                      (c) => c.challengeID === dropdownOpen
+                    );
                     if (challenge) {
                       setSelectedChallenge(challenge);
                       setShowDisapprovalModal(true);
@@ -505,8 +606,18 @@ function ChallengesInner() {
                   className="flex items-center gap-3 w-full px-4 py-3 text-sm text-gray-700 dark:text-gray-200 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-300 transition-colors duration-150"
                   type="button"
                 >
-                  <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  <svg
+                    className="w-4 h-4 flex-shrink-0"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"
+                    />
                   </svg>
                   <span className="truncate">Desaprobar Challenge</span>
                 </button>
@@ -546,17 +657,28 @@ function ChallengesInner() {
           showTotalCount={true}
         />
 
-
-
         {/* Modal de Enviar Credenciales */}
         {showCredentialsModal && selectedChallenge && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
-              <h3 className="text-lg font-semibold mb-4">Enviar Credenciales</h3>
-              <p className="text-gray-600 mb-4">¿Confirmas el envío de credenciales para este challenge?</p>
+              <h3 className="text-lg font-semibold mb-4">
+                Enviar Credenciales
+              </h3>
+              <p className="text-gray-600 mb-4">
+                ¿Confirmas el envío de credenciales para este challenge?
+              </p>
               <div className="mb-4 p-3 bg-gray-50 rounded">
-                <p><strong>Challenge ID:</strong> {selectedChallenge.challengeID}</p>
-                <p><strong>Usuario:</strong> {selectedChallenge.user ? `${selectedChallenge.user.firstName || ''} ${selectedChallenge.user.lastName || ''}`.trim() || selectedChallenge.user.email : selectedChallenge.userID}</p>
+                <p>
+                  <strong>Challenge ID:</strong> {selectedChallenge.challengeID}
+                </p>
+                <p>
+                  <strong>Usuario:</strong>{" "}
+                  {selectedChallenge.user
+                    ? `${selectedChallenge.user.firstName || ""} ${
+                        selectedChallenge.user.lastName || ""
+                      }`.trim() || selectedChallenge.user.email
+                    : selectedChallenge.userID}
+                </p>
               </div>
               <div className="flex justify-end space-x-3">
                 <button
@@ -571,7 +693,7 @@ function ChallengesInner() {
                   disabled={isLoadingCredentials}
                   className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 transition-colors disabled:opacity-50"
                 >
-                  {isLoadingCredentials ? 'Enviando...' : 'Enviar Credenciales'}
+                  {isLoadingCredentials ? "Enviando..." : "Enviar Credenciales"}
                 </button>
               </div>
             </div>
@@ -583,10 +705,21 @@ function ChallengesInner() {
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
               <h3 className="text-lg font-semibold mb-4">Aprobar Challenge</h3>
-              <p className="text-gray-600 mb-4">¿Confirmas la aprobación de este challenge?</p>
+              <p className="text-gray-600 mb-4">
+                ¿Confirmas la aprobación de este challenge?
+              </p>
               <div className="mb-4 p-3 bg-gray-50 rounded">
-                <p><strong>Challenge ID:</strong> {selectedChallenge.challengeID}</p>
-                <p><strong>Usuario:</strong> {selectedChallenge.user ? `${selectedChallenge.user.firstName || ''} ${selectedChallenge.user.lastName || ''}`.trim() || selectedChallenge.user.email : selectedChallenge.userID}</p>
+                <p>
+                  <strong>Challenge ID:</strong> {selectedChallenge.challengeID}
+                </p>
+                <p>
+                  <strong>Usuario:</strong>{" "}
+                  {selectedChallenge.user
+                    ? `${selectedChallenge.user.firstName || ""} ${
+                        selectedChallenge.user.lastName || ""
+                      }`.trim() || selectedChallenge.user.email
+                    : selectedChallenge.userID}
+                </p>
               </div>
               <div className="flex justify-end space-x-3">
                 <button
@@ -601,7 +734,7 @@ function ChallengesInner() {
                   disabled={isLoadingApproval}
                   className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 transition-colors disabled:opacity-50"
                 >
-                  {isLoadingApproval ? 'Aprobando...' : 'Aprobar Challenge'}
+                  {isLoadingApproval ? "Aprobando..." : "Aprobar Challenge"}
                 </button>
               </div>
             </div>
@@ -612,11 +745,24 @@ function ChallengesInner() {
         {showDisapprovalModal && selectedChallenge && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
-              <h3 className="text-lg font-semibold mb-4">Desaprobar Challenge</h3>
-              <p className="text-gray-600 mb-4">Proporciona una razón para la desaprobación:</p>
+              <h3 className="text-lg font-semibold mb-4">
+                Desaprobar Challenge
+              </h3>
+              <p className="text-gray-600 mb-4">
+                Proporciona una razón para la desaprobación:
+              </p>
               <div className="mb-4 p-3 bg-gray-50 rounded">
-                <p><strong>Challenge ID:</strong> {selectedChallenge.challengeID}</p>
-                <p><strong>Usuario:</strong> {selectedChallenge.user ? `${selectedChallenge.user.firstName || ''} ${selectedChallenge.user.lastName || ''}`.trim() || selectedChallenge.user.email : selectedChallenge.userID}</p>
+                <p>
+                  <strong>Challenge ID:</strong> {selectedChallenge.challengeID}
+                </p>
+                <p>
+                  <strong>Usuario:</strong>{" "}
+                  {selectedChallenge.user
+                    ? `${selectedChallenge.user.firstName || ""} ${
+                        selectedChallenge.user.lastName || ""
+                      }`.trim() || selectedChallenge.user.email
+                    : selectedChallenge.userID}
+                </p>
               </div>
               <textarea
                 value={disapprovalReason}
@@ -638,7 +784,9 @@ function ChallengesInner() {
                   disabled={isLoadingDisapproval || !disapprovalReason.trim()}
                   className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition-colors disabled:opacity-50"
                 >
-                  {isLoadingDisapproval ? 'Desaprobando...' : 'Desaprobar Challenge'}
+                  {isLoadingDisapproval
+                    ? "Desaprobando..."
+                    : "Desaprobar Challenge"}
                 </button>
               </div>
             </div>

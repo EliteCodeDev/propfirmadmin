@@ -11,6 +11,7 @@ import React, { useMemo, useState, useEffect } from "react";
 import useSWR from "swr";
 import { SessionProvider, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import {
   ArrowTopRightOnSquareIcon,
   PencilSquareIcon,
@@ -121,6 +122,14 @@ function UsersInner() {
     password: "",
   });
   const [selectedNewRoleID, setSelectedNewRoleID] = useState<string>("");
+
+  const [generateUserOpen, setGenerateUserOpen] = useState(false);
+  const [generateUser, setGenerateUser] = useState({
+    email: "",
+    name: "",
+  });
+  const [generatingUser, setGeneratingUser] = useState(false);
+  const [bulkGenerating, setBulkGenerating] = useState(false);
 
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
@@ -552,6 +561,106 @@ function UsersInner() {
     }
   };
 
+  // Bulk Generate Users from JSON
+  const onBulkGenerateUsers = async () => {
+    try {
+      setBulkGenerating(true);
+      
+      // Import the JSON data
+      const usersData = await import('@/migration_data/users_data.json');
+      const users = usersData.default;
+      
+      toast.info(`Iniciando generación masiva de ${users.length} usuarios...`);
+      
+      let successCount = 0;
+      let errorCount = 0;
+      
+      for (const user of users) {
+        try {
+          const res = await fetch(`${API_BASE}/users/generate`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              ...buildHeaders(accessToken),
+            },
+            credentials: "include",
+            body: JSON.stringify({
+              email: user.email,
+              name: user.name
+            }),
+          });
+          
+          if (res.ok) {
+            successCount++;
+          } else {
+            errorCount++;
+            console.error(`Error creating user ${user.email}:`, await res.text());
+          }
+        } catch (error) {
+          errorCount++;
+          console.error(`Error creating user ${user.email}:`, error);
+        }
+        
+        // Small delay to avoid overwhelming the server
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
+      
+      toast.success(`Generación completada: ${successCount} exitosos, ${errorCount} errores`);
+      await mutate();
+    } catch (error) {
+      console.error('Error in bulk generation:', error);
+      toast.error('Error al cargar los datos de migración');
+    } finally {
+      setBulkGenerating(false);
+    }
+  };
+
+  // Generar Usuario
+  const onGenerateUser = async () => {
+    if (!generateUser.email || !generateUser.name) {
+      toast.error("Por favor completa todos los campos");
+      return;
+    }
+    try {
+      // Cerrar modal y limpiar antes del llamado
+      const payload = { ...generateUser };
+      setGenerateUserOpen(false);
+      setGenerateUser({
+        email: "",
+        name: "",
+      });
+
+      setGeneratingUser(true);
+      const res = await fetch(`${API_BASE}/users/generate`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...buildHeaders(accessToken),
+        },
+        credentials: "include",
+        body: JSON.stringify(payload),
+      });
+      
+      if (!res.ok) {
+        const errorText = await res.text();
+        throw new Error(errorText || `Error ${res.status}`);
+      }
+      
+      const result = await res.json();
+      toast.success("Usuario generado exitosamente. Se ha enviado un email con las credenciales.");
+      await mutate();
+    } catch (e) {
+      const maybe = e as unknown;
+      const message =
+        typeof maybe === "object" && maybe !== null && "message" in maybe
+          ? String((maybe as { message?: unknown }).message || "")
+          : "";
+      toast.error(message || "Error al generar el usuario");
+    } finally {
+      setGeneratingUser(false);
+    }
+  };
+
   return (
     <MainLayout>
       <div className="min-h-screen dark:bg-gray-800 transition-colors duration-200">
@@ -570,6 +679,12 @@ function UsersInner() {
               mutateRoles();
               setCreateUserOpen(true);
             }}
+            secondaryButtonText="Generate User"
+            onSecondaryClick={() => {
+              setGenerateUserOpen(true);
+            }}
+            tertiaryButtonText={bulkGenerating ? "Generating..." : "Bulk Generate Users"}
+            onTertiaryClick={bulkGenerating ? undefined : onBulkGenerateUsers}
             totalCount={pageObj.total}
             showTotalCount={true}
           />
@@ -852,6 +967,95 @@ function UsersInner() {
               >
                 {busy ? "Creating..." : "Create"}
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Generar Usuario */}
+      {generateUserOpen && (
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+          onClick={(e) => {
+            // Prevenir cierre del modal durante la operación
+            if (generatingUser) {
+              e.preventDefault();
+              return;
+            }
+            // Solo cerrar si se hace clic en el backdrop (no en el modal)
+            if (e.target === e.currentTarget) {
+              setGenerateUserOpen(false);
+              setGenerateUser({
+                email: "",
+                name: "",
+              });
+            }
+          }}
+        >
+          <div className={`w-full max-w-md bg-white dark:bg-gray-800 rounded-xl p-5 shadow-lg border border-gray-200 dark:border-gray-700 relative ${generatingUser ? 'pointer-events-none' : ''}`}>
+            {generatingUser && (
+              <div className="absolute inset-0 bg-white/50 dark:bg-gray-800/50 rounded-xl flex items-center justify-center z-10">
+                <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300">
+                  <svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="m4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  <span className="text-sm font-medium">Generando usuario...</span>
+                </div>
+              </div>
+            )}
+            <h3 className="text-lg font-semibold mb-3 text-gray-900 dark:text-white">
+              Generate User
+            </h3>
+            <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
+              Generate a user with a random password that will be sent via email.
+            </p>
+            <div className="grid grid-cols-1 gap-3">
+              <input
+                className="px-3 py-2 text-sm border rounded-lg bg-white dark:bg-gray-700 dark:border-gray-600"
+                placeholder="Email"
+                type="email"
+                value={generateUser.email}
+                onChange={(e) =>
+                  setGenerateUser((s) => ({ ...s, email: e.target.value }))
+                }
+              />
+              <input
+                className="px-3 py-2 text-sm border rounded-lg bg-white dark:bg-gray-700 dark:border-gray-600"
+                placeholder="Full Name"
+                value={generateUser.name}
+                onChange={(e) =>
+                  setGenerateUser((s) => ({ ...s, name: e.target.value }))
+                }
+              />
+            </div>
+            <div className="mt-5 flex items-center justify-end gap-2">
+              <button
+                 className="px-3 py-2 text-sm rounded-lg border disabled:opacity-50 disabled:cursor-not-allowed"
+                 onClick={() => {
+                   setGenerateUserOpen(false);
+                   setGenerateUser({
+                     email: "",
+                     name: "",
+                   });
+                 }}
+                 disabled={generatingUser}
+                >
+                  Cancel
+                </button>
+                <button
+                  className="px-3 py-2 text-sm rounded-lg bg-blue-600 text-white disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                  onClick={onGenerateUser}
+                  disabled={generatingUser}
+                >
+                  {generatingUser && (
+                    <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="m4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                  )}
+                  {generatingUser ? "Generando..." : "Generate"}
+                </button>
             </div>
           </div>
         </div>

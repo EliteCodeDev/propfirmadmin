@@ -31,6 +31,16 @@ export interface UpdateUserPayload {
   status?: string;
 }
 
+export interface GenerateUserPayload {
+  email: string;
+  name: string;
+}
+
+export interface GenerateUserResponse {
+  user: UserEntity;
+  password: string;
+}
+
 export const usersApi = {
   create: async (payload: CreateUserPayload): Promise<UserEntity> => {
     const { data } = await client.post("/users", payload);
@@ -63,6 +73,10 @@ export const usersApi = {
   },
   remove: async (id: string): Promise<{ success: boolean }> => {
     const { data } = await client.delete(`/users/${id}`);
+    return data;
+  },
+  generate: async (payload: GenerateUserPayload): Promise<GenerateUserResponse> => {
+    const { data } = await client.post("/users/generate", payload);
     return data;
   },
 };
