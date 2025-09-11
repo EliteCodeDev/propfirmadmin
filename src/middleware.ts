@@ -13,19 +13,18 @@ export async function middleware(req: NextRequest) {
   const isAuthenticated = !!token;
 
   if (isAuthenticated) {
-    // Redirigir al dashboard si entra a /auth/*
+    // Si entra a /auth/* redirigir al dashboard
     if (AUTH_PATHS.some((p) => pathname.startsWith(p))) {
-      return NextResponse.redirect(new URL(PROTECTED_ROOT, req.url));
+      return NextResponse.redirect(new URL(PROTECTED_ROOT, req.nextUrl.origin));
     }
-    // Redirigir al dashboard si entra a la raíz
+    // Si entra a la raíz "/", redirigir siempre a /admin/dashboard
     if (pathname === "/") {
-      return NextResponse.redirect(
-        new URL(PROTECTED_ROOT, req.nextUrl.origin)
-      );
+      return NextResponse.redirect(new URL(PROTECTED_ROOT, req.nextUrl.origin));
     }
   } else {
-    // Bloquear solo rutas protegidas (ej: /admin)
-    const isPublic = AUTH_PATHS.some((p) => pathname.startsWith(p)) || pathname === "/";
+    // Bloquear rutas protegidas (ej: /admin/*)
+    const isPublic =
+      AUTH_PATHS.some((p) => pathname.startsWith(p)) || pathname === "/";
     if (!isPublic) {
       const url = req.nextUrl.clone();
       url.pathname = "/auth/login";
