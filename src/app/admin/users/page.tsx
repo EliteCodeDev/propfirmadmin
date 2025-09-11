@@ -566,16 +566,16 @@ function UsersInner() {
   const onBulkGenerateUsers = async () => {
     try {
       setBulkGenerating(true);
-      
+
       // Import the JSON data
-      const usersData = await import('@/migration_data/users_data.json');
+      const usersData = await import("@/migration_data/users_data.json");
       const users = usersData.default;
-      
+
       toast.info(`Iniciando generación masiva de ${users.length} usuarios...`);
-      
+
       let successCount = 0;
       let errorCount = 0;
-      
+
       for (const user of users) {
         try {
           const res = await fetch(`${API_BASE}/users/generate`, {
@@ -588,30 +588,34 @@ function UsersInner() {
             body: JSON.stringify({
               email: user.email,
               name: user.name,
-              isConfirmed: true
             }),
           });
-          
+
           if (res.ok) {
             successCount++;
           } else {
             errorCount++;
-            console.error(`Error creating user ${user.email}:`, await res.text());
+            console.error(
+              `Error creating user ${user.email}:`,
+              await res.text()
+            );
           }
         } catch (error) {
           errorCount++;
           console.error(`Error creating user ${user.email}:`, error);
         }
-        
+
         // Small delay to avoid overwhelming the server
-        await new Promise(resolve => setTimeout(resolve, 100));
+        await new Promise((resolve) => setTimeout(resolve, 100));
       }
-      
-      toast.success(`Generación completada: ${successCount} exitosos, ${errorCount} errores`);
+
+      toast.success(
+        `Generación completada: ${successCount} exitosos, ${errorCount} errores`
+      );
       await mutate();
     } catch (error) {
-      console.error('Error in bulk generation:', error);
-      toast.error('Error al cargar los datos de migración');
+      console.error("Error in bulk generation:", error);
+      toast.error("Error al cargar los datos de migración");
     } finally {
       setBulkGenerating(false);
     }
@@ -624,18 +628,12 @@ function UsersInner() {
       return;
     }
     try {
-      // Cerrar modal y limpiar antes del llamado
-      const payload = { 
+      // Preparar payload pero mantener modal abierto durante la carga
+      const payload = {
         email: generateUser.email,
         name: generateUser.name,
-        isConfirmed: generateUser.isConfirmed
+        isConfirmed: generateUser.isConfirmed,
       };
-      setGenerateUserOpen(false);
-      setGenerateUser({
-        email: "",
-        name: "",
-        isConfirmed: true,
-      });
 
       setGeneratingUser(true);
       const res = await fetch(`${API_BASE}/users/generate`, {
@@ -647,14 +645,25 @@ function UsersInner() {
         credentials: "include",
         body: JSON.stringify(payload),
       });
-      
+
       if (!res.ok) {
         const errorText = await res.text();
         throw new Error(errorText || `Error ${res.status}`);
       }
-      
+
       const result = await res.json();
-      toast.success("Usuario generado exitosamente. Se ha enviado un email con las credenciales.");
+
+      // Solo cerrar modal y limpiar después de éxito
+      setGenerateUserOpen(false);
+      setGenerateUser({
+        email: "",
+        name: "",
+        isConfirmed: true,
+      });
+
+      toast.success(
+        "Usuario generado exitosamente. Se ha enviado un email con las credenciales."
+      );
       await mutate();
     } catch (e) {
       const maybe = e as unknown;
@@ -690,8 +699,10 @@ function UsersInner() {
             onSecondaryClick={() => {
               setGenerateUserOpen(true);
             }}
-            tertiaryButtonText={bulkGenerating ? "Generating..." : "Bulk Generate Users"}
-            onTertiaryClick={bulkGenerating ? undefined : onBulkGenerateUsers}
+            tertiaryButtonText={
+              bulkGenerating ? "Generating..." : "Bulk Generate Users"
+            }
+            // onTertiaryClick={bulkGenerating ? undefined : onBulkGenerateUsers}
             totalCount={pageObj.total}
             showTotalCount={true}
           />
@@ -981,7 +992,7 @@ function UsersInner() {
 
       {/* Modal Generar Usuario */}
       {generateUserOpen && (
-        <div 
+        <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
           onClick={(e) => {
             // Prevenir cierre del modal durante la operación
@@ -1000,15 +1011,37 @@ function UsersInner() {
             }
           }}
         >
-          <div className={`w-full max-w-md bg-white dark:bg-gray-800 rounded-xl p-5 shadow-lg border border-gray-200 dark:border-gray-700 relative ${generatingUser ? 'pointer-events-none' : ''}`}>
+          <div
+            className={`w-full max-w-md bg-white dark:bg-gray-800 rounded-xl p-5 shadow-lg border border-gray-200 dark:border-gray-700 relative ${
+              generatingUser ? "pointer-events-none" : ""
+            }`}
+          >
             {generatingUser && (
               <div className="absolute inset-0 bg-white/50 dark:bg-gray-800/50 rounded-xl flex items-center justify-center z-10">
                 <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300">
-                  <svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="m4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  <svg
+                    className="animate-spin h-5 w-5"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    ></circle>
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="m4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    ></path>
                   </svg>
-                  <span className="text-sm font-medium">Generando usuario...</span>
+                  <span className="text-sm font-medium">
+                    Generando usuario...
+                  </span>
                 </div>
               </div>
             )}
@@ -1016,7 +1049,8 @@ function UsersInner() {
               Generate User
             </h3>
             <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
-              Generate a user with a random password that will be sent via email.
+              Generate a user with a random password that will be sent via
+              email.
             </p>
             <div className="grid grid-cols-1 gap-3">
               <input
@@ -1042,43 +1076,65 @@ function UsersInner() {
                   id="isConfirmed"
                   checked={generateUser.isConfirmed}
                   onChange={(e) =>
-                    setGenerateUser((s) => ({ ...s, isConfirmed: e.target.checked }))
+                    setGenerateUser((s) => ({
+                      ...s,
+                      isConfirmed: e.target.checked,
+                    }))
                   }
                   className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
                 />
-                <label htmlFor="isConfirmed" className="text-sm text-gray-700 dark:text-gray-300">
+                <label
+                  htmlFor="isConfirmed"
+                  className="text-sm text-gray-700 dark:text-gray-300"
+                >
                   Usuario confirmado
                 </label>
               </div>
             </div>
             <div className="mt-5 flex items-center justify-end gap-2">
               <button
-                 className="px-3 py-2 text-sm rounded-lg border disabled:opacity-50 disabled:cursor-not-allowed"
-                 onClick={() => {
-                   setGenerateUserOpen(false);
-                   setGenerateUser({
-                     email: "",
-                     name: "",
-                     isConfirmed: true,
-                   });
-                 }}
-                 disabled={generatingUser}
-                >
-                  Cancel
-                </button>
-                <button
-                  className="px-3 py-2 text-sm rounded-lg bg-blue-600 text-white disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-                  onClick={onGenerateUser}
-                  disabled={generatingUser}
-                >
-                  {generatingUser && (
-                    <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="m4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                  )}
-                  {generatingUser ? "Generando..." : "Generate"}
-                </button>
+                className="px-3 py-2 text-sm rounded-lg border disabled:opacity-50 disabled:cursor-not-allowed"
+                onClick={() => {
+                  setGenerateUserOpen(false);
+                  setGenerateUser({
+                    email: "",
+                    name: "",
+                    isConfirmed: true,
+                  });
+                }}
+                disabled={generatingUser}
+              >
+                Cancel
+              </button>
+              <button
+                className="px-3 py-2 text-sm rounded-lg bg-blue-600 text-white disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                onClick={onGenerateUser}
+                disabled={generatingUser}
+              >
+                {generatingUser && (
+                  <svg
+                    className="animate-spin h-4 w-4"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    ></circle>
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="m4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    ></path>
+                  </svg>
+                )}
+                {generatingUser ? "Generando..." : "Generate"}
+              </button>
             </div>
           </div>
         </div>

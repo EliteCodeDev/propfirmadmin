@@ -430,6 +430,7 @@ function ChallengesInner() {
     { key: "numPhase", label: "Phase", type: "normal" },
     //{ key: "dynamicBalance", label: "Dyn. Balance", type: "normal" },
     { key: "status", label: "Status", type: "normal" },
+    { key: "isActive", label: "Active", type: "normal" },
     { key: "startDate", label: "Start", type: "normal" },
     { key: "endDate", label: "End", type: "normal" },
     {
@@ -638,6 +639,7 @@ function ChallengesInner() {
       numPhase: c.numPhase ?? "-",
       dynamicBalance: dynBal,
       status: c.status ?? "-",
+      isActive: c.isActive ? "Sí" : "No",
       startDate: start,
       endDate: end,
       actions: actionsComponent,

@@ -20,6 +20,7 @@ const ALLOWED_PREFIXES = [
   "/dashboard",
   "/addons",
   "/relation-addons",
+  "/broker-accounts",
 ];
 
 export const dynamic = "force-dynamic";
@@ -99,11 +100,18 @@ async function proxy(req: NextRequest) {
 
   // Si respuesta de error carece de cuerpo útil, inyectar payload informativo
   if (res.status >= 400) {
-    const emptyJson = data && typeof data === "object" && Object.keys(data).length === 0;
+    const emptyJson =
+      data && typeof data === "object" && Object.keys(data).length === 0;
     const notObject = typeof data !== "object" || data === null;
     if (emptyJson || notObject) {
       data = {
-        message: (responseContentType.includes("application/json") && typeof data === "object" ? (data as any)?.message : undefined) || res.statusText || "HTTP Error",
+        message:
+          (responseContentType.includes("application/json") &&
+          typeof data === "object"
+            ? (data as any)?.message
+            : undefined) ||
+          res.statusText ||
+          "HTTP Error",
         status: res.status,
         path: subPath,
         method,

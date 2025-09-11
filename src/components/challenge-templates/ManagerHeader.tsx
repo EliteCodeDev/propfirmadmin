@@ -9,6 +9,10 @@ interface ManagerHeaderProps {
   description: string;
   buttonText?: string;
   onCreateClick?: () => void;
+  secondaryButtonText?: string;
+  onSecondaryClick?: () => void;
+  tertiaryButtonText?: string;
+  onTertiaryClick?: () => void;
   totalCount?: number;
   showTotalCount?: boolean;
 }
@@ -18,6 +22,10 @@ export function ManagerHeader({
   description,
   buttonText,
   onCreateClick,
+  secondaryButtonText,
+  onSecondaryClick,
+  tertiaryButtonText,
+  onTertiaryClick,
   totalCount = 0,
   showTotalCount = false,
 }: ManagerHeaderProps) {
@@ -37,6 +45,26 @@ export function ManagerHeader({
             <div className="text-xs font-medium">Total</div>
             <div className="text-lg font-bold">{totalCount}</div>
           </div>
+        )}
+        {tertiaryButtonText && onTertiaryClick && (
+          <Button
+            onClick={onTertiaryClick}
+            variant="outline"
+            className="border-orange-600 text-orange-600 hover:bg-orange-50 dark:border-orange-400 dark:text-orange-400 dark:hover:bg-orange-900/20 group shadow-sm"
+          >
+            <Plus className="mr-2 h-4 w-4 transition-transform duration-200 group-hover:rotate-90" />
+            {tertiaryButtonText}
+          </Button>
+        )}
+        {secondaryButtonText && onSecondaryClick && (
+          <Button
+            onClick={onSecondaryClick}
+            variant="outline"
+            className="border-blue-600 text-blue-600 hover:bg-blue-50 dark:border-blue-400 dark:text-blue-400 dark:hover:bg-blue-900/20 group shadow-sm"
+          >
+            <Plus className="mr-2 h-4 w-4 transition-transform duration-200 group-hover:rotate-90" />
+            {secondaryButtonText}
+          </Button>
         )}
         {buttonText && onCreateClick && (
           <Button
