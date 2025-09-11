@@ -65,27 +65,37 @@ function LoginContent() {
     setIsSubmitting(true);
     setShowConfirmationError(false);
 
-    const res = await signIn("credentials", {
-      redirect: false,
-      email,
-      password,
-    });
+    try {
+      const res = await signIn("credentials", {
+        redirect: false,
+        email,
+        password,
+      });
 
-    setIsSubmitting(false);
+      setIsSubmitting(false);
 
-    if (res?.ok) {
-      toast.success("Acceso autorizado!");
-      router.push("/admin/dashboard");
-    } else {
-      if (res?.error === "Email not confirmed") {
-        setShowConfirmationError(true);
+      if (res?.ok) {
+        toast.success("Acceso autorizado!");
+        router.push("/admin/dashboard");
       } else {
-        toast.error(res?.error || "Credenciales incorrectas");
+        if (res?.error === "Email not confirmed") {
+          // 🔑 Caso especial de no verificado
+          setShowConfirmationError(true);
+          toast.warning("Tu correo no está verificado. Revisa tu bandeja o reenvía el correo.");
+        } else {
+          toast.error(res?.error || "Credenciales incorrectas");
+        }
+
+        // Resetear recaptcha si hubo error
+        if (recaptchaRef.current) {
+          recaptchaRef.current.reset();
+          setIsVerifying("");
+        }
       }
-      if (recaptchaRef.current) {
-        recaptchaRef.current.reset();
-        setIsVerifying("");
-      }
+    } catch (err) {
+      setIsSubmitting(false);
+      toast.error("Ocurrió un error inesperado. Intenta nuevamente.");
+      console.error("Login error:", err);
     }
   };
 
