@@ -127,6 +127,7 @@ function UsersInner() {
   const [generateUser, setGenerateUser] = useState({
     email: "",
     name: "",
+    isConfirmed: true,
   });
   const [generatingUser, setGeneratingUser] = useState(false);
   const [bulkGenerating, setBulkGenerating] = useState(false);
@@ -586,7 +587,8 @@ function UsersInner() {
             credentials: "include",
             body: JSON.stringify({
               email: user.email,
-              name: user.name
+              name: user.name,
+              isConfirmed: true
             }),
           });
           
@@ -623,11 +625,16 @@ function UsersInner() {
     }
     try {
       // Cerrar modal y limpiar antes del llamado
-      const payload = { ...generateUser };
+      const payload = { 
+        email: generateUser.email,
+        name: generateUser.name,
+        isConfirmed: generateUser.isConfirmed
+      };
       setGenerateUserOpen(false);
       setGenerateUser({
         email: "",
         name: "",
+        isConfirmed: true,
       });
 
       setGeneratingUser(true);
@@ -988,6 +995,7 @@ function UsersInner() {
               setGenerateUser({
                 email: "",
                 name: "",
+                isConfirmed: true,
               });
             }
           }}
@@ -1028,6 +1036,20 @@ function UsersInner() {
                   setGenerateUser((s) => ({ ...s, name: e.target.value }))
                 }
               />
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="isConfirmed"
+                  checked={generateUser.isConfirmed}
+                  onChange={(e) =>
+                    setGenerateUser((s) => ({ ...s, isConfirmed: e.target.checked }))
+                  }
+                  className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+                />
+                <label htmlFor="isConfirmed" className="text-sm text-gray-700 dark:text-gray-300">
+                  Usuario confirmado
+                </label>
+              </div>
             </div>
             <div className="mt-5 flex items-center justify-end gap-2">
               <button
@@ -1037,6 +1059,7 @@ function UsersInner() {
                    setGenerateUser({
                      email: "",
                      name: "",
+                     isConfirmed: true,
                    });
                  }}
                  disabled={generatingUser}
