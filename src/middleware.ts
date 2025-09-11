@@ -19,7 +19,9 @@ export async function middleware(req: NextRequest) {
     }
     // Redirigir al dashboard si entra a la raíz
     if (pathname === "/") {
-      return NextResponse.redirect(new URL(PROTECTED_ROOT, req.url));
+      return NextResponse.redirect(
+        new URL(PROTECTED_ROOT, req.nextUrl.origin)
+      );
     }
   } else {
     // Bloquear solo rutas protegidas (ej: /admin)
