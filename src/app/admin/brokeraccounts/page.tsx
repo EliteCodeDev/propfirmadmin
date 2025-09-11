@@ -104,7 +104,7 @@ export default function BrokerAccountsPage() {
   const [usedFilter, setUsedFilter] = useState<UsedFilter>("all");
   const [search, setSearch] = useState<string>("");
 
-  // Estados para el modal de generación
+  // States for generation modal
   const [generateOpen, setGenerateOpen] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [relations, setRelations] = useState<ChallengeRelation[]>([]);
@@ -120,7 +120,7 @@ export default function BrokerAccountsPage() {
     isActive: true,
   });
 
-  // Estados para búsqueda de usuarios
+  // States for user search
   const [users, setUsers] = useState<any[]>([]);
   const [loadingUsers, setLoadingUsers] = useState(false);
   const [selectedUser, setSelectedUser] = useState<any>(null);
@@ -129,16 +129,16 @@ export default function BrokerAccountsPage() {
   const emailInputRef = useRef<HTMLInputElement>(null);
   const emailDropdownRef = useRef<HTMLDivElement>(null);
 
-  // debounce para búsqueda
+  // debounce for search
   const [debouncedSearch, setDebouncedSearch] = useState(search);
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedSearch(search), 500);
     return () => clearTimeout(timer);
   }, [search]);
 
-  // Cargar relations cuando se abre el modal
+  // Load relations when modal opens
   const loadRelations = async () => {
-    if (relations.length > 0) return; // Ya están cargadas
+    if (relations.length > 0) return; // Already loaded
 
     setLoadingRelations(true);
     try {
@@ -152,9 +152,9 @@ export default function BrokerAccountsPage() {
     }
   };
 
-  // Cargar usuarios
+  // Load users
   const loadUsers = async () => {
-    if (users.length > 0) return; // Ya están cargados
+    if (users.length > 0) return; // Already loaded
 
     setLoadingUsers(true);
     try {
@@ -175,7 +175,7 @@ export default function BrokerAccountsPage() {
 
       setUsers(mappedUsers);
     } catch (error) {
-      console.error("Error al cargar usuarios:", error);
+      console.error("Error loading users:", error);
       toast.error("Error loading users");
     } finally {
       setLoadingUsers(false);
@@ -189,7 +189,7 @@ export default function BrokerAccountsPage() {
     }
   }, [generateOpen]);
 
-  // Manejar clicks fuera del dropdown de email
+  // Handle clicks outside email dropdown
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -207,7 +207,7 @@ export default function BrokerAccountsPage() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Filtrar sugerencias de email basado en la búsqueda
+  // Filter email suggestions based on search
   const filteredEmailSuggestions = useMemo(() => {
     if (!generateData.email.trim() || generateData.email.length < 2) return [];
     if (!Array.isArray(users)) return [];
@@ -223,7 +223,7 @@ export default function BrokerAccountsPage() {
     return filtered;
   }, [users, generateData.email]);
 
-  // Manejar selección de email del dropdown
+  // Handle email selection from dropdown
   const handleEmailSuggestionClick = (user: any) => {
     setGenerateData((s) => ({ ...s, email: user.email }));
     setSelectedUser(user);
@@ -231,7 +231,7 @@ export default function BrokerAccountsPage() {
     setHighlightedIndex(-1);
   };
 
-  // Manejar cambio en el input de email
+  // Handle email input change
   const handleEmailInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setGenerateData((s) => ({ ...s, email: value }));
@@ -242,7 +242,7 @@ export default function BrokerAccountsPage() {
     setShowEmailDropdown(shouldShow);
   };
 
-  // Manejar navegación con teclado
+  // Handle keyboard navigation
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (!showEmailDropdown || filteredEmailSuggestions.length === 0) return;
 
@@ -309,7 +309,7 @@ export default function BrokerAccountsPage() {
     { revalidateOnFocus: false, revalidateOnReconnect: false }
   );
 
-  // si no está autenticado, redirigir
+  // if not authenticated, redirect
   useEffect(() => {
     if (status === "unauthenticated") {
       router.replace("/auth/login");
@@ -319,7 +319,7 @@ export default function BrokerAccountsPage() {
   if (status === "loading") {
     return (
       <MainLayout>
-        <div className="p-6">Verificando sesión…</div>
+        <div className="p-6">Verifying session…</div>
       </MainLayout>
     );
   }
@@ -327,12 +327,12 @@ export default function BrokerAccountsPage() {
   if (!accessToken) {
     return (
       <MainLayout>
-        <div className="p-6">No autorizado. Redirigiendo…</div>
+        <div className="p-6">Unauthorized. Redirecting…</div>
       </MainLayout>
     );
   }
 
-  // unwrap datos
+  // unwrap data
   const pageObj = unwrapPage<BrokerAccount>(data as unknown);
   const accounts = pageObj.items;
   const totalPages = pageObj.totalPages;
@@ -367,7 +367,7 @@ export default function BrokerAccountsPage() {
         : "-",
   }));
 
-  // Función para generar broker account
+  // Function to generate broker account
   const onGenerateBrokerAccount = async () => {
     if (!generateData.login.trim() || !generateData.email.trim()) {
       toast.error("Please fill in all required fields (login and email)");
@@ -395,7 +395,7 @@ export default function BrokerAccountsPage() {
       setSelectedUser(null);
       setShowEmailDropdown(false);
       setHighlightedIndex(-1);
-      await mutate(); // Revalidar datos
+      await mutate(); // Revalidate data
     } catch (error) {
       console.error("Error generating broker account:", error);
       const axiosError = error as AxiosError<{ message?: string }>;
@@ -419,7 +419,7 @@ export default function BrokerAccountsPage() {
           showTotalCount={true}
         />
 
-        {/* Botón Generate */}
+        {/* Generate Button */}
         <div className="flex justify-end">
           <button
             className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
@@ -452,7 +452,7 @@ export default function BrokerAccountsPage() {
           </button>
         </div>
 
-        {/* Filtros */}
+        {/* Filters */}
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-3 items-end">
             {/* Buscar */}
@@ -515,7 +515,7 @@ export default function BrokerAccountsPage() {
           </div>
         </div>
 
-        {/* Tabla */}
+        {/* Table */}
         <PaginatedCardTable
           columns={columns}
           rows={rows}
@@ -523,7 +523,7 @@ export default function BrokerAccountsPage() {
           emptyText={
             error ? (error as Error).message : "No broker accounts found"
           }
-          actionsHeader="Acciones"
+          actionsHeader="Actions"
           renderActions={(row) => {
             const acc = row.__raw as BrokerAccount | undefined;
             const id = acc?.brokerAccountID;
@@ -536,7 +536,7 @@ export default function BrokerAccountsPage() {
                   }
                   disabled={!id}
                 >
-                  Ver
+                  View
                 </button>
               </div>
             );
@@ -611,7 +611,7 @@ export default function BrokerAccountsPage() {
                       ></path>
                     </svg>
                     <span className="text-sm font-medium">
-                      Generando broker account...
+                      Generating broker account...
                     </span>
                   </div>
                 </div>
@@ -669,12 +669,11 @@ export default function BrokerAccountsPage() {
                     >
                       <div className="p-2 border-b border-gray-100 dark:border-gray-700">
                         <p className="text-xs text-gray-500 dark:text-gray-400 px-2 py-1">
-                          {filteredEmailSuggestions.length} usuario
+                          {filteredEmailSuggestions.length} user
                           {filteredEmailSuggestions.length !== 1
                             ? "s"
                             : ""}{" "}
-                          encontrado
-                          {filteredEmailSuggestions.length !== 1 ? "s" : ""}
+                          found
                         </p>
                       </div>
                       {filteredEmailSuggestions.map((user, index) => (
@@ -734,7 +733,7 @@ export default function BrokerAccountsPage() {
                               <div className="flex items-center gap-1 mt-0.5">
                                 <UserIcon className="h-2.5 w-2.5 text-gray-400 flex-shrink-0" />
                                 <span className="text-xs text-gray-500 dark:text-gray-400 truncate">
-                                  {user.firstName || "Sin nombre"}{" "}
+                                  {user.firstName || "No name"}{" "}
                                   {user.lastName || ""}
                                 </span>
                               </div>
@@ -744,8 +743,8 @@ export default function BrokerAccountsPage() {
                       ))}
                       <div className="p-2 border-t border-gray-100 dark:border-gray-700">
                         <p className="text-xs text-gray-400 dark:text-gray-500 px-2 text-center">
-                          Usa ↑↓ para navegar • Enter para seleccionar • Esc
-                          para cerrar
+                          Use ↑↓ to navigate • Enter to select • Esc
+                          to close
                         </p>
                       </div>
                     </div>
@@ -914,7 +913,7 @@ export default function BrokerAccountsPage() {
                       ></path>
                     </svg>
                   )}
-                  {generating ? "Generando..." : "Generate"}
+                  {generating ? "Generating..." : "Generate"}
                 </button>
               </div>
             </div>

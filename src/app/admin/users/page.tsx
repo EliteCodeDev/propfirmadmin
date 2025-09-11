@@ -28,7 +28,7 @@ type LimitParam = number;
 
 const API_BASE = apiBaseUrl.replace(/\/$/, "");
 
-/* Badge de estado (isConfirmed) */
+/* Status badge (isConfirmed) */
 function StatusBadge({ confirmed }: { confirmed: boolean }) {
   return (
     <span
@@ -48,7 +48,7 @@ function StatusBadge({ confirmed }: { confirmed: boolean }) {
   );
 }
 
-/* Unwrap robusto */
+/* Robust unwrap */
 function unwrapPage<T = Record<string, unknown>>(
   raw: unknown
 ): {
@@ -103,12 +103,12 @@ function UsersInner() {
   const router = useRouter();
   const { data: session, status: authStatus } = useSession();
 
-  // Estado UI
+  // UI State
   const [page, setPage] = useState<number>(1);
   const [limit, setLimit] = useState<LimitParam>(10);
   const [search, setSearch] = useState<string>("");
 
-  // Modales
+  // Modals
   const [roleModalOpen, setRoleModalOpen] = useState(false);
   const [roleModalUser, setRoleModalUser] = useState<User | null>(null);
   const [selectedRoleID, setSelectedRoleID] = useState<string>("");
@@ -135,13 +135,13 @@ function UsersInner() {
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
 
-  // Modal editar usuario
+  // Edit user modal
   const [editOpen, setEditOpen] = useState(false);
   const [editUser, setEditUser] = useState<User | null>(null);
 
   const accessToken = session?.accessToken as string | undefined;
 
-  // Querystring
+  // Query string
   const query = useMemo(() => {
     const q = new URLSearchParams();
     q.set("page", String(page));
@@ -150,7 +150,7 @@ function UsersInner() {
     return q.toString();
   }, [page, limit, search]);
 
-  // Rutas reales del backend
+  // Real backend routes
   const usersPath = "/users";
   const rolesPath = "/roles";
   const bffRolesAssign = `/api/server/roles/assign`;
@@ -281,7 +281,7 @@ function UsersInner() {
     ([, token]) => fetchRoles(token as string | undefined)
   );
 
-  // Redirección si no hay sesión
+  // Redirect if no session
   useEffect(() => {
     if (
       authStatus === "unauthenticated" ||
@@ -298,8 +298,8 @@ function UsersInner() {
     return (
       <LoadingSpinner
         size="md"
-        text="Verificando Sesión"
-        subtitle="Validando credenciales de usuario..."
+        text="Verifying Session"
+        subtitle="Validating user credentials..."
         showProgress
       />
     );
@@ -308,20 +308,20 @@ function UsersInner() {
     return (
       <LoadingSpinner
         size="md"
-        text="Redirigiendo"
-        subtitle="Redirigiendo al sistema de login..."
+        text="Redirecting"
+        subtitle="Redirecting to login system..."
         showProgress
       />
     );
   }
 
-  // Normalización
+  // Normalization
   const pageObj = unwrapPage<User>(data as unknown);
   const users = pageObj.items;
   const totalPages = pageObj.totalPages;
   const roleOptions: RoleOption[] = Array.isArray(rolesData) ? rolesData : [];
 
-  // Columnas
+  // Columns
   const columns: ColumnConfig[] = [
     { key: "serial", label: "ID", type: "normal" },
     { key: "name", label: "NAME", type: "normal" },
@@ -365,7 +365,7 @@ function UsersInner() {
         return (
           <button
             className="inline-flex items-center gap-1 px-2 py-1 text-xs border rounded-md hover:bg-gray-50 dark:hover:bg-gray-700"
-            title="Ver challenges del usuario"
+            title="View user challenges"
             onClick={() => uid && router.push(`/admin/users/${uid}`)}
           >
             <ArrowTopRightOnSquareIcon className="w-4 h-4" />
@@ -398,7 +398,7 @@ function UsersInner() {
 
   const offset = (page - 1) * limit;
 
-  // Filas (incluye __raw para acciones)
+  // Rows (includes __raw for actions)
   const rows = users.map((u, idx) => {
     const serial = offset + idx + 1;
     const name =
@@ -422,7 +422,7 @@ function UsersInner() {
     };
   });
 
-  // Helpers API
+  // API Helpers
   const getUserId = (u: User) => String(u.userID ?? u.id ?? "");
 
   type CreateUserBody = {
@@ -490,7 +490,7 @@ function UsersInner() {
     return true;
   };
 
-  // Guardar rol
+  // Save role
   const onSaveRole = async () => {
     if (!roleModalUser || !selectedRoleID) {
       setMsg("Select a role.");
@@ -515,7 +515,7 @@ function UsersInner() {
     }
   };
 
-  // Crear Usuario
+  // Create User
   const onCreateUser = async () => {
     if (!newUser.email || !newUser.username || !newUser.password) {
       setMsg("Email, Username and Password are required.");
@@ -571,7 +571,7 @@ function UsersInner() {
       const usersData = await import("@/migration_data/users_data.json");
       const users = usersData.default;
 
-      toast.info(`Iniciando generación masiva de ${users.length} usuarios...`);
+      toast.info(`Starting bulk generation of ${users.length} users...`);
 
       let successCount = 0;
       let errorCount = 0;
@@ -610,21 +610,21 @@ function UsersInner() {
       }
 
       toast.success(
-        `Generación completada: ${successCount} exitosos, ${errorCount} errores`
+        `Generation completed: ${successCount} successful, ${errorCount} errors`
       );
       await mutate();
     } catch (error) {
       console.error("Error in bulk generation:", error);
-      toast.error("Error al cargar los datos de migración");
+      toast.error("Error loading migration data");
     } finally {
       setBulkGenerating(false);
     }
   };
 
-  // Generar Usuario
+  // Generate User
   const onGenerateUser = async () => {
     if (!generateUser.email || !generateUser.name) {
-      toast.error("Por favor completa todos los campos");
+      toast.error("Please complete all fields");
       return;
     }
     try {
@@ -662,7 +662,7 @@ function UsersInner() {
       });
 
       toast.success(
-        "Usuario generado exitosamente. Se ha enviado un email con las credenciales."
+        "User generated successfully. An email with credentials has been sent."
       );
       await mutate();
     } catch (e) {
@@ -671,7 +671,7 @@ function UsersInner() {
         typeof maybe === "object" && maybe !== null && "message" in maybe
           ? String((maybe as { message?: unknown }).message || "")
           : "";
-      toast.error(message || "Error al generar el usuario");
+      toast.error(message || "Error generating user");
     } finally {
       setGeneratingUser(false);
     }
@@ -686,12 +686,12 @@ function UsersInner() {
             description="Manage and monitor all system users"
             buttonText="Create User"
             onCreateClick={() => {
-              // Preseleccionar rol "user" por defecto
+              // Preselect "user" role by default
               const userRole = roleOptions.find(
                 (r) => r.name.toLowerCase() === "user"
               );
               setSelectedNewRoleID(userRole?.roleID ?? "");
-              // Refrescar roles al abrir
+              // Refresh roles when opening
               mutateRoles();
               setCreateUserOpen(true);
             }}
@@ -707,7 +707,7 @@ function UsersInner() {
             showTotalCount={true}
           />
 
-          {/* Filtros */}
+          {/* Filters */}
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4">
             <div className="flex flex-col sm:flex-row gap-3">
               <div className="flex-1">
@@ -782,7 +782,7 @@ function UsersInner() {
             </div>
           </div>
 
-          {/* Tabla */}
+          {/* Table */}
           <PaginatedCardTable
             columns={columns}
             rows={rows}
@@ -809,7 +809,7 @@ function UsersInner() {
         </div>
       </div>
 
-      {/* Modal Cambiar Rol */}
+      {/* Change Role Modal */}
       {roleModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
           <div className="w-full max-w-md bg-white dark:bg-gray-800 rounded-xl p-5 shadow-lg border border-gray-200 dark:border-gray-700">
@@ -872,7 +872,7 @@ function UsersInner() {
         </div>
       )}
 
-      {/* Modal Crear Usuario */}
+      {/* Create User Modal */}
       {createUserOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
           <div className="w-full max-w-md bg-white dark:bg-gray-800 rounded-xl p-5 shadow-lg border border-gray-200 dark:border-gray-700">
@@ -927,7 +927,7 @@ function UsersInner() {
                 }
               />
 
-              {/* Select de Rol */}
+              {/* Role Select */}
               <div>
                 <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Role
@@ -990,17 +990,17 @@ function UsersInner() {
         </div>
       )}
 
-      {/* Modal Generar Usuario */}
+      {/* Generate User Modal */}
       {generateUserOpen && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
           onClick={(e) => {
-            // Prevenir cierre del modal durante la operación
+            // Prevent modal closure during operation
             if (generatingUser) {
               e.preventDefault();
               return;
             }
-            // Solo cerrar si se hace clic en el backdrop (no en el modal)
+            // Only close if clicking on backdrop (not on modal)
             if (e.target === e.currentTarget) {
               setGenerateUserOpen(false);
               setGenerateUser({
@@ -1040,7 +1040,7 @@ function UsersInner() {
                     ></path>
                   </svg>
                   <span className="text-sm font-medium">
-                    Generando usuario...
+                    Generating user...
                   </span>
                 </div>
               </div>
@@ -1087,7 +1087,7 @@ function UsersInner() {
                   htmlFor="isConfirmed"
                   className="text-sm text-gray-700 dark:text-gray-300"
                 >
-                  Usuario confirmado
+                  Confirmed user
                 </label>
               </div>
             </div>
@@ -1133,14 +1133,14 @@ function UsersInner() {
                     ></path>
                   </svg>
                 )}
-                {generatingUser ? "Generando..." : "Generate"}
+                {generatingUser ? "Generating..." : "Generate"}
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Modal Editar Usuario (Reutilizable) */}
+      {/* Edit User Modal (Reusable) */}
       {editOpen && (
         <EditUserModal
           open={editOpen}
@@ -1150,7 +1150,7 @@ function UsersInner() {
             setEditUser(null);
           }}
           onSubmit={async (vals, uid) => {
-            // Solo enviar campos permitidos por UpdateUserDto
+            // Only send fields allowed by UpdateUserDto
             const payload: UpdateUserBody = {
               username: vals.username,
               email: vals.email,
@@ -1161,7 +1161,7 @@ function UsersInner() {
               isBlocked: vals.isBlocked,
               isVerified: vals.isVerified,
             };
-            // limpiar undefined para no sobrescribir con undefined
+            // clean undefined to not overwrite with undefined
             (Object.keys(payload) as (keyof UpdateUserBody)[]).forEach(
               (k) =>
                 payload[k] === undefined &&

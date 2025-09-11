@@ -161,9 +161,6 @@ export default function PerformanceAnalytics() {
               <h3 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
                 Analytics
               </h3>
-              <p className="text-gray-600 dark:text-gray-400">
-                Track your revenue and client metrics over time
-              </p>
               <div className="mt-2 flex items-center gap-4 text-sm">
                 <div className="flex items-center gap-2">
                   <span className="w-8 h-0.5 bg-blue-600 rounded-full" />{" "}
