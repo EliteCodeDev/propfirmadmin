@@ -17,10 +17,6 @@ import { Separator } from "@/components/ui/separator";
 import { Check, Plus, X, ChevronDown, ChevronUp } from "lucide-react";
 import type { AddonSelectorModalProps } from "@/types";
 
-function formatAmount(n?: number) {
-  if (typeof n !== "number") return "—";
-  return `$${n.toLocaleString()}`;
-}
 
 export default function RelationAddonsModal({
   open,
@@ -92,7 +88,7 @@ export default function RelationAddonsModal({
     });
   }, [selected, sourceAddons, initialRelationAddons]);
 
-  const { available, selectedList } = useMemo(() => {
+  const { available } = useMemo(() => {
     const set = new Set(selected);
     const available = sourceAddons.filter((a) => !set.has(a.addonID));
     const selectedList = sourceAddons.filter((a) => set.has(a.addonID));
@@ -455,10 +451,11 @@ export default function RelationAddonsModal({
               }
             }}
             disabled={isLoading}
-            className="bg-emerald-600 text-white hover:bg-emerald-700 dark:bg-emerald-600 dark:hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="bg-emerald-600 text-center text-white hover:bg-emerald-700 dark:bg-emerald-600 dark:hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <Check className="h-4 w-4 mr-1" />{" "}
-            {isLoading ? "Guardando..." : "Agregar"}
+            {isLoading ? (<>
+            <Check className="h-4 w-4 mr-1 animate-spin" />
+            </>) : "Guardar"}
           </Button>
         </DialogFooter>
       </DialogContent>

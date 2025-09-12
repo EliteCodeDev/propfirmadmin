@@ -31,12 +31,12 @@ function classNames(...classes: string[]) {
 export default function AssignmentPage() {
     const { data: session } = useSession();
 
-    // Datos de prueba mientras se implementa el fetch real
+    // Test data while implementing real fetch
     const [users, setUsers] = useState<any[]>([]);
     const [loadingUsers, setLoadingUsers] = useState(false);
     const [usersError, setUsersError] = useState<any>(null);
 
-    // 2) Estados de búsqueda de email con autocompletado
+    // 2) Email search states with autocomplete
     const [searchEmail, setSearchEmail] = useState("");
     const [selectedUser, setSelectedUser] = useState<any>(null);
     const [loadingSearch, setLoadingSearch] = useState(false);
@@ -47,7 +47,7 @@ export default function AssignmentPage() {
     const emailInputRef = useRef<HTMLInputElement>(null);
     const emailDropdownRef = useRef<HTMLDivElement>(null);
 
-    // Manejar clicks fuera del dropdown de email
+    // Handle clicks outside email dropdown
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
             if (
@@ -72,7 +72,7 @@ export default function AssignmentPage() {
                     `${apiBaseUrl}/users?page=1&limit=999999999`
                 );
 
-                // Mapear los datos de la API a la estructura esperada
+                // Map API data to expected structure
                 const mappedUsers = response.data.data.data.map((user: any) => ({
                     id: user.userID,
                     email: user.email,
@@ -84,9 +84,9 @@ export default function AssignmentPage() {
                 }));
 
                 setUsers(mappedUsers);
-                // console.log("Usuarios cargados:", mappedUsers); // Para debug
+                // console.log("Users loaded:", mappedUsers); // For debug
             } catch (error) {
-                console.error("Error al cargar usuarios:", error);
+                console.error("Error loading users:", error);
                 setUsersError(error);
             }
         };
@@ -99,7 +99,7 @@ export default function AssignmentPage() {
     // Solo loader inicial (no volverá a mostrarse al revalidar)
     const loadingInitialUsers = loadingUsers && users?.length === 0;
 
-    // Filtrar sugerencias de email basado en la búsqueda
+    // Filter email suggestions based on search
     const filteredEmailSuggestions = useMemo(() => {
         if (!searchEmail.trim() || searchEmail.length < 2) return [];
         if (!Array.isArray(users)) return [];
@@ -118,7 +118,7 @@ export default function AssignmentPage() {
         return filtered;
     }, [users, searchEmail]);
 
-    // Manejar selección de email del dropdown
+    // Handle email selection from dropdown
     const handleEmailSuggestionClick = (user: any) => {
         setSearchEmail(user.email);
         setSelectedUser(user);
@@ -126,7 +126,7 @@ export default function AssignmentPage() {
         setHighlightedIndex(-1);
     };
 
-    // Manejar cambio en el input de email
+    // Handle email input change
     const handleEmailInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value;
         console.log("Input change:", value);
@@ -139,7 +139,7 @@ export default function AssignmentPage() {
         setShowEmailDropdown(shouldShow);
     };
 
-    // Manejar navegación con teclado
+    // Handle keyboard navigation
     const handleKeyDown = (e: React.KeyboardEvent) => {
         if (!showEmailDropdown || filteredEmailSuggestions.length === 0) return;
 
@@ -171,13 +171,13 @@ export default function AssignmentPage() {
 
     const handleSearchUser = () => {
         if (!searchEmail.trim()) {
-            toast.error("Por favor ingresa un email válido.");
+            toast.error("Please enter a valid email.");
             return;
         }
         setLoadingSearch(true);
 
         if (!Array.isArray(users)) {
-            toast.error("No se encontró ningún usuario con ese email.");
+            toast.error("No user found with that email.");
             setSelectedUser(null);
             setLoadingSearch(false);
             return;
@@ -187,7 +187,7 @@ export default function AssignmentPage() {
             (u) => u.email && u.email.toLowerCase() === searchEmail.toLowerCase()
         );
         if (!hit) {
-            toast.error("No se encontró ningún usuario con ese email.");
+            toast.error("No user found with that email.");
             setSelectedUser(null);
         } else {
             setSelectedUser(hit);
@@ -195,7 +195,7 @@ export default function AssignmentPage() {
         setLoadingSearch(false);
     };
 
-    // 3) Fetch inicial de relaciones, productos y configs (solo al montar)
+    // 3) Initial fetch of relations, products and configs (only on mount)
     const [categories, setCategories] = useState<ChallengeCategory[]>([]);
     const [plans, setPlans] = useState<ChallengePlan[]>([]);
     const [balances, setBalances] = useState<ChallengeBalance[]>([]);
@@ -204,14 +204,14 @@ export default function AssignmentPage() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<any>(null);
 
-    // Estados de selección para challenge templates
+    // Selection states for challenge templates
     const [selectedPlan, setSelectedPlan] = useState<ChallengePlan | null>(null);
     const [selectedCategory, setSelectedCategory] =
         useState<ChallengeCategory | null>(null);
     const [selectedBalance, setSelectedBalance] =
         useState<ChallengeBalance | null>(null);
 
-    // Cargar todos los datos de challenge templates
+    // Load all challenge templates data
     const loadChallengeData = async (): Promise<void> => {
         try {
             setLoading(true);
@@ -230,9 +230,9 @@ export default function AssignmentPage() {
             setRelations(relationsData);
 
         } catch (error: unknown) {
-            console.error("Error al cargar datos de challenge:", error);
-            setError(error instanceof Error ? error.message : "Error desconocido");
-            toast.error("Error al cargar datos de challenge templates");
+            console.error("Error loading challenge data:", error);
+            setError(error instanceof Error ? error.message : "Unknown error");
+            toast.error("Error loading challenge templates data");
         } finally {
             setLoading(false);
         }
@@ -248,7 +248,7 @@ export default function AssignmentPage() {
     const balancesValidation = useArrayValidation(balances);
     const relationsValidation = useArrayValidation(relations);
 
-    // Buscar relación basada en selecciones (como en TemplateVisualizer)
+    // Search relation based on selections (like in TemplateVisualizer)
     const currentRelation = useMemo(() => {
         if (!selectedPlan || !selectedCategory) return null;
 
@@ -259,7 +259,7 @@ export default function AssignmentPage() {
         );
     }, [selectedPlan, selectedCategory, relationsValidation]);
 
-    // Obtener balances disponibles para la relación actual (como en TemplateVisualizer)
+    // Get available balances for current relation (like in TemplateVisualizer)
     const availableBalances = useMemo(() => {
         if (!currentRelation?.balances) return [];
 
@@ -276,13 +276,13 @@ export default function AssignmentPage() {
             .filter((item) => item.balance);
     }, [currentRelation, balancesValidation]);
 
-    // 5) Estados de selección (actualizados para trabajar con challenge templates)
+    // 5) Selection states (updated to work with challenge templates)
     const [selectedStep, setSelectedStep] = useState<any>(null);
     const [selectedRelation, setSelectedRelation] = useState<ChallengeRelation | null | undefined>(null);
     const [selectedProduct, setSelectedProduct] = useState<any>(null);
     const [selectedStage, setSelectedStage] = useState<any>(null);
 
-    // Handlers para challenge plans y categories
+    // Handlers for challenge plans and categories
     const handlePlanClick = (plan: ChallengePlan) => {
         setSelectedPlan(plan);
         setSelectedBalance(null); // Reset balance when plan changes
@@ -308,7 +308,7 @@ export default function AssignmentPage() {
     const matchingVariation = useMemo(() => {
         if (!selectedBalance || !currentRelation) return null;
 
-        // Buscar la relación de balance específica
+        // Search for specific balance relation
         const relationBalance = currentRelation.balances?.find(
             (rb) => rb.balanceID === selectedBalance.balanceID
         );
@@ -321,18 +321,18 @@ export default function AssignmentPage() {
             : null;
     }, [selectedBalance, currentRelation]);
 
-    // 7) Continuar al checkout
+    // 7) Continue to checkout
     const handleContinue = async () => {
         if (!session) {
             signIn(undefined, { callbackUrl: window.location.href });
             return;
         }
         if (!selectedUser) {
-            toast.error("Primero busca y selecciona un usuario.");
+            toast.error("First search and select a user.");
             return;
         }
         if (!selectedPlan || !selectedCategory || !selectedBalance) {
-            toast.error("Selecciona plan, categoría y balance.");
+            toast.error("Select plan, category and balance.");
             return;
         }
 
@@ -380,7 +380,7 @@ export default function AssignmentPage() {
                 setLoadingModal(false);
                 
                 if (res.ok && data.success) {
-                    toast.success("Challenge asignado exitosamente");
+                    toast.success("Challenge assigned successfully");
                     // Reset form
                     setSelectedUser(null);
                     setSelectedPlan(null);
@@ -388,15 +388,15 @@ export default function AssignmentPage() {
                     setSelectedBalance(null);
                     setSearchEmail("");
                 } else {
-                    toast.error(data.message || "Error al asignar challenge");
+                    toast.error(data.message || "Error assigning challenge");
                 }
             } catch (error) {
                 console.error("Error assigning challenge:", error);
                 setLoadingModal(false);
-                toast.error("Error al asignar challenge");
+                toast.error("Error assigning challenge");
             }
         } else {
-            toast.error("Datos de challenge incompletos");
+            toast.error("Incomplete challenge data");
         }
     };
 
@@ -408,7 +408,7 @@ export default function AssignmentPage() {
                     <div className="absolute inset-0 bg-gradient-to-br from-blue-50/60 via-purple-50/60 to-transparent dark:from-blue-950/30 dark:via-purple-950/20" />
                     <div className="relative flex flex-col items-center gap-4">
                         <div className="w-12 h-12 border-4 border-zinc-200 border-t-blue-500 rounded-full animate-spin" />
-                        <p className="text-sm text-zinc-500 dark:text-zinc-400">Cargando configuración de retos…</p>
+                        <p className="text-sm text-zinc-500 dark:text-zinc-400">Loading challenge configuration…</p>
                     </div>
                 </div>
             </MainLayout>
@@ -418,8 +418,8 @@ export default function AssignmentPage() {
         return (
             <MainLayout>
                 <div className="p-6 bg-red-50 rounded-xl border border-red-200">
-                    <h2 className="text-red-800 font-semibold mb-1">No pudimos cargar los datos</h2>
-                    <p className="text-red-600 text-sm">Intenta de nuevo más tarde.</p>
+                    <h2 className="text-red-800 font-semibold mb-1">We couldn't load the data</h2>
+                    <p className="text-red-600 text-sm">Please try again later.</p>
                 </div>
             </MainLayout>
         );
@@ -448,19 +448,19 @@ export default function AssignmentPage() {
                         <div>
                             <h1 className="text-2xl md:text-3xl font-semibold tracking-tight flex items-center gap-3">
                                 {/* <TrophyIcon className="w-7 h-7 text-blue-600" /> */}
-                                Asignar Challenge
+                                Assign Challenge
                             </h1>
-                            <p className="text-sm text-zinc-600 dark:text-zinc-400 mt-1">Elige plan, categoría y balance; luego selecciona el comprador.</p>
+                            <p className="text-sm text-zinc-600 dark:text-zinc-400 mt-1">Choose plan, category and balance; then select the buyer.</p>
                         </div>
                         {/* Visual stepper */}
                         <div className="flex items-center gap-6">
                             <Step index={1} label="Plan" done={!!selectedPlan} active={!selectedPlan} />
                             <div className="w-10 h-px bg-zinc-200 dark:bg-zinc-400" />
-                            <Step index={2} label="Categoría" done={!!selectedCategory} active={!!selectedPlan && !selectedCategory} />
+                            <Step index={2} label="Category" done={!!selectedCategory} active={!!selectedPlan && !selectedCategory} />
                             <div className="w-10 h-px bg-zinc-200 dark:bg-zinc-400" />
                             <Step index={3} label="Balance" done={!!selectedBalance} active={!!selectedCategory && !selectedBalance} />
                             <div className="w-10 h-px bg-zinc-200 dark:bg-zinc-400" />
-                            <Step index={4} label="Comprador" active={!!selectedBalance && !selectedUser} done={!!selectedUser} />
+                            <Step index={4} label="Buyer" active={!!selectedBalance && !selectedUser} done={!!selectedUser} />
                         </div>
                     </div>
                 </div>
@@ -471,16 +471,16 @@ export default function AssignmentPage() {
                             {/* Challenge Plans */}
                             <section className="bg-white rounded-2xl p-5 shadow-sm border border-zinc-200 dark:bg-gray-800 dark:border-zinc-800">
                                 <div className="flex items-center mb-3">
-                                    <h3 className="text-zinc-900 dark:text-zinc-100 font-semibold">Planes disponibles</h3>
+                                    <h3 className="text-zinc-900 dark:text-zinc-100 font-semibold">Available Plans</h3>
                                     <div className="relative ml-2 group">
                                         <InformationCircleIcon className="h-5 w-5 text-zinc-500 group-hover:text-zinc-400" />
                                         <div className="absolute z-10 invisible group-hover:visible bg-zinc-800 text-xs text-zinc-200 p-2 rounded-md w-56 top-full left-0 mt-1">
-                                            Selecciona el plan de challenge que deseas asignar.
+                                            Select the challenge plan you want to assign.
                                         </div>
                                     </div>
                                 </div>
                                 <p className="text-zinc-600 mb-4 text-sm dark:text-zinc-400">
-                                    Elige un plan para continuar.
+                                    Choose a plan to continue.
                                 </p>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
                                     {plansValidation.safeMap((plan, index) => (
@@ -504,7 +504,7 @@ export default function AssignmentPage() {
                                                 aria-checked={selectedPlan?.planID === plan?.planID}
                                                 role="radio"
                                             >
-                                                <span className="block font-medium leading-tight">{plan?.name || "Sin nombre"}</span>
+                                                <span className="block font-medium leading-tight">{plan?.name || "No name"}</span>
                                                 {selectedPlan?.planID === plan?.planID && (
                                                     <CheckIcon className="absolute top-4 right-4 h-5 w-5" />
                                                 )}
@@ -518,17 +518,17 @@ export default function AssignmentPage() {
                             {selectedPlan && (
                                 <section className="bg-white rounded-2xl p-5 shadow-sm border border-zinc-200 dark:bg-gray-800 dark:border-zinc-800">
                                     <div className="flex items-center mb-3">
-                                        <h3 className="text-zinc-900 dark:text-zinc-100 font-semibold">Categorías del plan</h3>
-                                        <div className="relative ml-2 group">
-                                            <InformationCircleIcon className="h-5 w-5 text-zinc-500 group-hover:text-zinc-400" />
-                                            <div className="absolute z-10 invisible group-hover:visible bg-zinc-800 text-xs text-zinc-200 p-2 rounded-md w-56 top-full left-0 mt-1">
-                                                Selecciona la categoría que deseas asignar.
-                                            </div>
+                                    <h3 className="text-zinc-900 dark:text-zinc-100 font-semibold">Plan categories</h3>
+                                    <div className="relative ml-2 group">
+                                        <InformationCircleIcon className="h-5 w-5 text-zinc-500 group-hover:text-zinc-400" />
+                                        <div className="absolute z-10 invisible group-hover:visible bg-zinc-800 text-xs text-zinc-200 p-2 rounded-md w-56 top-full left-0 mt-1">
+                                            Select the category you want to assign.
                                         </div>
                                     </div>
-                                    <p className="text-zinc-600 mb-4 text-sm dark:text-zinc-400">
-                                        Para <span className="font-medium text-zinc-900 dark:text-zinc-100">{selectedPlan.name}</span>.
-                                    </p>
+                                </div>
+                                <p className="text-zinc-600 mb-4 text-sm dark:text-zinc-400">
+                                    For <span className="font-medium text-zinc-900 dark:text-zinc-100">{selectedPlan.name}</span>.
+                                </p>
                                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
                                         {categoriesValidation.safeMap((category, index) => (
                                             <div key={`category-${category?.categoryID ?? "unknown"}-${index}`} className="relative">
@@ -566,16 +566,16 @@ export default function AssignmentPage() {
                             {selectedPlan && selectedCategory && availableBalances.length > 0 && (
                                 <section className="bg-white rounded-2xl p-5 shadow-sm border border-zinc-200 dark:bg-gray-800 dark:border-zinc-800">
                                     <div className="flex items-center mb-3">
-                                        <h3 className="text-zinc-900 dark:text-zinc-100 font-semibold">Balance de cuenta</h3>
+                                        <h3 className="text-zinc-900 dark:text-zinc-100 font-semibold">Account balance</h3>
                                         <div className="relative ml-2 group">
                                             <InformationCircleIcon className="h-5 w-5 text-zinc-500 group-hover:text-zinc-400" />
                                             <div className="absolute z-10 invisible group-hover:visible bg-zinc-800 text-xs text-zinc-200 p-2 rounded-md w-56 top-full left-0 mt-1">
-                                                Selecciona el balance de cuenta a asignar.
+                                                Select the account balance to assign.
                                             </div>
                                         </div>
                                     </div>
                                     <p className="text-zinc-600 mb-4 text-sm dark:text-zinc-400">
-                                        Para {selectedPlan.name} — {selectedCategory.name}
+                                        For {selectedPlan.name} — {selectedCategory.name}
                                     </p>
                                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
                                         {availableBalances.map((balanceDetail, index) => {
@@ -585,7 +585,7 @@ export default function AssignmentPage() {
                                                 balanceDetail.balance?.name ||
                                                 (typeof balanceDetail.balance?.balance === "number"
                                                     ? balanceDetail.balance.balance.toLocaleString()
-                                                    : "Sin balance");
+                                    : "No balance");
 
                                             return (
                                                 <div
@@ -655,7 +655,7 @@ export default function AssignmentPage() {
                                                                 setShowEmailDropdown(true);
                                                             }
                                                         }}
-                                                        placeholder="Buscar usuario por email…"
+                                                        placeholder="Search user by email…"
                                                         className="w-full pl-10 pr-4 py-3.5 border border-zinc-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-zinc-800 dark:text-white dark:border-zinc-700 transition-all"
                                                         aria-autocomplete="list"
                                                         aria-expanded={showEmailDropdown}
@@ -673,9 +673,8 @@ export default function AssignmentPage() {
                                                     >
                                                         <div className="p-2 border-b border-zinc-100 dark:border-zinc-700">
                                                             <p className="text-xs text-zinc-500 dark:text-zinc-400 px-2 py-1">
-                                                                {filteredEmailSuggestions.length} usuario
-                                                                {filteredEmailSuggestions.length !== 1 ? "s" : ""} encontrado
-                                                                {filteredEmailSuggestions.length !== 1 ? "s" : ""}
+                                                                {filteredEmailSuggestions.length} user
+                                                                 {filteredEmailSuggestions.length !== 1 ? "s" : ""} found
                                                             </p>
                                                         </div>
                                                         {filteredEmailSuggestions.map((user, index) => (
@@ -742,7 +741,7 @@ export default function AssignmentPage() {
                                                         ))}
                                                         <div className="p-2 border-t border-zinc-100 dark:border-zinc-700">
                                                             <p className="text-xs text-zinc-400 dark:text-zinc-500 px-2 text-center">
-                                                                Usa ↑↓ para navegar • Enter para seleccionar • Esc para cerrar
+                                                                Use ↑↓ to navigate • Enter to select • Esc to close
                                                             </p>
                                                         </div>
                                                     </div>
@@ -755,7 +754,7 @@ export default function AssignmentPage() {
                                                 disabled={loadingSearch}
                                                 className="px-6 py-3.5 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold hover:opacity-90 disabled:opacity-50 transition-all shadow-sm"
                                             >
-                                                {loadingSearch ? "Buscando…" : "Buscar"}
+                                                {loadingSearch ? "Searching…" : "Search"}
                                             </button>
                                         </div>
                                     </div>
@@ -805,7 +804,7 @@ export default function AssignmentPage() {
                                                     : "bg-zinc-200 text-zinc-500 cursor-not-allowed"
                                             )}
                                         >
-                                            <span>{loadingModal ? "Redirigiendo…" : "Continuar"}</span>
+                                            <span>{loadingModal ? "Redirecting…" : "Continue"}</span>
                                             <ChevronRightIcon className="h-5 w-5 ml-2" />
                                         </button>
                                     </div>

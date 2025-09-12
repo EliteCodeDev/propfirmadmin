@@ -4,8 +4,9 @@ import {
   BrokerAccount,
   GenerateBrokerAccountDto,
   GenerateBrokerAccountResponse,
+  CreateBrokerAccountDto,
+  UpdateBrokerAccountDto,
 } from "@/types/broker";
-
 export interface BrokerAccountQuery {
   page?: number;
   limit?: number;
@@ -15,21 +16,21 @@ export interface BrokerAccountQuery {
 
 export interface CreateBrokerAccountPayload {
   login: string;
-  server?: string;
-  serverIp?: string;
-  platform?: string;
-  investorPass?: string;
-  initialBalance?: number;
+  server?: string | null;
+  serverIp?: string | null;
+  platform?: string | null;
+  investorPass?: string | null;
+  innitialBalance?: number | null;
   isUsed?: boolean;
 }
 
 export interface UpdateBrokerAccountPayload {
   login?: string;
-  server?: string;
-  serverIp?: string;
-  platform?: string;
-  investorPass?: string;
-  initialBalance?: number;
+  server?: string | null;
+  serverIp?: string | null;
+  platform?: string | null;
+  investorPass?: string | null;
+  innitialBalance?: number | null;
   isUsed?: boolean;
 }
 
@@ -68,3 +69,35 @@ export const brokerAccountsApi = {
     return data.data.data;
   },
 };
+
+// export const brokerAccountsApi = {
+//   list: async (
+//     query: BrokerAccountQuery = {}
+//   ): Promise<PageResponse<BrokerAccount>> => {
+//     const { data } = await client.get("/broker-accounts", { params: query });
+//     return data;
+//   },
+
+//   get: async (id: string): Promise<BrokerAccount> => {
+//     const { data } = await client.get(`/broker-accounts/${id}`);
+//     return data;
+//   },
+
+//   create: async (payload: CreateBrokerAccountDto): Promise<BrokerAccount> => {
+//     const { data } = await client.post("/broker-accounts", payload);
+//     return data;
+//   },
+
+//   update: async (
+//     id: string,
+//     payload: UpdateBrokerAccountDto
+//   ): Promise<BrokerAccount> => {
+//     const { data } = await client.patch(`/broker-accounts/${id}`, payload);
+//     return data;
+//   },
+
+//   remove: async (id: string): Promise<{ success: boolean }> => {
+//     const { data } = await client.delete(`/broker-accounts/${id}`);
+//     return data;
+//   },
+// };

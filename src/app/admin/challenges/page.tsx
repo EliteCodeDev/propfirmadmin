@@ -211,14 +211,14 @@ function ChallengesInner() {
         );
       }
 
-      // Mostrar notificación de éxito
-      toast.success("Credenciales enviadas exitosamente");
+      // Show success notification
+      toast.success("Credentials sent successfully");
 
-      // Recargar datos
-      mutate();
+      // Reload data
+        mutate();
     } catch (error) {
       console.error("Error:", error);
-      toast.error("Error al enviar credenciales");
+      toast.error("Error sending credentials");
     } finally {
       setIsLoadingCredentials(false);
       setShowCredentialsModal(false);
@@ -257,14 +257,14 @@ function ChallengesInner() {
         );
       }
 
-      // Mostrar notificación de éxito
-      toast.success("Challenge aprobado exitosamente");
+      // Show success notification
+      toast.success("Challenge approved successfully");
 
-      // Recargar datos
-      mutate();
+      // Reload data
+        mutate();
     } catch (error) {
       console.error("Error:", error);
-      toast.error("Error al aprobar challenge");
+      toast.error("Error approving challenge");
     } finally {
       setIsLoadingApproval(false);
       setShowApprovalModal(false);
@@ -305,14 +305,14 @@ function ChallengesInner() {
         );
       }
 
-      // Mostrar notificación de éxito
-      toast.success("Challenge desaprobado exitosamente");
+      // Show success notification
+      toast.success("Challenge disapproved successfully");
 
-      // Recargar datos
-      mutate();
+      // Reload data
+        mutate();
     } catch (error) {
       console.error("Error:", error);
-      toast.error("Error al desaprobar challenge");
+      toast.error("Error disapproving challenge");
     } finally {
       setIsLoadingDisapproval(false);
       closeDisapprovalModal();
@@ -588,7 +588,7 @@ function ChallengesInner() {
                       d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
                     />
                   </svg>
-                  <span className="truncate">Enviar Credenciales</span>
+                  <span className="truncate">Send Credentials</span>
                 </button>
 
                 <button
@@ -620,7 +620,7 @@ function ChallengesInner() {
                       d="M5 13l4 4L19 7"
                     />
                   </svg>
-                  <span className="truncate">Aprobar Challenge</span>
+                  <span className="truncate">Approve Challenge</span>
                 </button>
 
                 <button
@@ -652,7 +652,7 @@ function ChallengesInner() {
                       d="M6 18L18 6M6 6l12 12"
                     />
                   </svg>
-                  <span className="truncate">Desaprobar Challenge</span>
+                  <span className="truncate">Disapprove Challenge</span>
                 </button>
               </div>
             </div>
@@ -691,22 +691,22 @@ function ChallengesInner() {
           showTotalCount={true}
         />
 
-        {/* Modal de Enviar Credenciales */}
+        {/* Send Credentials Modal */}
         {showCredentialsModal && selectedChallenge && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
               <h3 className="text-lg font-semibold mb-4">
-                Enviar Credenciales
+                Send Credentials
               </h3>
               <p className="text-gray-600 mb-4">
-                ¿Confirmas el envío de credenciales para este challenge?
+                Do you confirm sending credentials for this challenge?
               </p>
               <div className="mb-4 p-3 bg-gray-50 rounded">
                 <p>
                   <strong>Challenge ID:</strong> {selectedChallenge.challengeID}
                 </p>
                 <p>
-                  <strong>Usuario:</strong>{" "}
+                  <strong>User:</strong>{" "}
                   {selectedChallenge.user
                     ? `${selectedChallenge.user.firstName || ""} ${
                         selectedChallenge.user.lastName || ""
@@ -720,34 +720,34 @@ function ChallengesInner() {
                   disabled={isLoadingCredentials}
                   className="px-4 py-2 text-gray-600 border border-gray-300 rounded hover:bg-gray-50 transition-colors disabled:opacity-50"
                 >
-                  Cancelar
+                  Cancel
                 </button>
                 <button
                   onClick={() => handleSendCredentials(selectedChallenge)}
                   disabled={isLoadingCredentials}
                   className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 transition-colors disabled:opacity-50"
                 >
-                  {isLoadingCredentials ? "Enviando..." : "Enviar Credenciales"}
+                  {isLoadingCredentials ? "Sending..." : "Send Credentials"}
                 </button>
               </div>
             </div>
           </div>
         )}
 
-        {/* Modal de Aprobar Challenge */}
+        {/* Approve Challenge Modal */}
         {showApprovalModal && selectedChallenge && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
-              <h3 className="text-lg font-semibold mb-4">Aprobar Challenge</h3>
+              <h3 className="text-lg font-semibold mb-4">Approve Challenge</h3>
               <p className="text-gray-600 mb-4">
-                ¿Confirmas la aprobación de este challenge?
+                Do you confirm the approval of this challenge?
               </p>
               <div className="mb-4 p-3 bg-gray-50 rounded">
                 <p>
                   <strong>Challenge ID:</strong> {selectedChallenge.challengeID}
                 </p>
                 <p>
-                  <strong>Usuario:</strong>{" "}
+                  <strong>User:</strong>{" "}
                   {selectedChallenge.user
                     ? `${selectedChallenge.user.firstName || ""} ${
                         selectedChallenge.user.lastName || ""
@@ -761,36 +761,36 @@ function ChallengesInner() {
                   disabled={isLoadingApproval}
                   className="px-4 py-2 text-gray-600 border border-gray-300 rounded hover:bg-gray-50 transition-colors disabled:opacity-50"
                 >
-                  Cancelar
+                  Cancel
                 </button>
                 <button
                   onClick={() => handleApprove(selectedChallenge)}
                   disabled={isLoadingApproval}
                   className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 transition-colors disabled:opacity-50"
                 >
-                  {isLoadingApproval ? "Aprobando..." : "Aprobar Challenge"}
+                  {isLoadingApproval ? "Approving..." : "Approve Challenge"}
                 </button>
               </div>
             </div>
           </div>
         )}
 
-        {/* Modal de Desaprobar Challenge */}
+        {/* Disapprove Challenge Modal */}
         {showDisapprovalModal && selectedChallenge && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
               <h3 className="text-lg font-semibold mb-4">
-                Desaprobar Challenge
+                Disapprove Challenge
               </h3>
               <p className="text-gray-600 mb-4">
-                Proporciona una razón para la desaprobación:
+                Provide a reason for disapproval:
               </p>
               <div className="mb-4 p-3 bg-gray-50 rounded">
                 <p>
                   <strong>Challenge ID:</strong> {selectedChallenge.challengeID}
                 </p>
                 <p>
-                  <strong>Usuario:</strong>{" "}
+                  <strong>User:</strong>{" "}
                   {selectedChallenge.user
                     ? `${selectedChallenge.user.firstName || ""} ${
                         selectedChallenge.user.lastName || ""
@@ -801,7 +801,7 @@ function ChallengesInner() {
               <textarea
                 value={disapprovalReason}
                 onChange={(e) => setDisapprovalReason(e.target.value)}
-                placeholder="Escribe la razón de la desaprobación..."
+                placeholder="Write the reason for disapproval..."
                 className="w-full p-3 border border-gray-300 rounded-lg mb-4 min-h-[100px] resize-vertical"
                 disabled={isLoadingDisapproval}
               />
@@ -811,7 +811,7 @@ function ChallengesInner() {
                   disabled={isLoadingDisapproval}
                   className="px-4 py-2 text-gray-600 border border-gray-300 rounded hover:bg-gray-50 transition-colors disabled:opacity-50"
                 >
-                  Cancelar
+                  Cancel
                 </button>
                 <button
                   onClick={confirmDisapproval}
@@ -819,15 +819,15 @@ function ChallengesInner() {
                   className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition-colors disabled:opacity-50"
                 >
                   {isLoadingDisapproval
-                    ? "Desaprobando..."
-                    : "Desaprobar Challenge"}
+                    ? "Disapproving..."
+                    : "Disapprove Challenge"}
                 </button>
               </div>
             </div>
           </div>
         )}
 
-        {/* Filtros */}
+        {/* Filters */}
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4">
           <div className="flex flex-col sm:flex-row gap-3 items-end flex-wrap">
             <div className="w-full sm:w-48">
@@ -835,15 +835,15 @@ function ChallengesInner() {
                 User
               </label>
               <input
-                type="text"
-                placeholder="Nombre, email o ID"
-                className="block w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                value={userFilter}
-                onChange={(e) => {
-                  setUserFilter(e.target.value);
-                  setPage(1);
-                }}
-              />
+                  type="text"
+                  placeholder="Name, email or ID"
+                  className="block w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  value={userFilter}
+                  onChange={(e) => {
+                    setUserFilter(e.target.value);
+                    setPage(1);
+                  }}
+                />
             </div>
 
             <div className="w-full sm:w-48">
@@ -851,15 +851,15 @@ function ChallengesInner() {
                 Login
               </label>
               <input
-                type="text"
-                placeholder="Login..."
-                className="block w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                value={loginFilter}
-                onChange={(e) => {
-                  setLoginFilter(e.target.value);
-                  setPage(1);
-                }}
-              />
+                  type="text"
+                  placeholder="Login..."
+                  className="block w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  value={loginFilter}
+                  onChange={(e) => {
+                    setLoginFilter(e.target.value);
+                    setPage(1);
+                  }}
+                />
             </div>
 
             <div className="w-full sm:w-48">

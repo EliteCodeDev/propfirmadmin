@@ -1,19 +1,29 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { StatCard } from './StatCard';
-import { SectionCard } from './SectionCard';
-import PerformanceAnalytics from './PerformanceAnalytics';
-import { BanknotesIcon, ChartBarIcon, UserGroupIcon, ExclamationTriangleIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
-import DashboardApi from '@/api/dashboard';
-import { DashboardStats, TopSellingPlan } from '@/types/dashboard';
+import { useState, useEffect } from "react";
+import { StatCard } from "./StatCard";
+import { SectionCard } from "./SectionCard";
+import PerformanceAnalytics from "./PerformanceAnalytics";
+import {
+  BanknotesIcon,
+  ChartBarIcon,
+  UserGroupIcon,
+  ExclamationTriangleIcon,
+  ArrowPathIcon,
+} from "@heroicons/react/24/outline";
+import DashboardApi from "@/api/dashboard";
+import { DashboardStats, TopSellingPlan } from "@/types/dashboard";
 
 interface DashboardContentProps {
   initialData?: DashboardStats | null;
 }
 
-export default function DashboardContent({ initialData }: DashboardContentProps) {
-  const [dashboardData, setDashboardData] = useState<DashboardStats | null>(initialData || null);
+export default function DashboardContent({
+  initialData,
+}: DashboardContentProps) {
+  const [dashboardData, setDashboardData] = useState<DashboardStats | null>(
+    initialData || null
+  );
   const [topPlans, setTopPlans] = useState<TopSellingPlan[]>([]);
   const [loading, setLoading] = useState(!initialData);
   const [error, setError] = useState<string | null>(null);
@@ -32,15 +42,15 @@ export default function DashboardContent({ initialData }: DashboardContentProps)
 
       const [statsData, plansData] = await Promise.all([
         DashboardApi.getStats(),
-        DashboardApi.getTopPlans()
+        DashboardApi.getTopPlans(),
       ]);
 
       setDashboardData(statsData);
       setTopPlans(plansData);
       setLastUpdated(new Date());
     } catch (err) {
-      console.error('Error fetching dashboard data:', err);
-      setError('Failed to load dashboard data. Please try again.');
+      console.error("Error fetching dashboard data:", err);
+      setError("Failed to load dashboard data. Please try again.");
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -84,7 +94,9 @@ export default function DashboardContent({ initialData }: DashboardContentProps)
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
           <ExclamationTriangleIcon className="h-12 w-12 text-red-500 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">Error Loading Dashboard</h3>
+          <h3 className="text-lg font-medium text-gray-900 mb-2">
+            Error Loading Dashboard
+          </h3>
           <p className="text-gray-600 mb-4">{error}</p>
           <button
             onClick={() => fetchDashboardData()}
@@ -98,11 +110,10 @@ export default function DashboardContent({ initialData }: DashboardContentProps)
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-2">
       {/* Header with refresh button */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold dark:text-white text-gray-900">Dashboard</h1>
           {lastUpdated && (
             <p className="text-xs dark:text-white text-gray-500 mt-1">
               Last updated: {lastUpdated.toLocaleTimeString()}
@@ -184,15 +195,16 @@ export default function DashboardContent({ initialData }: DashboardContentProps)
               icon={<BanknotesIcon className="h-6 w-6 text-indigo-600" />}
             />
           </div>*/}
-        </div> 
-
+        </div>
         {/* Bottom row - financial metrics (wider) */}
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
           <div className="xl:col-span-1">
             <StatCard
               size="sm"
               label="Withdrawable Profits"
-              value={`$${dashboardData?.withdrawableProfits?.toFixed(2) || "0.00"}`}
+              value={`$${
+                dashboardData?.withdrawableProfits?.toFixed(2) || "0.00"
+              }`}
               variant="emerald"
               delay={600}
               icon={<BanknotesIcon className="h-6 w-6 text-emerald-600" />}
@@ -209,8 +221,6 @@ export default function DashboardContent({ initialData }: DashboardContentProps)
             />
           </div>
         </div>
-
-        Analytics Section
         <div className="grid grid-cols-1 xl:grid-cols-1 gap-6">
           <div className="xl:col-span-1">
             <PerformanceAnalytics />
