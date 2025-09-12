@@ -1,6 +1,8 @@
 // Centralized broker-related types
 // Origin: src/app/brokeraccounts/page.tsx
 
+import { Challenge } from "./challenge";
+
 export interface BrokerAccount {
   brokerAccountID: string;
   login: string;
@@ -10,6 +12,14 @@ export interface BrokerAccount {
   isUsed: boolean;
   investorPass?: string | null;
   innitialBalance?: number | null;
+  challenge?: Challenge & {
+    user?: {
+      userID: string;
+      email: string;
+      firstName?: string;
+      lastName?: string;
+    };
+  };
 }
 
 // DTO for generating broker accounts

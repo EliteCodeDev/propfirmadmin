@@ -9,7 +9,9 @@ import type {
   PageResponse,
   GenerateBrokerAccountDto,
   GenerateBrokerAccountResponse,
-  CreateBrokerAccountDto, UpdateBrokerAccountDto
+  CreateBrokerAccountDto,
+  UpdateBrokerAccountDto,
+  User,
 } from "@/types";
 import React, {
   useCallback,
@@ -114,13 +116,15 @@ export default function BrokerAccountsPage() {
   const [limit, setLimit] = useState<LimitParam>(10);
   const [usedFilter, setUsedFilter] = useState<UsedFilter>("all");
   const [search, setSearch] = useState<string>("");
-  
+
   // Estados para modales
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
-  const [selectedAccount, setSelectedAccount] = useState<BrokerAccount | null>(null);
+  const [selectedAccount, setSelectedAccount] = useState<BrokerAccount | null>(
+    null
+  );
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
+
   // Estados del formulario de edición
   const [formData, setFormData] = useState<UpdateBrokerAccountDto>({
     login: "",
@@ -131,7 +135,7 @@ export default function BrokerAccountsPage() {
     investorPass: "",
     innitialBalance: 0,
   });
-  
+
   // Estados para modal de creación
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [createFormData, setCreateFormData] = useState<CreateBrokerAccountDto>({
@@ -162,9 +166,9 @@ export default function BrokerAccountsPage() {
   });
 
   // States for user search
-  const [users, setUsers] = useState<any[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
   const [loadingUsers, setLoadingUsers] = useState(false);
-  const [selectedUser, setSelectedUser] = useState<any>(null);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [showEmailDropdown, setShowEmailDropdown] = useState(false);
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
   const emailInputRef = useRef<HTMLInputElement>(null);
@@ -265,7 +269,7 @@ export default function BrokerAccountsPage() {
   }, [users, generateData.email]);
 
   // Handle email selection from dropdown
-  const handleEmailSuggestionClick = (user: any) => {
+  const handleEmailSuggestionClick = (user: User) => {
     setGenerateData((s) => ({ ...s, email: user.email }));
     setSelectedUser(user);
     setShowEmailDropdown(false);
@@ -328,7 +332,7 @@ export default function BrokerAccountsPage() {
     if (debouncedSearch.trim()) q.set("login", debouncedSearch.trim());
     return q.toString();
   }, [page, limit, usedFilter, debouncedSearch]);
-  
+
   // Funciones para manejar modales
   const handleEdit = (account: BrokerAccount) => {
     setSelectedAccount(account);
@@ -343,46 +347,58 @@ export default function BrokerAccountsPage() {
     });
     setEditModalOpen(true);
   };
-  
+
   const handleDelete = (account: BrokerAccount) => {
     setSelectedAccount(account);
     setDeleteModalOpen(true);
   };
-  
+
   const handleUpdateSubmit = async () => {
     if (!selectedAccount) return;
-    
+
     setIsSubmitting(true);
     try {
       await brokerAccountsApi.update(selectedAccount.brokerAccountID, formData);
       await mutate(url); // Revalidate data for the current URL
+      toast.success("Broker account updated successfully!");
       setEditModalOpen(false);
       setSelectedAccount(null);
     } catch (error) {
       console.error("Error updating broker account:", error);
-      alert("Error al actualizar la cuenta. Por favor intente nuevamente.");
+      const axiosError = error as AxiosError<{ message?: string }>;
+      toast.error(
+        axiosError.response?.data?.message ||
+          axiosError.message ||
+          "Error updating the account. Please try again."
+      );
     } finally {
       setIsSubmitting(false);
     }
   };
-  
+
   const handleDeleteConfirm = async () => {
     if (!selectedAccount) return;
-    
+
     setIsSubmitting(true);
     try {
       await brokerAccountsApi.remove(selectedAccount.brokerAccountID);
       await mutate(url); // Revalidar datos
+      toast.success("Broker account deleted successfully!");
       setDeleteModalOpen(false);
       setSelectedAccount(null);
     } catch (error) {
       console.error("Error deleting broker account:", error);
-      alert("Error al eliminar la cuenta. Por favor intente nuevamente.");
+      const axiosError = error as AxiosError<{ message?: string }>;
+      toast.error(
+        axiosError.response?.data?.message ||
+          axiosError.message ||
+          "Error deleting the account. Please try again."
+      );
     } finally {
       setIsSubmitting(false);
     }
   };
-  
+
   const handleCreate = () => {
     setCreateFormData({
       login: "",
@@ -396,16 +412,22 @@ export default function BrokerAccountsPage() {
     });
     setCreateModalOpen(true);
   };
-  
+
   const handleCreateSubmit = async () => {
     setIsSubmitting(true);
     try {
       await brokerAccountsApi.create(createFormData);
       await mutate(url); // Revalidar datos
+      toast.success("Broker account created successfully!");
       setCreateModalOpen(false);
     } catch (error) {
       console.error("Error creating broker account:", error);
-      alert("Error al crear la cuenta. Por favor intente nuevamente.");
+      const axiosError = error as AxiosError<{ message?: string }>;
+      toast.error(
+        axiosError.response?.data?.message ||
+          axiosError.message ||
+          "Error creating the account. Please try again."
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -424,15 +446,12 @@ export default function BrokerAccountsPage() {
     return res.json();
   };
 
-  const { data, error, isLoading, mutate } = useSWR<
-    PageResponse<BrokerAccount>
-  >(
   const { data, error, isLoading } = useSWR<PageResponse<BrokerAccount>>(
     accessToken ? url : null, // 👈 evita llamadas si no hay token
     fetcher,
     { revalidateOnFocus: false, revalidateOnReconnect: false }
   );
-
+  console.log(data);
   // if not authenticated, redirect
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -464,7 +483,22 @@ export default function BrokerAccountsPage() {
 
   const columns: ColumnConfig[] = [
     { key: "serial", label: "#", type: "normal" },
-    { key: "login", label: "Login", type: "normal" },
+    {
+      key: "login",
+      label: "Login",
+      type: "link",
+      linkUrl: (_value, row: any) =>
+        `/admin/users/${
+          (row.__raw as BrokerAccount)?.challenge?.user?.userID || "#"
+        }`,
+    },
+    {
+      key: "email",
+      label: "Email",
+      type: "link",
+      linkUrl: (_value, row: any) =>
+        `mailto:${(row.__raw as BrokerAccount)?.challenge?.user?.email || ""}`,
+    },
     { key: "server", label: "Server", type: "normal" },
     { key: "serverIp", label: "Server IP", type: "normal" },
     { key: "platform", label: "Platform", type: "normal" },
@@ -481,6 +515,7 @@ export default function BrokerAccountsPage() {
     __raw: a,
     serial: offset + idx + 1,
     login: a.login,
+    email: a.challenge?.user?.email || "-",
     server: a.server || "-",
     serverIp: a.serverIp || "-",
     platform: a.platform || "-",
@@ -519,7 +554,7 @@ export default function BrokerAccountsPage() {
       setSelectedUser(null);
       setShowEmailDropdown(false);
       setHighlightedIndex(-1);
-      await mutate(); // Revalidate data
+      await mutate(url); // Revalidate data
     } catch (error) {
       console.error("Error generating broker account:", error);
       const axiosError = error as AxiosError<{ message?: string }>;
@@ -535,51 +570,18 @@ export default function BrokerAccountsPage() {
 
   return (
     <MainLayout>
-      <div className="p-6 space-y-6 pt-4">
-        <div className="flex justify-between items-center">
-          <ManagerHeader
-            title="Broker Accounts"
-            description="List of available and used broker accounts"
-            totalCount={pageObj.total}
-            showTotalCount={true}
-          />
-        </div>
+      <div className="p-6 space-y-6 pt-4"></div>
+      <div className="flex justify-between items-center">
+        <ManagerHeader
+          title="Broker Accounts"
+          description="List of available and used broker accounts"
+          totalCount={pageObj.total}
+          showTotalCount={true}
+        />
+      </div>
 
-        {/* Generate Button */}
-        <div className="flex justify-end">
-          <button
-            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-            onClick={() => setGenerateOpen(true)}
-            disabled={generating}
-          >
-            {generating && (
-              <svg
-                className="animate-spin h-4 w-4"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-              >
-                <circle
-                  className="opacity-25"
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  stroke="currentColor"
-                  strokeWidth="4"
-                ></circle>
-                <path
-                  className="opacity-75"
-                  fill="currentColor"
-                  d="m4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                ></path>
-              </svg>
-            )}
-            Generate Broker Account
-          </button>
-        </div>
-
-        {/* Filters */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4">
+      {/* Filters */}
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4">
         {/* Filtros */}
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 flex justify-between">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-3 items-end">
@@ -641,12 +643,44 @@ export default function BrokerAccountsPage() {
               </select>
             </div>
           </div>
-          <div className="flex items-center justify-end">
+          <div className="flex items-center justify-end gap-6">
+            {/* Generate Button */}
+            <div className="flex justify-end">
+              <button
+                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                onClick={() => setGenerateOpen(true)}
+                disabled={generating}
+              >
+                {generating && (
+                  <svg
+                    className="animate-spin h-4 w-4"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    ></circle>
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="m4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    ></path>
+                  </svg>
+                )}
+                Generate Broker Account
+              </button>
+            </div>
             <button
               onClick={handleCreate}
               className="px-4 py-2 bg-blue-400 hover:bg-blue-500 text-white text-sm font-medium rounded-lg transition-colors"
             >
-              + New Account
+              + New Broker Account
             </button>
           </div>
         </div>
@@ -692,7 +726,6 @@ export default function BrokerAccountsPage() {
                 >
                   <Delete className="h-4 w-4" />
                 </button>
-
               </div>
             );
           }}
@@ -708,19 +741,22 @@ export default function BrokerAccountsPage() {
             },
           }}
         />
-        
+
         {/* Modal de Edición */}
         <Dialog open={editModalOpen} onOpenChange={setEditModalOpen}>
           <DialogContent className="sm:max-w-[425px]">
             <DialogHeader>
-              <DialogTitle>Editar Cuenta de Broker</DialogTitle>
+              <DialogTitle>Edit Broker Account</DialogTitle>
               <DialogDescription>
-                Modifica los campos de la cuenta. El ID y login no son editables.
+                Modify the account fields. ID and login are not editable.
               </DialogDescription>
             </DialogHeader>
             <div className="grid gap-4 py-4">
               <div className="grid grid-cols-4 items-center gap-4">
-                <label htmlFor="login" className="text-right text-sm font-medium">
+                <label
+                  htmlFor="login"
+                  className="text-right text-sm font-medium"
+                >
                   Login
                 </label>
                 <input
@@ -731,71 +767,104 @@ export default function BrokerAccountsPage() {
                 />
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
-                <label htmlFor="server" className="text-right text-sm font-medium">
+                <label
+                  htmlFor="server"
+                  className="text-right text-sm font-medium"
+                >
                   Server
                 </label>
                 <input
                   id="server"
                   value={formData.server || ""}
-                  onChange={(e) => setFormData({ ...formData, server: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, server: e.target.value })
+                  }
                   className="col-span-3 px-3 py-2 border border-gray-300 rounded-md"
                 />
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
-                <label htmlFor="serverIp" className="text-right text-sm font-medium">
+                <label
+                  htmlFor="serverIp"
+                  className="text-right text-sm font-medium"
+                >
                   Server IP
                 </label>
                 <input
                   id="serverIp"
                   value={formData.serverIp || ""}
-                  onChange={(e) => setFormData({ ...formData, serverIp: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, serverIp: e.target.value })
+                  }
                   className="col-span-3 px-3 py-2 border border-gray-300 rounded-md"
                 />
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
-                <label htmlFor="platform" className="text-right text-sm font-medium">
+                <label
+                  htmlFor="platform"
+                  className="text-right text-sm font-medium"
+                >
                   Platform
                 </label>
                 <input
                   id="platform"
                   value={formData.platform || ""}
-                  onChange={(e) => setFormData({ ...formData, platform: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, platform: e.target.value })
+                  }
                   className="col-span-3 px-3 py-2 border border-gray-300 rounded-md"
                 />
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
-                <label htmlFor="investorPass" className="text-right text-sm font-medium">
+                <label
+                  htmlFor="investorPass"
+                  className="text-right text-sm font-medium"
+                >
                   Investor Pass
                 </label>
                 <input
                   id="investorPass"
                   value={formData.investorPass || ""}
-                  onChange={(e) => setFormData({ ...formData, investorPass: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, investorPass: e.target.value })
+                  }
                   className="col-span-3 px-3 py-2 border border-gray-300 rounded-md"
                 />
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
-                <label htmlFor="innitialBalance" className="text-right text-sm font-medium">
+                <label
+                  htmlFor="initialBalance"
+                  className="text-right text-sm font-medium"
+                >
                   Initial Balance
                 </label>
                 <input
-                  id="innitialBalance"
+                  id="initialBalance"
                   type="number"
                   value={formData.innitialBalance || 0}
-                  onChange={(e) => setFormData({ ...formData, innitialBalance: Number(e.target.value) })}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      innitialBalance: Number(e.target.value),
+                    })
+                  }
                   className="col-span-3 px-3 py-2 border border-gray-300 rounded-md"
                 />
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
-                <label htmlFor="isUsed" className="text-right text-sm font-medium">
-                  En Uso
+                <label
+                  htmlFor="isUsed"
+                  className="text-right text-sm font-medium"
+                >
+                  In Use
                 </label>
                 <div className="col-span-3">
                   <input
                     id="isUsed"
                     type="checkbox"
                     checked={formData.isUsed}
-                    onChange={(e) => setFormData({ ...formData, isUsed: e.target.checked })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, isUsed: e.target.checked })
+                    }
                     className="h-4 w-4"
                   />
                 </div>
@@ -808,7 +877,7 @@ export default function BrokerAccountsPage() {
                 className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200"
                 disabled={isSubmitting}
               >
-                Cancelar
+                Cancel
               </button>
               <button
                 type="button"
@@ -816,19 +885,19 @@ export default function BrokerAccountsPage() {
                 disabled={isSubmitting}
                 className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 disabled:opacity-50"
               >
-                {isSubmitting ? "Guardando..." : "Guardar"}
+                {isSubmitting ? "Saving..." : "Save"}
               </button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
-        
+
         {/* Modal de Confirmación de Eliminación */}
         <Dialog open={deleteModalOpen} onOpenChange={setDeleteModalOpen}>
           <DialogContent className="sm:max-w-[425px]">
             <DialogHeader>
-              <DialogTitle>Confirmar Eliminación</DialogTitle>
+              <DialogTitle>Confirm Deletion</DialogTitle>
               <DialogDescription>
-                {`¿Estás seguro de que deseas eliminar la cuenta de broker con login ${selectedAccount?.login}. Esta acción no se puede deshacer.`}
+                {`Are you sure you want to delete the broker account with login ${selectedAccount?.login}? This action cannot be undone.`}
               </DialogDescription>
             </DialogHeader>
             <DialogFooter>
@@ -838,7 +907,7 @@ export default function BrokerAccountsPage() {
                 className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200"
                 disabled={isSubmitting}
               >
-                Cancelar
+                Cancel
               </button>
               <button
                 type="button"
@@ -846,116 +915,180 @@ export default function BrokerAccountsPage() {
                 disabled={isSubmitting}
                 className="px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md hover:bg-red-700 disabled:opacity-50"
               >
-                {isSubmitting ? "Eliminando..." : "Eliminar"}
+                {isSubmitting ? "Deleting..." : "Delete"}
               </button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
-        
+
         {/* Modal de Creación */}
         <Dialog open={createModalOpen} onOpenChange={setCreateModalOpen}>
           <DialogContent className="sm:max-w-[425px]">
             <DialogHeader>
-              <DialogTitle>Crear Nueva Cuenta de Broker</DialogTitle>
+              <DialogTitle>Create New Broker Account</DialogTitle>
               <DialogDescription>
-                Completa todos los campos para crear una nueva cuenta de broker.
+                Complete all fields to create a new broker account.
               </DialogDescription>
             </DialogHeader>
             <div className="grid gap-4 py-4">
               <div className="grid grid-cols-4 items-center gap-4">
-                <label htmlFor="create-login" className="text-right text-sm font-medium">
+                <label
+                  htmlFor="create-login"
+                  className="text-right text-sm font-medium"
+                >
                   Login *
                 </label>
                 <input
                   id="create-login"
                   value={createFormData.login}
-                  onChange={(e) => setCreateFormData({ ...createFormData, login: e.target.value })}
+                  onChange={(e) =>
+                    setCreateFormData({
+                      ...createFormData,
+                      login: e.target.value,
+                    })
+                  }
                   className="col-span-3 px-3 py-2 border border-gray-300 rounded-md"
                   placeholder="MT5_123456"
                   required
                 />
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
-                <label htmlFor="create-password" className="text-right text-sm font-medium">
+                <label
+                  htmlFor="create-password"
+                  className="text-right text-sm font-medium"
+                >
                   Password *
                 </label>
                 <input
                   id="create-password"
                   type="password"
                   value={createFormData.password}
-                  onChange={(e) => setCreateFormData({ ...createFormData, password: e.target.value })}
+                  onChange={(e) =>
+                    setCreateFormData({
+                      ...createFormData,
+                      password: e.target.value,
+                    })
+                  }
                   className="col-span-3 px-3 py-2 border border-gray-300 rounded-md"
                   placeholder="securePassword123"
                   required
                 />
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
-                <label htmlFor="create-server" className="text-right text-sm font-medium">
+                <label
+                  htmlFor="create-server"
+                  className="text-right text-sm font-medium"
+                >
                   Server
                 </label>
                 <input
                   id="create-server"
                   value={createFormData.server || ""}
-                  onChange={(e) => setCreateFormData({ ...createFormData, server: e.target.value })}
+                  onChange={(e) =>
+                    setCreateFormData({
+                      ...createFormData,
+                      server: e.target.value,
+                    })
+                  }
                   className="col-span-3 px-3 py-2 border border-gray-300 rounded-md"
                 />
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
-                <label htmlFor="create-serverIp" className="text-right text-sm font-medium">
+                <label
+                  htmlFor="create-serverIp"
+                  className="text-right text-sm font-medium"
+                >
                   Server IP
                 </label>
                 <input
                   id="create-serverIp"
                   value={createFormData.serverIp || ""}
-                  onChange={(e) => setCreateFormData({ ...createFormData, serverIp: e.target.value })}
+                  onChange={(e) =>
+                    setCreateFormData({
+                      ...createFormData,
+                      serverIp: e.target.value,
+                    })
+                  }
                   className="col-span-3 px-3 py-2 border border-gray-300 rounded-md"
                   placeholder="192.168.1.1"
                 />
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
-                <label htmlFor="create-platform" className="text-right text-sm font-medium">
+                <label
+                  htmlFor="create-platform"
+                  className="text-right text-sm font-medium"
+                >
                   Platform
                 </label>
                 <input
                   id="create-platform"
                   value={createFormData.platform || ""}
-                  onChange={(e) => setCreateFormData({ ...createFormData, platform: e.target.value })}
+                  onChange={(e) =>
+                    setCreateFormData({
+                      ...createFormData,
+                      platform: e.target.value,
+                    })
+                  }
                   className="col-span-3 px-3 py-2 border border-gray-300 rounded-md"
                 />
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
-                <label htmlFor="create-investorPass" className="text-right text-sm font-medium">
+                <label
+                  htmlFor="create-investorPass"
+                  className="text-right text-sm font-medium"
+                >
                   Investor Pass
                 </label>
                 <input
                   id="create-investorPass"
                   value={createFormData.investorPass || ""}
-                  onChange={(e) => setCreateFormData({ ...createFormData, investorPass: e.target.value })}
+                  onChange={(e) =>
+                    setCreateFormData({
+                      ...createFormData,
+                      investorPass: e.target.value,
+                    })
+                  }
                   className="col-span-3 px-3 py-2 border border-gray-300 rounded-md"
                 />
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
-                <label htmlFor="create-innitialBalance" className="text-right text-sm font-medium">
+                <label
+                  htmlFor="create-initialBalance"
+                  className="text-right text-sm font-medium"
+                >
                   Initial Balance
                 </label>
                 <input
-                  id="create-innitialBalance"
+                  id="create-initialBalance"
                   type="number"
                   value={createFormData.innitialBalance || 0}
-                  onChange={(e) => setCreateFormData({ ...createFormData, innitialBalance: Number(e.target.value) })}
+                  onChange={(e) =>
+                    setCreateFormData({
+                      ...createFormData,
+                      innitialBalance: Number(e.target.value),
+                    })
+                  }
                   className="col-span-3 px-3 py-2 border border-gray-300 rounded-md"
                 />
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
-                <label htmlFor="create-isUsed" className="text-right text-sm font-medium">
-                  En Uso
+                <label
+                  htmlFor="create-isUsed"
+                  className="text-right text-sm font-medium"
+                >
+                  In Use
                 </label>
                 <div className="col-span-3">
                   <input
                     id="create-isUsed"
                     type="checkbox"
                     checked={createFormData.isUsed}
-                    onChange={(e) => setCreateFormData({ ...createFormData, isUsed: e.target.checked })}
+                    onChange={(e) =>
+                      setCreateFormData({
+                        ...createFormData,
+                        isUsed: e.target.checked,
+                      })
+                    }
                     className="h-4 w-4"
                   />
                 </div>
@@ -968,15 +1101,19 @@ export default function BrokerAccountsPage() {
                 className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200"
                 disabled={isSubmitting}
               >
-                Cancelar
+                Cancel
               </button>
               <button
                 type="button"
                 onClick={handleCreateSubmit}
-                disabled={isSubmitting || !createFormData.login || !createFormData.password}
+                disabled={
+                  isSubmitting ||
+                  !createFormData.login ||
+                  !createFormData.password
+                }
                 className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 disabled:opacity-50"
               >
-                {isSubmitting ? "Creando..." : "Crear"}
+                {isSubmitting ? "Creating..." : "Create"}
               </button>
             </DialogFooter>
           </DialogContent>
@@ -1171,8 +1308,7 @@ export default function BrokerAccountsPage() {
                       ))}
                       <div className="p-2 border-t border-gray-100 dark:border-gray-700">
                         <p className="text-xs text-gray-400 dark:text-gray-500 px-2 text-center">
-                          Use ↑↓ to navigate • Enter to select • Esc
-                          to close
+                          Use ↑↓ to navigate • Enter to select • Esc to close
                         </p>
                       </div>
                     </div>
@@ -1351,5 +1487,3 @@ export default function BrokerAccountsPage() {
     </MainLayout>
   );
 }
-
-
