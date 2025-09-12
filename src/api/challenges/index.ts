@@ -44,26 +44,56 @@ export interface ChallengeWithDetails {
   brokerAccount: BrokerAccount;
 }
 
-export interface ChallengeDetailedData {
-  accountID: string;
-  login: string;
-  challengeId: string;
-  status: string;
-  createDateTime: string;
-  lastUpdate: string;
-  balance: {
-    initialBalance: string;
-    currentBalance: string;
-    dailyBalance: string | null;
-  };
-  equity: number;
-  openPositions: {
-    positions: unknown[];
-    lenght: number;
-  };
-  closedPositions: {
-    positions: unknown[];
-  };
+// Backend ChallengeDetails relation (subset used for metrix)
+export interface ChallengeDetailsRelation {
+  lastUpdate?: string | Date | null;
+  balance?: {
+    initialBalance?: number | string | null;
+    currentBalance?: number | string | null;
+    dailyBalance?: number | string | null;
+  } | null;
+  metaStats?: {
+    equity?: number | string | null;
+    maxMinBalance?: {
+      maxBalance?: number | string | null;
+      minBalance?: number | string | null;
+    } | null;
+    averageMetrics?: {
+      totalTrades?: number;
+      winningTrades?: number;
+      losingTrades?: number;
+      winRate?: number;
+      lossRate?: number;
+      averageProfit?: number;
+      averageLoss?: number;
+      highestWin?: number;
+      highestLoss?: number;
+      profitFactor?: number;
+      averageRRR?: number;
+      expectancy?: number;
+      avgHoldTime?: number;
+      profitLossRatio?: number;
+    } | null;
+    numTrades?: number | null;
+    todayPnl?: number | null;
+    lots?: number | null;
+  } | null;
+  positions?: {
+    openPositions?: any[];
+    closedPositions?: any[];
+  } | null;
+  rulesParams?: {
+    profitTarget?: number;
+    dailyDrawdown?: number;
+    maxDrawdown?: number;
+    tradingDays?: number;
+    inactiveDays?: number;
+  } | null;
+  rulesValidation?: Record<string, unknown> | null;
+}
+
+export interface ChallengeWithDetailsAndRelations extends ChallengeWithDetails {
+  details?: ChallengeDetailsRelation | null;
 }
 
 export interface ChallengeQuery {
@@ -158,12 +188,9 @@ export const challengesApi = {
     const { data } = await client.get("/challenges", { params });
     return data;
   },
-  getChallengeDetails: async (challengeId: string): Promise<{
-    success: boolean;
-    message: string;
-    data: ChallengeDetailedData;
-  }> => {
+  // Admin: fetch a single challenge including relations and details
+  getWithDetails: async (challengeId: string): Promise<ChallengeWithDetailsAndRelations> => {
     const { data } = await client.get(`/challenges/${challengeId}`);
-    return data;
+    return data as ChallengeWithDetailsAndRelations;
   },
 };
