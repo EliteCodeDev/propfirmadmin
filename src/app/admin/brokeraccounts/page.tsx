@@ -433,6 +433,39 @@ export default function BrokerAccountsPage() {
     }
   };
 
+  // States for anti-chucho delete
+  const [antiOpen, setAntiOpen] = useState(false);
+  const [antiTarget, setAntiTarget] = useState<BrokerAccount | null>(null);
+  const [antiLoading, setAntiLoading] = useState(false);
+
+  const handleAntiDelete = async () => {
+    if (!antiTarget) return;
+    setAntiLoading(true);
+    try {
+      const res = await fetch(
+        `${API_BASE}/broker-accounts/${antiTarget.brokerAccountID}/anti-chucho-delete`,
+        {
+          method: "DELETE",
+          credentials: "include",
+          headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
+        }
+      );
+      if (!res.ok) {
+        const msg = await res.text();
+        throw new Error(msg || `HTTP ${res.status}`);
+      }
+      toast.success("Deleted (anti-chucho) successfully");
+      await mutate(url);
+    } catch (e) {
+      console.error(e);
+      toast.error("Failed anti-chucho delete");
+    } finally {
+      setAntiLoading(false);
+      setAntiOpen(false);
+      setAntiTarget(null);
+    }
+  };
+
   const url = `${API_BASE}/broker-accounts?${query}`;
 
   const fetcher = async (u: string) => {
@@ -722,7 +755,20 @@ export default function BrokerAccountsPage() {
                   className="px-2 py-1 text-[11px] rounded hover:bg-red-600 text-white disabled:opacity-50 bg-red-400"
                   onClick={() => acc && handleDelete(acc)}
                   disabled={!acc}
-                  title="Look account"
+                  title="Delete account"
+                >
+                  <Delete className="h-4 w-4" />
+                </button>
+                <button
+                  className="px-2 py-1 text-[11px] rounded hover:bg-red-700 text-white disabled:opacity-50 bg-red-500"
+                  onClick={() => {
+                    if (acc) {
+                      setAntiTarget(acc);
+                      setAntiOpen(true);
+                    }
+                  }}
+                  disabled={!acc}
+                  title="Anti-chucho delete"
                 >
                   <Delete className="h-4 w-4" />
                 </button>
@@ -1483,6 +1529,40 @@ export default function BrokerAccountsPage() {
             </div>
           </div>
         )}
+
+        {/* Modal Anti-Chucho Delete */}
+        <Dialog open={antiOpen} onOpenChange={setAntiOpen}>
+          <DialogContent className="sm:max-w-[425px]">
+            <DialogHeader>
+              <DialogTitle>Delete Anti-Chucho</DialogTitle>
+              <DialogDescription>
+                This will delete the broker account and its linked challenge, including all related data. This action cannot be undone.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="grid gap-2 py-2 text-sm">
+              <div><strong>Login:</strong> {antiTarget?.login}</div>
+              <div><strong>BrokerAccountID:</strong> {antiTarget?.brokerAccountID}</div>
+            </div>
+            <DialogFooter>
+              <button
+                type="button"
+                onClick={() => setAntiOpen(false)}
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200"
+                disabled={antiLoading}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleAntiDelete}
+                disabled={antiLoading}
+                className="px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md hover:bg-red-700 disabled:opacity-50"
+              >
+                {antiLoading ? "Deleting..." : "Delete"}
+              </button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </MainLayout>
   );

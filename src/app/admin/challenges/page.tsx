@@ -11,6 +11,7 @@ import { useRouter } from "next/navigation";
 import type { Challenge, PageResponse } from "@/types";
 import { apiBaseUrl } from "@/config";
 import { toast } from "react-hot-toast";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 
 type LimitParam = number;
 
@@ -115,6 +116,7 @@ function ChallengesInner() {
   const [showDisapprovalModal, setShowDisapprovalModal] = useState(false);
   const [showCredentialsModal, setShowCredentialsModal] = useState(false);
   const [showApprovalModal, setShowApprovalModal] = useState(false);
+  const [showAntiChuchoModal, setShowAntiChuchoModal] = useState(false);
 
   const [selectedChallenge, setSelectedChallenge] = useState<Challenge | null>(
     null
@@ -127,6 +129,7 @@ function ChallengesInner() {
   const [isLoadingCredentials, setIsLoadingCredentials] = useState(false);
   const [isLoadingApproval, setIsLoadingApproval] = useState(false);
   const [isLoadingDisapproval, setIsLoadingDisapproval] = useState(false);
+  const [isLoadingAntiChucho, setIsLoadingAntiChucho] = useState(false);
 
   const accessToken = session?.accessToken as string | undefined;
 
@@ -319,6 +322,36 @@ function ChallengesInner() {
     }
   };
 
+  const handleAntiChuchoDelete = async (challenge: Challenge) => {
+    if (!accessToken) return;
+    setIsLoadingAntiChucho(true);
+    try {
+      const res = await fetch(
+        `${API_BASE}/challenges/${challenge.challengeID}/anti-chucho-delete`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+          credentials: "include",
+        }
+      );
+      if (!res.ok) {
+        const msg = await res.text();
+        throw new Error(msg || `HTTP ${res.status}`);
+      }
+      toast.success("Eliminado especial correctamente");
+      mutate();
+    } catch (e) {
+      console.error(e);
+      toast.error("No se pudo eliminar especial");
+    } finally {
+      setIsLoadingAntiChucho(false);
+      setShowAntiChuchoModal(false);
+      setSelectedChallenge(null);
+    }
+  };
+
   // Funciones auxiliares para cerrar modales
   const closeCredentialsModal = () => {
     setShowCredentialsModal(false);
@@ -336,6 +369,11 @@ function ChallengesInner() {
     setDisapprovalReason("");
   };
 
+  const closeAntiChuchoModal = () => {
+    setShowAntiChuchoModal(false);
+    setSelectedChallenge(null);
+  };
+
   // useEffect para manejo de eventos de dropdown
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -351,8 +389,18 @@ function ChallengesInner() {
       }
     };
 
-    const handleScroll = () => {
-      if (dropdownOpen) {
+    const handleScroll = (event: Event) => {
+      // Solo cerrar si el scroll ocurre FUERA del dropdown
+      const dropdowns = document.querySelectorAll('.dropdown-container');
+      let insideDropdown = false;
+      if (event.target instanceof Node) {
+        dropdowns.forEach((el) => {
+          if (el.contains(event.target as Node)) {
+            insideDropdown = true;
+          }
+        });
+      }
+      if (!insideDropdown && dropdownOpen) {
         setDropdownOpen(null);
       }
     };
@@ -654,6 +702,38 @@ function ChallengesInner() {
                   </svg>
                   <span className="truncate">Disapprove Challenge</span>
                 </button>
+
+                <button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const challenge = challenges.find(
+                      (c) => c.challengeID === dropdownOpen
+                    );
+                    if (challenge) {
+                      setSelectedChallenge(challenge);
+                      setShowAntiChuchoModal(true);
+                    }
+                    setDropdownOpen(null);
+                  }}
+                  className="flex items-center gap-3 w-full px-4 py-3 text-sm text-gray-700 dark:text-gray-200 hover:bg-orange-50 dark:hover:bg-orange-900/20 hover:text-orange-600 dark:hover:text-orange-300 transition-colors duration-150"
+                  type="button"
+                >
+                  <svg
+                    className="w-4 h-4 flex-shrink-0"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
+                  <span className="truncate">Eliminado anticucho</span>
+                </button>
               </div>
             </div>
           </div>
@@ -825,6 +905,49 @@ function ChallengesInner() {
               </div>
             </div>
           </div>
+        )}
+
+        {/* Modal Eliminado Anticucho */}
+        {showAntiChuchoModal && selectedChallenge && (
+          <Dialog open={showAntiChuchoModal} onOpenChange={setShowAntiChuchoModal}>
+            <DialogContent className="sm:max-w-[425px]">
+              <DialogHeader>
+                <DialogTitle>Anticucho Delete</DialogTitle>
+                <DialogDescription>
+                  This will delete the challenge and its associated broker (if any), as well as all related dependencies.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="mb-4 p-3 bg-gray-900 rounded">
+                <p>
+                  <strong>Challenge ID:</strong> {selectedChallenge?.challengeID}
+                </p>
+                <p>
+                  <strong>Login:</strong> {selectedChallenge?.brokerAccount?.login || "-"}
+                </p>
+              </div>
+              <DialogFooter>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowAntiChuchoModal(false);
+                    setSelectedChallenge(null);
+                  }}
+                  disabled={isLoadingAntiChucho}
+                  className="px-4 py-2 text-gray-600 border border-gray-300 rounded hover:bg-gray-50 transition-colors disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={() => selectedChallenge && handleAntiChuchoDelete(selectedChallenge)}
+                  disabled={isLoadingAntiChucho}
+                  className="px-4 py-2 bg-orange-600 text-white rounded hover:bg-orange-700 transition-colors disabled:opacity-50"
+                >
+                  {isLoadingAntiChucho ? "Deleting..." : "Delete"}
+                </button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
         )}
 
         {/* Filters */}
