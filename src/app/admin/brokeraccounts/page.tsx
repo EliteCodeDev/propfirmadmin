@@ -484,7 +484,6 @@ export default function BrokerAccountsPage() {
     fetcher,
     { revalidateOnFocus: false, revalidateOnReconnect: false }
   );
-  console.log(data);
   // if not authenticated, redirect
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -569,7 +568,6 @@ export default function BrokerAccountsPage() {
     setGenerating(true);
     try {
       const response = await brokerAccountsApi.generate(generateData);
-      console.log(response);
       toast.success(
         `Broker account generated successfully! Login: ${response.login}`
       );
@@ -706,14 +704,14 @@ export default function BrokerAccountsPage() {
                     ></path>
                   </svg>
                 )}
-                Generate Broker Account
+                Generate
               </button>
             </div>
             <button
               onClick={handleCreate}
               className="px-4 py-2 bg-blue-400 hover:bg-blue-500 text-white text-sm font-medium rounded-lg transition-colors"
             >
-              + New Broker Account
+              + New
             </button>
           </div>
         </div>

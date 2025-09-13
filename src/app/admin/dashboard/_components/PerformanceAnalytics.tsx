@@ -143,7 +143,6 @@ export default function PerformanceAnalytics() {
     return filteredData;
   }, [analyticsData, range, start, end]);
 
-  //console.log(data);
 
   const ranges: RangeKey[] = ["D", "W", "M", "Y", "All"];
 

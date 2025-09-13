@@ -1,25 +1,49 @@
 "use client";
 
 import MainLayout from "@/components/layouts/MainLayout";
-import { ManagerHeader } from "@/components/challenge-templates/ManagerHeader";
-import PaginatedCardTable from "@/components/common/PaginatedCardTable";
-import type { ColumnConfig } from "@/types";
 import React, { useMemo, useState, useEffect, useCallback } from "react";
 import useSWR from "swr";
-import { SessionProvider, useSession } from "next-auth/react";
+import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { Eye, Check, X, Search } from "lucide-react";
+import { Eye, Search } from "lucide-react";
 import { verificationApi } from "@/api/verification";
-import { VerificationItem, VerificationStatus, DocumentType, VerificationListResponse } from "@/types/verification";
-import {VerificationDetails, documentTypeLabels, statusColors} from "@/components/verifications/VerificationDetails";
+import {
+  VerificationItem,
+  VerificationStatus,
+  DocumentType,
+  VerificationListResponse,
+} from "@/types/verification";
+import {
+  VerificationDetails,
+  documentTypeLabels,
+  statusColors,
+} from "@/components/verifications/VerificationDetails";
 import CardImage from "@/components/verifications/CardImage";
 import { apiBaseUrl } from "@/config";
 
@@ -74,8 +98,14 @@ function VerificationsPageContent() {
     if (documentTypeFilter !== "all")
       params.append("documentType", documentTypeFilter);
 
-  return `${apiBaseUrl}/verification?${params.toString()}`;
-  }, [currentPage, pageSize, debouncedSearch, statusFilter, documentTypeFilter]);
+    return `${apiBaseUrl}/verification?${params.toString()}`;
+  }, [
+    currentPage,
+    pageSize,
+    debouncedSearch,
+    statusFilter,
+    documentTypeFilter,
+  ]);
 
   // Usar SWR para obtener los datos
   const { data, error, isLoading, mutate } = useSWR<VerificationListResponse>(
@@ -87,7 +117,9 @@ function VerificationsPageContent() {
     }
   );
 
-  const verifications: VerificationItem[] = Array.isArray(data?.data) ? data!.data : [];
+  const verifications: VerificationItem[] = Array.isArray(data?.data)
+    ? data!.data
+    : [];
   const pagination = {
     page: data?.page ?? currentPage,
     limit: data?.limit ?? pageSize,
@@ -155,14 +187,17 @@ function VerificationsPageContent() {
   };
 
   return (
-
     <MainLayout>
       <div className="container mx-auto p-6">
         <Card>
           <CardHeader>
             <div className="flex items-center justify-between gap-2">
-              <CardTitle className="text-2xl font-bold">Gestión de Verificaciones</CardTitle>
-              <span className="text-sm text-gray-500">{isLoading ? "Cargando..." : `Total: ${pagination.total}`}</span>
+              <CardTitle className="text-2xl font-bold">
+                Gestión de Verificaciones
+              </CardTitle>
+              <span className="text-sm text-gray-500">
+                {isLoading ? "Cargando..." : `Total: ${pagination.total}`}
+              </span>
             </div>
           </CardHeader>
           <CardContent>
@@ -186,7 +221,12 @@ function VerificationsPageContent() {
                       }
                     }}
                   />
-                  <Button size="icon" onClick={handleSearch} variant="outline" title="Buscar">
+                  <Button
+                    size="icon"
+                    onClick={handleSearch}
+                    variant="outline"
+                    title="Buscar"
+                  >
                     <Search className="h-4 w-4" />
                   </Button>
                   <Button
@@ -204,7 +244,12 @@ function VerificationsPageContent() {
                   </Button>
                 </div>
               </div>
-              <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value as VerificationStatus | "all")}>
+              <Select
+                value={statusFilter}
+                onValueChange={(value) =>
+                  setStatusFilter(value as VerificationStatus | "all")
+                }
+              >
                 <SelectTrigger className="w-[150px]">
                   <SelectValue placeholder="Estado" />
                 </SelectTrigger>
@@ -215,7 +260,12 @@ function VerificationsPageContent() {
                   <SelectItem value="rejected">Rechazado</SelectItem>
                 </SelectContent>
               </Select>
-              <Select value={documentTypeFilter} onValueChange={(value) => setDocumentTypeFilter(value as DocumentType | "all")}>
+              <Select
+                value={documentTypeFilter}
+                onValueChange={(value) =>
+                  setDocumentTypeFilter(value as DocumentType | "all")
+                }
+              >
                 <SelectTrigger className="w-[150px]">
                   <SelectValue placeholder="Documento" />
                 </SelectTrigger>
@@ -259,35 +309,56 @@ function VerificationsPageContent() {
                       <TableRow key={verification.verificationID}>
                         <TableCell>
                           <div>
-                            <div className="font-medium">{verification.user?.firstName} {verification.user?.lastName}</div>
-                            <div className="text-sm text-gray-500">{verification.user?.email}</div>
+                            <div className="font-medium">
+                              {verification.user?.firstName}{" "}
+                              {verification.user?.lastName}
+                            </div>
+                            <div className="text-sm text-gray-500">
+                              {verification.user?.email}
+                            </div>
                           </div>
                         </TableCell>
                         <TableCell>{verification.numDocument}</TableCell>
-                        <TableCell>{documentTypeLabels[verification.documentType]}</TableCell>
                         <TableCell>
-                          <span className={`font-medium ${statusColors[verification.status]}`}>
+                          {documentTypeLabels[verification.documentType]}
+                        </TableCell>
+                        <TableCell>
+                          <span
+                            className={`font-medium ${
+                              statusColors[verification.status]
+                            }`}
+                          >
                             {verification.status === "pending" && "pendiente"}
                             {verification.status === "approved" && "aceptado"}
                             {verification.status === "rejected" && "rechazado"}
                           </span>
                         </TableCell>
-                        <TableCell>{formatDate(verification.submittedAt)}</TableCell>
+                        <TableCell>
+                          {formatDate(verification.submittedAt)}
+                        </TableCell>
                         <TableCell>
                           <Dialog>
                             <DialogTrigger asChild>
                               <Button
                                 variant="outline"
                                 size="sm"
-                                onClick={() => setSelectedVerification(verification)}
+                                onClick={() =>
+                                  setSelectedVerification(verification)
+                                }
                               >
                                 <Eye className="h-4 w-4 mr-1" />
                                 Ver
                               </Button>
                             </DialogTrigger>
-                            <DialogContent className={`max-w-4xl max-h-[90vh] overflow-y-auto ${selectedImage ? 'hidden' : ''}`}>
+                            <DialogContent
+                              className={`max-w-4xl max-h-[90vh] overflow-y-auto ${
+                                selectedImage ? "hidden" : ""
+                              }`}
+                            >
                               <DialogHeader>
-                                <DialogTitle>Detalles de Verificación</DialogTitle>
+                                <DialogTitle>
+                                  Detalles de Verificación
+                                </DialogTitle>
                               </DialogHeader>
                               {selectedVerification && (
                                 <VerificationDetails
@@ -315,14 +386,19 @@ function VerificationsPageContent() {
             {data && data.totalPages > 1 && (
               <div className="flex items-center justify-between mt-4">
                 <div className="text-sm text-gray-500">
-                  Mostrando {((pagination.page - 1) * pagination.limit) + 1} a {Math.min(pagination.page * pagination.limit, pagination.total)} de {pagination.total} verificaciones
+                  Mostrando {(pagination.page - 1) * pagination.limit + 1} a{" "}
+                  {Math.min(
+                    pagination.page * pagination.limit,
+                    pagination.total
+                  )}{" "}
+                  de {pagination.total} verificaciones
                 </div>
                 <div className="flex gap-2">
                   <Button
                     variant="outline"
                     size="sm"
                     disabled={pagination.page <= 1}
-                    onClick={() => setCurrentPage(prev => prev - 1)}
+                    onClick={() => setCurrentPage((prev) => prev - 1)}
                   >
                     Anterior
                   </Button>
@@ -330,7 +406,7 @@ function VerificationsPageContent() {
                     variant="outline"
                     size="sm"
                     disabled={pagination.page >= pagination.totalPages}
-                    onClick={() => setCurrentPage(prev => prev + 1)}
+                    onClick={() => setCurrentPage((prev) => prev + 1)}
                   >
                     Siguiente
                   </Button>
@@ -353,9 +429,5 @@ function VerificationsPageContent() {
 }
 
 export default function VerificationsPage() {
-  return (
-    <SessionProvider>
-      <VerificationsPageContent />
-    </SessionProvider>
-  );
+  return <VerificationsPageContent />;
 }

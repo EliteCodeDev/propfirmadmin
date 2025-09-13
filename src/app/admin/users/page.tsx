@@ -1179,9 +1179,5 @@ function UsersInner() {
 }
 
 export default function UsersPage() {
-  return (
-    <SessionProvider>
-      <UsersInner />
-    </SessionProvider>
-  );
+  return <UsersInner />;
 }

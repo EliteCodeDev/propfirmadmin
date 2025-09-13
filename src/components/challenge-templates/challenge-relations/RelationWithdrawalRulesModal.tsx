@@ -422,10 +422,6 @@ export default function RelationWithdrawalRulesModal({
                     value: value,
                   };
                 });
-
-                console.log("Datos a enviar:", data);
-                console.log("Configs actuales:", configs);
-
                 // Validar campos requeridos
                 const invalidRules = selectedList.filter((rule) => {
                   const config = configs[rule.ruleID];

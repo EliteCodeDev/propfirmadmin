@@ -208,7 +208,6 @@ export function RelationsManager({ pageSize = 10 }: RelationsManagerProps) {
       };
       if (editItem) {
         // Editar
-        console.log("Editando relación:", editItem.relationID, payload);
         await challengeTemplatesApi.updateRelation(
           editItem.relationID,
           payload

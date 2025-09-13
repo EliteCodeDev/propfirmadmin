@@ -29,7 +29,9 @@ function BrokerAccountInner() {
 
   const fetcher = async (u: string) => {
     const res = await fetch(u, {
-      headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
+      headers: accessToken
+        ? { Authorization: `Bearer ${accessToken}` }
+        : undefined,
       credentials: "include",
       cache: "no-store",
     });
@@ -37,7 +39,10 @@ function BrokerAccountInner() {
     return res.json();
   };
 
-  const { data, error, isLoading } = useSWR(url && accessToken ? url : null, fetcher);
+  const { data, error, isLoading } = useSWR(
+    url && accessToken ? url : null,
+    fetcher
+  );
 
   useEffect(() => {
     if (status === "unauthenticated") router.replace("/auth/login");
@@ -50,8 +55,12 @@ function BrokerAccountInner() {
       <div className="p-6 space-y-6 pt-4">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Broker Account</h1>
-            <p className="text-sm text-gray-600 dark:text-gray-400">Detalle de la cuenta del broker (solo lectura)</p>
+            <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
+              Broker Account
+            </h1>
+            <p className="text-sm text-gray-600 dark:text-gray-400">
+              Detalle de la cuenta del broker (solo lectura)
+            </p>
           </div>
           <button
             onClick={() => router.back()}
@@ -62,19 +71,28 @@ function BrokerAccountInner() {
         </div>
 
         {isLoading ? (
-          <div className="p-6 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">Cargando…</div>
+          <div className="p-6 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+            Cargando…
+          </div>
         ) : error ? (
           <div className="p-6 rounded-lg border border-red-200 bg-red-50 text-red-700">
             {(error as Error).message || "Error al cargar la cuenta"}
           </div>
         ) : !account ? (
-          <div className="p-6 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">No se encontró la cuenta</div>
+          <div className="p-6 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+            No se encontró la cuenta
+          </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4">
-              <h2 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Información básica</h2>
+              <h2 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                Información básica
+              </h2>
               <div className="space-y-2 text-sm">
-                <Field label="BrokerAccountID" value={account.brokerAccountID} />
+                <Field
+                  label="BrokerAccountID"
+                  value={account.brokerAccountID}
+                />
                 <Field label="Login" value={account.login} />
                 <Field label="Platform" value={account.platform ?? "-"} />
                 <Field label="Server" value={account.server ?? "-"} />
@@ -84,14 +102,27 @@ function BrokerAccountInner() {
             </div>
 
             <div className="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4">
-              <h2 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Detalles</h2>
+              <h2 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                Detalles
+              </h2>
               <div className="space-y-2 text-sm">
-                <Field label="Investor Password" value={account.investorPass ?? "-"} />
-                 <Field label="Initial Balance" value={
-                   typeof account.innitialBalance === "number" ?
-                     new Intl.NumberFormat(undefined, { style: "currency", currency: "USD" }).format(account.innitialBalance) :
-                     account.innitialBalance != null ? String(account.innitialBalance) : "-"
-                 } />
+                <Field
+                  label="Investor Password"
+                  value={account.investorPass ?? "-"}
+                />
+                <Field
+                  label="Initial Balance"
+                  value={
+                    typeof account.innitialBalance === "number"
+                      ? new Intl.NumberFormat(undefined, {
+                          style: "currency",
+                          currency: "USD",
+                        }).format(account.innitialBalance)
+                      : account.innitialBalance != null
+                      ? String(account.innitialBalance)
+                      : "-"
+                  }
+                />
               </div>
             </div>
           </div>
@@ -101,20 +132,27 @@ function BrokerAccountInner() {
   );
 }
 
-function Field({ label, value, masked = false }: { label: string; value: string | number; masked?: boolean }) {
-  const display = masked && value && value !== "-" ? "••••••" : String(value ?? "-");
+function Field({
+  label,
+  value,
+  masked = false,
+}: {
+  label: string;
+  value: string | number;
+  masked?: boolean;
+}) {
+  const display =
+    masked && value && value !== "-" ? "••••••" : String(value ?? "-");
   return (
     <div className="flex items-center justify-between">
       <span className="text-gray-600 dark:text-gray-400">{label}</span>
-      <span className="font-medium text-gray-900 dark:text-gray-100">{display}</span>
+      <span className="font-medium text-gray-900 dark:text-gray-100">
+        {display}
+      </span>
     </div>
   );
 }
 
 export default function BrokerAccountPage() {
-  return (
-    <SessionProvider>
-      <BrokerAccountInner />
-    </SessionProvider>
-  );
+  return <BrokerAccountInner />;
 }
