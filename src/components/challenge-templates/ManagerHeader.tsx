@@ -41,7 +41,7 @@ export function ManagerHeader({
       </div>
       <div className="flex items-center gap-3">
         {showTotalCount && (
-          <div className="bg-gradient-to-r from-blue-500 to-red-600 rounded-lg px-4 py-2 text-white shadow-sm">
+          <div className="bg-gradient-to-r from-blue-500 to-cyan-600 rounded-lg px-4 py-2 text-white shadow-sm">
             <div className="text-xs font-medium">Total</div>
             <div className="text-lg font-bold">{totalCount}</div>
           </div>

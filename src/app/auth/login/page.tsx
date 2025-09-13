@@ -26,11 +26,12 @@ function LoginContent() {
   const [isResending, setIsResending] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [showConfirmationError, setShowConfirmationError] = useState(false);
+  const [isRedirecting, setIsRedirecting] = useState(false);
   const router = useRouter();
   const recaptchaRef = useRef<RecaptchaRef>(null);
   const [isVerifying, setIsVerifying] = useState("");
 
-  // Cargar preferencia de tema
+  // Load theme preference
   useEffect(() => {
     const savedTheme = localStorage.getItem("theme");
     const prefersDark = window.matchMedia(
@@ -39,7 +40,7 @@ function LoginContent() {
     setIsDarkMode(savedTheme === "dark" || (!savedTheme && prefersDark));
   }, []);
 
-  // Aplicar tema al document
+  // Apply theme to document
   useEffect(() => {
     if (isDarkMode) {
       document.documentElement.classList.add("dark");
@@ -58,7 +59,7 @@ function LoginContent() {
     e.preventDefault();
 
     if (!isVerifying) {
-      toast.error("Por favor, verifique su recaptcha");
+      toast.error("Please verify your recaptcha");
       return;
     }
 
@@ -75,18 +76,24 @@ function LoginContent() {
       setIsSubmitting(false);
 
       if (res?.ok) {
-        toast.success("Acceso autorizado!");
-        router.push("/admin/dashboard");
+        toast.success("Access authorized!");
+        setIsRedirecting(true);
+        // Simulate loading time before redirect
+        setTimeout(() => {
+          router.push("/admin/dashboard");
+        }, 1500);
       } else {
         if (res?.error === "Email not confirmed") {
-          // 🔑 Caso especial de no verificado
+          // 🔑 Special case for unverified email
           setShowConfirmationError(true);
-          toast.warning("Tu correo no está verificado. Revisa tu bandeja o reenvía el correo.");
+          toast.warning(
+            "Your email is not verified. Check your inbox or resend the email."
+          );
         } else {
-          toast.error(res?.error || "Credenciales incorrectas");
+          toast.error(res?.error || "Incorrect credentials");
         }
 
-        // Resetear recaptcha si hubo error
+        // Reset recaptcha if there was an error
         if (recaptchaRef.current) {
           recaptchaRef.current.reset();
           setIsVerifying("");
@@ -94,23 +101,23 @@ function LoginContent() {
       }
     } catch (err) {
       setIsSubmitting(false);
-      toast.error("Ocurrió un error inesperado. Intenta nuevamente.");
+      toast.error("An unexpected error occurred. Please try again.");
       console.error("Login error:", err);
     }
   };
 
   const handleResendConfirmation = async () => {
     if (!email) {
-      toast.error("Por favor, introduce tu email primero.");
+      toast.error("Please enter your email first.");
       return;
     }
     setIsResending(true);
     try {
       await sendEmailConfirmation(email);
-      toast.success("Correo de confirmación enviado.");
+      toast.success("Confirmation email sent.");
     } catch (error) {
       console.error("Resend confirmation error:", error);
-      toast.error("No se pudo enviar el correo.");
+      toast.error("Could not send the email.");
     } finally {
       setIsResending(false);
     }
@@ -124,7 +131,24 @@ function LoginContent() {
         theme={isDarkMode ? "dark" : "light"}
       />
 
-      {/* Panel izquierdo - Información corporativa */}
+      {/* Loading overlay for redirect */}
+      {isRedirecting && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center">
+          <div className="bg-white dark:bg-slate-800 rounded-2xl p-8 shadow-2xl border border-slate-200 dark:border-slate-700 max-w-sm w-full mx-4">
+            <div className="text-center">
+              <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">
+                Redirecting to Dashboard
+              </h3>
+              <p className="text-sm text-slate-600 dark:text-slate-400">
+                Please wait while we prepare your workspace...
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Left panel - Corporate information */}
       <aside className="hidden lg:flex relative w-1/2 min-h-screen overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 dark:from-slate-800 dark:via-slate-700 dark:to-slate-800">
         <div className="absolute inset-0 opacity-10">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_25%_25%,white_1px,transparent_1px)] [background-size:24px_24px]"></div>
@@ -157,38 +181,38 @@ function LoginContent() {
           <div className="space-y-8 max-w-lg">
             <div>
               <h1 className="text-5xl font-light text-white mb-4 tracking-tight">
-                Panel de{" "}
+                Administration{" "}
                 <span className="block text-6xl font-bold bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent">
-                  Administración
+                  Panel
                 </span>
               </h1>
             </div>
 
-            <div className="space-y-4 pt-8">
+            {/* <div className="space-y-4 pt-8">
               <div className="flex items-center gap-4 text-slate-200">
                 <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
                 <span className="text-lg font-light">
-                  Acceso seguro y encriptado
+                  Secure and encrypted access
                 </span>
               </div>
               <div className="flex items-center gap-4 text-slate-200">
                 <div className="w-2 h-2 bg-indigo-400 rounded-full"></div>
                 <span className="text-lg font-light">
-                  Panel de control avanzado
+                  Advanced control panel
                 </span>
               </div>
               <div className="flex items-center gap-4 text-slate-200">
                 <div className="w-2 h-2 bg-purple-400 rounded-full"></div>
                 <span className="text-lg font-light">
-                  Monitoreo en tiempo real
+                  Real-time monitoring
                 </span>
               </div>
-            </div>
+            </div> */}
           </div>
         </div>
       </aside>
 
-      {/* Panel derecho - Formulario de acceso */}
+      {/* Right panel - Access form */}
       <main className="flex-1 min-h-screen flex items-center justify-center p-8 relative">
         {LOGIN_RIGHT_BG && (
           <>
@@ -203,7 +227,7 @@ function LoginContent() {
         <button
           onClick={toggleTheme}
           className="absolute top-6 right-6 p-3 rounded-xl bg-white dark:bg-slate-800 shadow-lg border border-slate-200 dark:border-slate-700 hover:shadow-xl transition-all duration-200 z-20"
-          aria-label="Cambiar tema"
+          aria-label="Change theme"
         >
           {isDarkMode ? (
             <SunIcon className="h-5 w-5 text-amber-500" />
@@ -237,7 +261,7 @@ function LoginContent() {
           </div>
 
           <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 p-8">
-            <button
+            {/* <button
               type="button"
               onClick={() =>
                 signIn("google", { callbackUrl: "/main/dashboard" })
@@ -274,7 +298,7 @@ function LoginContent() {
                   O accede con email
                 </span>
               </div>
-            </div>
+            </div> */}
 
             <form onSubmit={onSubmit} className="space-y-5">
               <div>
@@ -282,7 +306,7 @@ function LoginContent() {
                   htmlFor="email"
                   className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2"
                 >
-                  Correo electrónico
+                  Email address
                 </label>
                 <div className="relative">
                   <EnvelopeIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-slate-400" />
@@ -294,7 +318,7 @@ function LoginContent() {
                     onChange={(e) => setEmail(e.target.value)}
                     required
                     className="w-full pl-11 pr-4 py-3.5 border border-slate-300 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-slate-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                    placeholder="admin@empresa.com"
+                    placeholder="admin@company.com"
                   />
                 </div>
               </div>
@@ -304,7 +328,7 @@ function LoginContent() {
                   htmlFor="password"
                   className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2"
                 >
-                  Contraseña
+                  Password
                 </label>
                 <div className="relative">
                   <LockClosedIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-slate-400" />
@@ -339,15 +363,15 @@ function LoginContent() {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full py-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 disabled:from-slate-400 disabled:to-slate-500 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl disabled:shadow-none transition-all duration-200 disabled:cursor-not-allowed"
+                className="w-full py-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 disabled:from-slate-400 disabled:to-slate-500 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl disabled:shadow-none transition-all duration-200 disabled:cursor-not-allowed hover:cursor-pointer"
               >
                 {isSubmitting ? (
                   <div className="flex items-center justify-center gap-3">
                     <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                    Verificando credenciales...
+                    Verifying credentials...
                   </div>
                 ) : (
-                  "Acceder al Panel"
+                  "Access Panel"
                 )}
               </button>
             </form>
@@ -360,17 +384,17 @@ function LoginContent() {
                   </div>
                   <div className="flex-1">
                     <h3 className="text-sm font-semibold text-amber-800 dark:text-amber-200">
-                      Verificación pendiente
+                      Verification pending
                     </h3>
                     <p className="text-sm text-amber-700 dark:text-amber-300 mt-1">
-                      Debes confirmar tu email antes de acceder al panel.
+                      You must confirm your email before accessing the panel.
                     </p>
                     <button
                       onClick={handleResendConfirmation}
                       disabled={isResending}
                       className="mt-3 text-sm font-medium text-amber-800 dark:text-amber-200 hover:text-amber-900 dark:hover:text-amber-100 disabled:opacity-50"
                     >
-                      {isResending ? "Reenviando..." : "Reenviar correo"}
+                      {isResending ? "Resending..." : "Resend email"}
                     </button>
                   </div>
                 </div>
@@ -397,7 +421,7 @@ export default function LoginPage() {
           <div className="text-center">
             <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
             <p className="text-slate-600 dark:text-slate-400">
-              Cargando panel de administración...
+              Loading administration panel...
             </p>
           </div>
         </div>

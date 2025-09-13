@@ -6,7 +6,7 @@ import PaginatedCardTable from "@/components/common/PaginatedCardTable";
 import type { ColumnConfig } from "@/types";
 
 import { useParams, useRouter } from "next/navigation";
-import { SessionProvider, useSession } from "next-auth/react";
+import { useSession } from "next-auth/react";
 import useSWR from "swr";
 import { useEffect, useMemo, useState } from "react";
 import { apiBaseUrl, PUBLIC_API_KEY } from "@/config";
@@ -19,7 +19,12 @@ import {
 import type { User, Challenge } from "@/types";
 import { challengesApi, type ChallengeWithDetails } from "@/api/challenges";
 import { verificationApi } from "@/api/verification";
-import type { VerificationItem, VerificationStatus, DocumentType, MediaItem } from "@/types/verification";
+import type {
+  VerificationItem,
+  VerificationStatus,
+  DocumentType,
+  MediaItem,
+} from "@/types/verification";
 import Image from "next/image";
 
 /* ========= Config ========= */
@@ -98,8 +103,10 @@ async function authedFetcher([url, token]: [string, string]) {
 
 /* ========= Verifications UI helpers ========= */
 const statusColors: Record<VerificationStatus | string, string> = {
-  pending: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300",
-  approved: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300",
+  pending:
+    "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300",
+  approved:
+    "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300",
   rejected: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300",
 } as const;
 
@@ -150,13 +157,15 @@ export default function UserDetailInner() {
     isLoading: chLoading,
     error: chErr,
   } = useSWR(
-    canFetch && hasUserData && userId ? [`challenges-with-details-${userId}`, token!] : null,
+    canFetch && hasUserData && userId
+      ? [`challenges-with-details-${userId}`, token!]
+      : null,
     async () => {
       try {
         const response = await challengesApi.getChallengesWithDetails(userId);
         return response.data.data;
       } catch (error) {
-        console.error('Error fetching challenges with details:', error);
+        console.error("Error fetching challenges with details:", error);
         throw error;
       }
     },
@@ -164,25 +173,33 @@ export default function UserDetailInner() {
   );
 
   const challengesWithDetails: ChallengeWithDetails[] = useMemo(() => {
-    return Array.isArray(challengesWithDetailsRaw) ? challengesWithDetailsRaw : [];
+    return Array.isArray(challengesWithDetailsRaw)
+      ? challengesWithDetailsRaw
+      : [];
   }, [challengesWithDetailsRaw]);
 
   const challenges: Challenge[] = useMemo(() => {
-    return challengesWithDetails.map((c): Challenge => ({
-      challengeID: c.challengeID,
-      userID: c.userID ?? undefined,
-      status: c.status ?? null,
-      isActive: c.isActive ?? null,
-      numPhase: c.numPhase ?? null,
-      dynamicBalance: c.dynamicBalance != null ? Number(c.dynamicBalance) : null,
-      brokerAccount: {
-        login: c.brokerAccount?.login ?? null,
-        platform: c.brokerAccount?.platform ?? null,
-        innitialBalance: c.brokerAccount?.innitialBalance != null ? Number(c.brokerAccount.innitialBalance) : null,
-      },
-      startDate: c.startDate ?? null,
-      endDate: c.endDate ?? null,
-    }));
+    return challengesWithDetails.map(
+      (c): Challenge => ({
+        challengeID: c.challengeID,
+        userID: c.userID ?? undefined,
+        status: c.status ?? null,
+        isActive: c.isActive ?? null,
+        numPhase: c.numPhase ?? null,
+        dynamicBalance:
+          c.dynamicBalance != null ? Number(c.dynamicBalance) : null,
+        brokerAccount: {
+          login: c.brokerAccount?.login ?? null,
+          platform: c.brokerAccount?.platform ?? null,
+          innitialBalance:
+            c.brokerAccount?.innitialBalance != null
+              ? Number(c.brokerAccount.innitialBalance)
+              : null,
+        },
+        startDate: c.startDate ?? null,
+        endDate: c.endDate ?? null,
+      })
+    );
   }, [challengesWithDetails]);
 
   /* ---- Verificaciones del usuario ---- */
@@ -193,7 +210,10 @@ export default function UserDetailInner() {
   } = useSWR(
     canFetch && userId ? ["user-verifications", userId] : null,
     async () => {
-      const res = await verificationApi.getByUserId(String(userId), { page: 1, limit: 10 });
+      const res = await verificationApi.getByUserId(String(userId), {
+        page: 1,
+        limit: 10,
+      });
       return res;
     },
     { revalidateOnFocus: false }
@@ -283,10 +303,14 @@ export default function UserDetailInner() {
         const platform = c?.brokerAccount?.platform ?? "-";
 
         // Size: From brokerAccount.initialBalance
-        const accountSize = c?.brokerAccount?.innitialBalance ? parseFloat(String(c.brokerAccount.innitialBalance)) : null;
+        const accountSize = c?.brokerAccount?.innitialBalance
+          ? parseFloat(String(c.brokerAccount.innitialBalance))
+          : null;
 
         // Equity: From dynamicBalance
-        const equityNum = c?.dynamicBalance ? parseFloat(String(c.dynamicBalance)) : null;
+        const equityNum = c?.dynamicBalance
+          ? parseFloat(String(c.dynamicBalance))
+          : null;
 
         const whenRaw =
           (c as { startDate?: unknown; createdAt?: unknown }).startDate ??
@@ -294,15 +318,16 @@ export default function UserDetailInner() {
           null;
         const whenDate =
           typeof whenRaw === "string" ||
-            typeof whenRaw === "number" ||
-            whenRaw instanceof Date
+          typeof whenRaw === "number" ||
+          whenRaw instanceof Date
             ? new Date(whenRaw)
             : null;
 
         return {
           accountNumber: login || `${c.challengeID.slice(0, 8)}...`,
           accountType: c?.numPhase ? `${c.numPhase}-step` : "Challenge",
-          accountSize: accountSize != null ? `$${accountSize.toLocaleString()}` : "-",
+          accountSize:
+            accountSize != null ? `$${accountSize.toLocaleString()}` : "-",
           equity: equityNum != null ? `$${equityNum.toLocaleString()}` : "-",
           platform,
           status: c?.status ?? (c?.isActive ? "Active" : "Inactive"),
@@ -370,7 +395,7 @@ export default function UserDetailInner() {
             <div className="flex items-center justify-between">
               <button
                 className="inline-flex items-center px-3 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 transition-colors duration-200"
-                onClick={() => router.back()}
+                onClick={() => router.push("/admin/users")}
               >
                 <ArrowLeftIcon className="w-4 h-4 mr-2" />
                 Back to Users

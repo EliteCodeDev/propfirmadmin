@@ -32,9 +32,6 @@ export default function BalanceSelectorModal({
   onConfirmWithDetails,
   relationName = "",
 }: BalanceSelectorModalProps) {
-  console.log("initialRelationBalances for modal:", initialRelationBalances);
-  console.log("relationName:", relationName);
-  console.log("balances prop:", balances);
   const [search, setSearch] = useState("");
   const [selected, setSelected] = useState<string[]>(initialSelected);
   const [detailsOpen, setDetailsOpen] = useState<Record<string, boolean>>({});
@@ -113,7 +110,6 @@ export default function BalanceSelectorModal({
       (a, b) => (a.balance ?? 0) - (b.balance ?? 0)
     );
   }, [selectedList]);
-  console.log("selectedListSorted", selectedListSorted);
   const filteredAvailable = useMemo(() => {
     const q = search.trim().toLowerCase();
     if (!q) return available;
@@ -139,7 +135,9 @@ export default function BalanceSelectorModal({
       <DialogContent className="w-[95vw] sm:w-[90vw] md:w-auto sm:!max-w-3xl md:!max-w-5xl lg:!max-w-6xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700 shadow-lg rounded-xl">
         <DialogHeader>
           <DialogTitle className="text-gray-900 dark:text-white text-base md:text-lg font-semibold">
-            {relationName ? `Balances para: ${relationName}` : "Seleccionar balances"}
+            {relationName
+              ? `Balances para: ${relationName}`
+              : "Seleccionar balances"}
           </DialogTitle>
           <DialogDescription className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm">
             Elige balances disponibles y muévelos a la lista de agregados.

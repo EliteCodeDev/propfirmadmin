@@ -6,7 +6,7 @@ import { ManagerHeader } from "@/components/challenge-templates/ManagerHeader";
 import type { ColumnConfig } from "@/types";
 import React, { useMemo, useState, useEffect } from "react";
 import useSWR from "swr";
-import { SessionProvider, useSession } from "next-auth/react";
+import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import type { Challenge, PageResponse } from "@/types";
 import { apiBaseUrl } from "@/config";
@@ -180,12 +180,6 @@ function ChallengesInner() {
   const handleSendCredentials = async (challenge: Challenge) => {
     if (!accessToken) return;
 
-    console.log("Enviando credenciales para challenge:", challenge.challengeID);
-    console.log("API_BASE:", API_BASE);
-    console.log(
-      "URL completa:",
-      `${API_BASE}/challenges/${challenge.challengeID}/send-credentials`
-    );
 
     setIsLoadingCredentials(true);
     try {
@@ -201,8 +195,6 @@ function ChallengesInner() {
         }
       );
 
-      console.log("Response status:", response.status);
-      console.log("Response headers:", response.headers);
 
       if (!response.ok) {
         const errorText = await response.text();
@@ -215,7 +207,7 @@ function ChallengesInner() {
       toast.success("Credentials sent successfully");
 
       // Reload data
-        mutate();
+      mutate();
     } catch (error) {
       console.error("Error:", error);
       toast.error("Error sending credentials");
@@ -228,11 +220,6 @@ function ChallengesInner() {
   const handleApprove = async (challenge: Challenge) => {
     if (!accessToken) return;
 
-    console.log("Aprobando challenge:", challenge.challengeID);
-    console.log(
-      "URL completa:",
-      `${API_BASE}/challenges/${challenge.challengeID}/approve`
-    );
 
     setIsLoadingApproval(true);
     try {
@@ -248,7 +235,6 @@ function ChallengesInner() {
         }
       );
 
-      console.log("Response status:", response.status);
 
       if (!response.ok) {
         const errorText = await response.text();
@@ -261,7 +247,7 @@ function ChallengesInner() {
       toast.success("Challenge approved successfully");
 
       // Reload data
-        mutate();
+      mutate();
     } catch (error) {
       console.error("Error:", error);
       toast.error("Error approving challenge");
@@ -274,12 +260,6 @@ function ChallengesInner() {
   const confirmDisapproval = async () => {
     if (!selectedChallenge || !accessToken || !disapprovalReason.trim()) return;
 
-    console.log("Desaprobando challenge:", selectedChallenge.challengeID);
-    console.log("Razón:", disapprovalReason.trim());
-    console.log(
-      "URL completa:",
-      `${API_BASE}/challenges/${selectedChallenge.challengeID}/disapprove`
-    );
 
     setIsLoadingDisapproval(true);
     try {
@@ -296,7 +276,6 @@ function ChallengesInner() {
         }
       );
 
-      console.log("Response status:", response.status);
 
       if (!response.ok) {
         const errorText = await response.text();
@@ -309,7 +288,7 @@ function ChallengesInner() {
       toast.success("Challenge disapproved successfully");
 
       // Reload data
-        mutate();
+      mutate();
     } catch (error) {
       console.error("Error:", error);
       toast.error("Error disapproving challenge");
@@ -695,9 +674,7 @@ function ChallengesInner() {
         {showCredentialsModal && selectedChallenge && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
-              <h3 className="text-lg font-semibold mb-4">
-                Send Credentials
-              </h3>
+              <h3 className="text-lg font-semibold mb-4">Send Credentials</h3>
               <p className="text-gray-600 mb-4">
                 Do you confirm sending credentials for this challenge?
               </p>
@@ -835,15 +812,15 @@ function ChallengesInner() {
                 User
               </label>
               <input
-                  type="text"
-                  placeholder="Name, email or ID"
-                  className="block w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                  value={userFilter}
-                  onChange={(e) => {
-                    setUserFilter(e.target.value);
-                    setPage(1);
-                  }}
-                />
+                type="text"
+                placeholder="Name, email or ID"
+                className="block w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                value={userFilter}
+                onChange={(e) => {
+                  setUserFilter(e.target.value);
+                  setPage(1);
+                }}
+              />
             </div>
 
             <div className="w-full sm:w-48">
@@ -851,15 +828,15 @@ function ChallengesInner() {
                 Login
               </label>
               <input
-                  type="text"
-                  placeholder="Login..."
-                  className="block w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                  value={loginFilter}
-                  onChange={(e) => {
-                    setLoginFilter(e.target.value);
-                    setPage(1);
-                  }}
-                />
+                type="text"
+                placeholder="Login..."
+                className="block w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                value={loginFilter}
+                onChange={(e) => {
+                  setLoginFilter(e.target.value);
+                  setPage(1);
+                }}
+              />
             </div>
 
             <div className="w-full sm:w-48">
@@ -932,9 +909,5 @@ function ChallengesInner() {
 }
 
 export default function ChallengesPage() {
-  return (
-    <SessionProvider>
-      <ChallengesInner />
-    </SessionProvider>
-  );
+  return <ChallengesInner />;
 }

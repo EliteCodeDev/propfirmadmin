@@ -33,13 +33,25 @@ import type { NavigationItem, SidebarProps } from "@/types";
 const navigation: NavigationItem[] = [
   { name: "Dashboard", href: "/admin/dashboard", icon: HomeIcon },
   { name: "Challenges", href: "/admin/challenges", icon: TrophyIcon },
-  { name: "Challenge Templates", href: "/admin/challenge-templates", icon: DocumentTextIcon },
-  { name: "Usuarios", href: "/admin/users", icon: UserGroupIcon },
-  { name: "Verificaciones", href: "/admin/verifications", icon: ShieldCheckIcon },
-  { name: "Broker Accounts", href: "/admin/brokeraccounts", icon: DocumentTextIcon },
-  { name: "Retiros", href: "/admin/withdrawals", icon: BanknotesIcon },
-  { name: "Correo", href: "/admin/correo", icon: EnvelopeIcon },
-  { name: "Asignacion", href: "/admin/assignment", icon: UserPlusIcon },
+  {
+    name: "Challenge Templates",
+    href: "/admin/challenge-templates",
+    icon: DocumentTextIcon,
+  },
+  { name: "Users", href: "/admin/users", icon: UserGroupIcon },
+  {
+    name: "Verifications",
+    href: "/admin/verifications",
+    icon: ShieldCheckIcon,
+  },
+  {
+    name: "Broker Accounts",
+    href: "/admin/brokeraccounts",
+    icon: DocumentTextIcon,
+  },
+  { name: "Withdrawals", href: "/admin/withdrawals", icon: BanknotesIcon },
+  { name: "Mail", href: "/admin/correo", icon: EnvelopeIcon },
+  { name: "Assignment", href: "/admin/assignment", icon: UserPlusIcon },
 ];
 
 function classNames(...classes: string[]) {
@@ -72,7 +84,7 @@ export default function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
     [firstName, lastName].filter(Boolean).join(" ") ||
     username ||
     email ||
-    "Usuario";
+    "User";
   const initials = (
     firstName?.[0] ||
     username?.[0] ||
@@ -84,7 +96,7 @@ export default function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
     const singleRole = (user as unknown as { role?: { name?: string } })?.role
       ?.name as string | undefined;
     const candidate = roles?.[0] || singleRole;
-    if (!candidate) return "Usuario";
+    if (!candidate) return "User";
     const normalized = candidate.replace(/[-_]/g, " ");
     return normalized.replace(/\b\w/g, (c) => c.toUpperCase());
   })();
@@ -97,7 +109,10 @@ export default function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
+      if (
+        userMenuRef.current &&
+        !userMenuRef.current.contains(event.target as Node)
+      ) {
         setUserMenuOpen(false);
       }
     }
@@ -112,7 +127,7 @@ export default function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
   }, [isCollapsed]);
 
   const handleUserButtonClick = () => {
-    if (isCollapsed) return; // colapsado no abre dropdown
+    if (isCollapsed) return; // collapsed doesn't open dropdown
     setUserMenuOpen(!userMenuOpen);
   };
 
@@ -177,11 +192,14 @@ export default function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
 
         {/* Navigation */}
         <div className="flex-1 min-h-0 py-4 overflow-x-visible overflow-y-auto">
-          <nav className={classNames("space-y-2", isCollapsed ? "px-2" : "px-3")}>
+          <nav
+            className={classNames("space-y-2", isCollapsed ? "px-2" : "px-3")}
+          >
             {navigation.map((item, index) => {
               const isActive =
                 pathname === item.href ||
-                (pathname.startsWith(item.href + "/") && item.href !== "/admin/dashboard");
+                (pathname.startsWith(item.href + "/") &&
+                  item.href !== "/admin/dashboard");
 
               const showDivider = index === 0 || index === 2;
 
@@ -217,7 +235,9 @@ export default function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
                       <>
                         <div className="flex-1 relative z-10">
                           <div className="flex items-center justify-between">
-                            <span className="truncate font-medium">{item.name}</span>
+                            <span className="truncate font-medium">
+                              {item.name}
+                            </span>
                           </div>
                         </div>
                         {isActive && (
@@ -235,7 +255,12 @@ export default function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
                   </Link>
 
                   {showDivider && (
-                    <div className={classNames("my-4", isCollapsed ? "px-2" : "px-4")}>
+                    <div
+                      className={classNames(
+                        "my-4",
+                        isCollapsed ? "px-2" : "px-4"
+                      )}
+                    >
                       <div className="h-px bg-gradient-to-r from-transparent via-gray-400 dark:via-gray-600 to-transparent opacity-60"></div>
                     </div>
                   )}
@@ -264,7 +289,7 @@ export default function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
                 ) : (
                   <SunIcon className="h-4 w-4 mr-3 text-amber-500" />
                 )}
-                {theme === "light" ? "Modo Oscuro" : "Modo Claro"}
+                {theme === "light" ? "Dark Mode" : "Light Mode"}
               </button>
 
               <div className="h-px bg-gray-200 dark:bg-gray-600 my-2" />
@@ -275,7 +300,7 @@ export default function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
                 className="w-full flex items-center px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all rounded-lg"
               >
                 <UserIcon className="h-4 w-4 mr-3 text-blue-500" />
-                Mi Perfil
+                My Profile
               </Link>
 
               <div className="h-px bg-gray-200 dark:bg-gray-600 my-2" />
@@ -288,7 +313,7 @@ export default function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
                 className="w-full flex items-center px-4 py-3 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all rounded-lg"
               >
                 <ArrowRightOnRectangleIcon className="h-4 w-4 mr-3" />
-                Cerrar Sesión
+                Sign Out
               </button>
             </div>
           )}
@@ -304,7 +329,9 @@ export default function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
             <div className="relative flex items-center">
               <div className="relative">
                 <div className="w-10 h-10 bg-gradient-to-br from-blue-500 via-purple-500 to-indigo-600 rounded-full flex items-center justify-center shadow-lg">
-                  <span className="text-white font-semibold text-sm">{initials}</span>
+                  <span className="text-white font-semibold text-sm">
+                    {initials}
+                  </span>
                 </div>
               </div>
               {!isCollapsed && (
