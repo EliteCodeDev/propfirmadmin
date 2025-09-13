@@ -3,7 +3,7 @@
 import type { ChallengeBalance, Addon, WithdrawalRule } from "@/types";
 
 // Challenge Templates Components
-export interface BalanceSelectorModalProps {
+export type BalanceSelectorModalProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   balances: ChallengeBalance[];
@@ -31,7 +31,7 @@ export interface BalanceSelectorModalProps {
 }
 
 // Withdrawal Rules selector modal props
-export interface WithdrawalRuleSelectorModalProps {
+export type WithdrawalRuleSelectorModalProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   withdrawalRules: WithdrawalRule[];
@@ -57,7 +57,7 @@ export interface WithdrawalRuleSelectorModalProps {
 }
 
 // New: Addon selector modal props
-export interface AddonSelectorModalProps {
+export type AddonSelectorModalProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   addons: Addon[];
@@ -84,55 +84,55 @@ export interface AddonSelectorModalProps {
   relationName?: string;
 }
 
-export interface BalancesManagerProps {
+export type BalancesManagerProps = {
   pageSize?: number;
 }
 
-export interface StagesManagerProps {
+export type StagesManagerProps = {
   pageSize?: number;
 }
 
-export interface PlansManagerProps {
+export type PlansManagerProps = {
   pageSize?: number;
 }
 
-export interface CategoriesManagerProps {
+export type CategoriesManagerProps = {
   pageSize?: number;
 }
 
-export interface RelationsManagerProps {
+export type RelationsManagerProps = {
   pageSize?: number;
 }
 
-export interface TemplateVisualizerProps {
+export type TemplateVisualizerProps = {
   pageSize?: number;
 }
 
 // Newly added component props
-export interface AddonsManagerProps {
+export type AddonsManagerProps = {
   pageSize?: number;
 }
 
-export interface ProductsManagerProps {
+export type ProductsManagerProps = {
   pageSize?: number;
 }
 
 // Metric Card
-export interface MetricCardProps {
+export type MetricCardProps = {
   color: string;
   label: string;
   icon: React.ReactNode;
   value: string;
 }
 
-export interface ThemeToggleProps {
+export type ThemeToggleProps = {
   variant?: "default" | "minimal" | "button";
   size?: "sm" | "md" | "lg";
   className?: string;
   showLabel?: boolean;
 }
 
-export interface ContactCardProps {
+export type ContactCardProps = {
   title?: string;
   icon?: React.ReactNode;
   fields?: Array<{
@@ -141,7 +141,7 @@ export interface ContactCardProps {
   }>;
 }
 
-export interface LoadingSpinnerProps {
+export type LoadingSpinnerProps = {
   size?: "sm" | "md" | "lg";
   text?: string;
   subtitle?: string;
@@ -150,14 +150,14 @@ export interface LoadingSpinnerProps {
   steps?: string[];
 }
 // Rows Per Page
-export interface RowsPerPageProps {
+export type RowsPerPageProps = {
   pageSize: number;
   onPageSizeChange: (size: number) => void;
   options?: number[];
 }
 
 // Navigation
-export interface NavigationItem {
+export type NavigationItem = {
   name: string;
   href: string;
   icon: React.ComponentType<{ className?: string }>;
@@ -165,18 +165,18 @@ export interface NavigationItem {
   badge?: string;
 }
 
-export interface SidebarProps {
+export type SidebarProps = {
   collapsed?: boolean;
   onToggle?: () => void;
 }
 
 // Theme
-export interface ThemeContextType {
+export type ThemeContextType = {
   theme: "light" | "dark" | "system";
   setTheme: (theme: "light" | "dark" | "system") => void;
 }
 
-export interface ThemeProviderProps {
+export type ThemeProviderProps = {
   children: React.ReactNode;
   defaultTheme?: "light" | "dark" | "system";
   storageKey?: string;

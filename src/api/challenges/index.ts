@@ -191,6 +191,6 @@ export const challengesApi = {
   // Admin: fetch a single challenge including relations and details
   getWithDetails: async (challengeId: string): Promise<ChallengeWithDetailsAndRelations> => {
     const { data } = await client.get(`/challenges/${challengeId}`);
-    return data as ChallengeWithDetailsAndRelations;
+    return data.data as ChallengeWithDetailsAndRelations;
   },
 };
