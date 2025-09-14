@@ -1,36 +1,46 @@
-import NextAuth, { NextAuthOptions, User } from "next-auth";
-import { JWT } from "next-auth/jwt";
-import CredentialsProvider from "next-auth/providers/credentials";
+// src/auth.ts
+import NextAuth, { type NextAuthConfig, type User } from "next-auth";
+import Credentials from "next-auth/providers/credentials";
+import authConfig from "@/config/auth.config";
+
 import { login, refresh } from "@/api/auth";
 import { NEXTAUTH_SECRET } from "@/config";
 import { isAxiosError } from "axios";
+import { LoginCredentials } from "@/types";
 
-// Tiempo de margen para refrescar antes de expirar (segundos)
-const REFRESH_THRESHOLD = 60; // 1 minuto
+// =====================
+// Helpers Edge-safe
+// =====================
+const REFRESH_THRESHOLD = 60; // segundos
 
-interface ExtendedJWT extends JWT {
-  // 'id' es requerido en JWT extendido para evitar incompatibilidad, usar union con existente
-  id: string | number; // NextAuth core espera id declarado en augmentations
-  email?: string;
-  name?: string;
-  username?: string;
-  firstName?: string;
-  lastName?: string;
-  accessToken?: string;
-  refreshToken?: string;
-  accessTokenExpires?: number; // epoch seconds
-  roles?: string[];
-  isVerified?: boolean;
+function decodeJwtExp(jwt: string): number | undefined {
+  try {
+    const [, payloadB64] = jwt.split(".");
+    if (!payloadB64) return;
+    const pad = payloadB64.length % 4 ? 4 - (payloadB64.length % 4) : 0;
+    const b64 =
+      payloadB64.replace(/-/g, "+").replace(/_/g, "/") + "=".repeat(pad);
+    const json =
+      typeof atob === "function"
+        ? atob(b64)
+        : Buffer.from(b64, "base64").toString("binary");
+    const payload = JSON.parse(json);
+    return typeof payload.exp === "number" ? payload.exp : undefined;
+  } catch {
+    return undefined;
+  }
 }
 
-export const authOptions: NextAuthOptions = {
+// =====================
+// NextAuth v5 principal
+// =====================
+const nextAuth = NextAuth({
+  ...authConfig, // páginas, session, callbacks.authorized
   secret: NEXTAUTH_SECRET,
-  pages: {
-    signIn: "/auth/login",
-    error: "/auth/login",
-  },
+  // Proveedores (se ejecutan en Node, no en el middleware)
   providers: [
-    CredentialsProvider({
+    Credentials({
+      id: "credentials",
       name: "Email y contraseña",
       credentials: {
         email: { label: "Email", type: "email" },
@@ -44,8 +54,7 @@ export const authOptions: NextAuthOptions = {
           const loginResponse = await login({
             email: credentials.email,
             password: credentials.password,
-          });
-          // console.log("Login response completa:", loginResponse);
+          } as LoginCredentials);
 
           const { user, access_token, refresh_token } = loginResponse as {
             user: {
@@ -62,51 +71,39 @@ export const authOptions: NextAuthOptions = {
             access_token?: string;
             refresh_token?: string;
           };
-          // console.log("Datos extraídos:", {
-          //   user,
-          //   access_token,
-          //   refresh_token,
-          // });
 
-          if (user && access_token) {
-            // Normalizamos el usuario del backend (puede venir con userID, role, etc.)
-            const rawUser = user;
-            // Extraer el rol principal desde el backend
-            const roleName: string | undefined = rawUser?.role?.name;
-            // Bloquear acceso a usuarios sin rol o con rol 'user'
-            if (!roleName || roleName === "user") {
-              throw new Error("No tienes permisos para acceder al panel");
-            }
-            const userToReturn = {
-              id: rawUser.userID ?? rawUser.id, // Mapear userID del backend a id que espera NextAuth
-              name:
-                rawUser.username ||
-                `${rawUser.firstName || ""} ${rawUser.lastName || ""}`.trim() ||
-                rawUser.email,
-              email: rawUser.email ?? undefined,
-              image: null, // No hay imagen en el backend
-              // Campos personalizados
-              username: rawUser.username,
-              firstName: rawUser.firstName,
-              lastName: rawUser.lastName,
-              isVerified: rawUser.isVerified,
-              // Mapear a arreglo de roles desde el rol único del backend
-              roles:
-                Array.isArray(rawUser?.userRoles) && rawUser?.userRoles.length
-                  ? rawUser.userRoles
-                  : roleName
-                  ? [roleName]
-                  : [],
-              accessToken: access_token,
-              refreshToken: refresh_token,
-            } as User;
-            // console.log("Usuario que se retorna:", userToReturn);
-            return userToReturn;
+          if (!user || !access_token) return null;
+
+          // Bloquear usuarios sin rol o con rol 'user'
+          const roleName: string | undefined = user?.role?.name;
+          if (!roleName || roleName === "user") {
+            throw new Error("No tienes permisos para acceder al panel");
           }
-          // console.log(
-          //   "No se pudo crear el usuario - falta user o access_token"
-          // );
-          return null;
+
+          const normalized: User = {
+            id: String(user.userID ?? user.id ?? ""),
+            name:
+              user.username ||
+              `${user.firstName || ""} ${user.lastName || ""}`.trim() ||
+              user.email,
+            email: user.email ?? undefined,
+            image: null,
+            // custom fields para callbacks
+            username: user.username,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            isVerified: user.isVerified,
+            roles:
+              Array.isArray(user?.userRoles) && user.userRoles.length
+                ? user.userRoles
+                : roleName
+                ? [roleName]
+                : [],
+            accessToken: access_token,
+            refreshToken: refresh_token,
+          };
+
+          return normalized;
         } catch (err) {
           if (isAxiosError(err)) {
             const data = err.response?.data as
@@ -128,16 +125,12 @@ export const authOptions: NextAuthOptions = {
   ],
   callbacks: {
     async jwt({ token, user }) {
-      const jwtToken = token as ExtendedJWT;
-      // console.log("token", jwtToken);
-
-      // Primer login - cuando user está presente
+      // Primer login
       if (user) {
-        // console.log("Usuario en primer login:", user);
         const u = user as User & {
           accessToken?: string;
           refreshToken?: string;
-          id: string | number;
+          id?: string | number;
           username?: string;
           firstName?: string;
           lastName?: string;
@@ -145,84 +138,62 @@ export const authOptions: NextAuthOptions = {
           isVerified?: boolean;
         };
 
-        // Guardar todos los datos del usuario en el token
-        jwtToken.accessToken = u.accessToken;
-        jwtToken.refreshToken = u.refreshToken;
-        jwtToken.id = u.id;
-        jwtToken.email = (u.email ?? undefined) as string | undefined;
-        jwtToken.name = (u.name ?? undefined) as string | undefined;
-        jwtToken.username = u.username;
-        jwtToken.firstName = u.firstName;
-        jwtToken.lastName = u.lastName;
-        if (u.roles) jwtToken.roles = u.roles;
-        if (typeof u.isVerified !== "undefined")
-          jwtToken.isVerified = u.isVerified;
-
-        // Decodificar expiración del access token (JWT estándar) para programar refresh
-        if (u.accessToken) {
-          try {
-            const payload = JSON.parse(
-              Buffer.from(u.accessToken.split(".")[1], "base64").toString()
-            );
-            jwtToken.accessTokenExpires = payload.exp; // en segundos
-          } catch {}
-        }
-        return jwtToken;
+        token.id = u.id;
+        token.email = u.email ?? undefined;
+        token.name = u.name ?? undefined;
+        token.username = u.username;
+        token.firstName = u.firstName;
+        token.lastName = u.lastName;
+        token.roles = u.roles;
+        token.isVerified = u.isVerified;
+        token.accessToken = u.accessToken;
+        token.refreshToken = u.refreshToken;
+        if (u.accessToken)
+          token.accessTokenExpires = decodeJwtExp(u.accessToken);
+        return token;
       }
 
-      // Requests subsecuentes - user es undefined, pero el token persiste los datos
-      // Refresh automático si está cerca de expirar
-      if (jwtToken.accessToken && jwtToken.accessTokenExpires) {
+      // Subsecuentes: auto-refresh
+      if (token.accessToken && token.accessTokenExpires) {
         const now = Math.floor(Date.now() / 1000);
         const shouldRefresh =
-          jwtToken.accessTokenExpires - now < REFRESH_THRESHOLD;
-        if (shouldRefresh && jwtToken.refreshToken) {
+          token.accessTokenExpires - now < REFRESH_THRESHOLD;
+
+        if (shouldRefresh && token.refreshToken) {
           try {
-            const data = await refresh(jwtToken.refreshToken);
-            jwtToken.accessToken = data.access_token;
-            jwtToken.refreshToken = data.refresh_token || jwtToken.refreshToken; // por si se rota
-            try {
-              const payload = JSON.parse(
-                Buffer.from(
-                  data.access_token.split(".")[1],
-                  "base64"
-                ).toString()
-              );
-              jwtToken.accessTokenExpires = payload.exp;
-            } catch {}
+            const data = await refresh(token.refreshToken);
+            token.accessToken = data.access_token;
+            token.refreshToken = data.refresh_token || token.refreshToken;
+            token.accessTokenExpires = decodeJwtExp(data.access_token);
           } catch {
-            // Si falla refresh, limpiamos tokens para forzar signIn en el front
-            delete jwtToken.accessToken;
-            delete jwtToken.refreshToken;
-            delete jwtToken.accessTokenExpires;
+            // fuerza re-login cliente
+            delete token.accessToken;
+            delete token.refreshToken;
+            delete token.accessTokenExpires;
           }
         }
       }
-      return jwtToken;
+      return token;
     },
     async session({ session, token }) {
-      const t = token as ExtendedJWT;
-      session.accessToken = t.accessToken;
-      session.refreshToken = t.refreshToken;
-      if (t.id !== undefined) session.user.id = t.id as string | number;
-      if (t.email) session.user.email = t.email;
-      if (t.name) session.user.name = t.name;
-      if (t.username) session.user.username = t.username;
-      if (t.firstName) session.user.firstName = t.firstName;
-      if (t.lastName) session.user.lastName = t.lastName;
-      if (t.roles) session.user.roles = t.roles;
-      if (typeof t.isVerified !== "undefined")
-        session.user.isVerified = t.isVerified;
+      session.accessToken = token.accessToken;
+      session.refreshToken = token.refreshToken;
+      session.user = {
+        ...(session.user ?? {}),
+        id: token.id as string | number | undefined,
+        email: token.email ?? null,
+        name: token.name ?? null,
+        username: token.username ?? null,
+        firstName: token.firstName ?? null,
+        lastName: token.lastName ?? null,
+        roles: token.roles,
+        isVerified: token.isVerified,
+        image: session.user?.image ?? null,
+      } as typeof session.user;
       return session;
     },
   },
-  session: {
-    strategy: "jwt",
-    maxAge: 60 * 60 * 24 * 7, // 7 días (alineado con refresh token)
-  },
-  jwt: {
-    maxAge: 60 * 60 * 24 * 7, // mismo periodo
-  },
-};
+});
 
-export const authHandler = NextAuth(authOptions);
+export const { handlers, auth, signIn, signOut } = nextAuth;
+export const { GET, POST } = handlers;

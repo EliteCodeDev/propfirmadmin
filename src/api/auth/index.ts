@@ -6,28 +6,12 @@ export async function login(
   credentials: LoginCredentials
 ): Promise<AuthResponse> {
   const { data } = await authClient.post("/auth/admin/login", credentials);
-  // Si la respuesta del backend tiene un formato como { success, message, data },
-  // y en caso de éxito devuelve los datos del usuario dentro de 'data',
-  // y en caso de error no lo hace, debemos manejarlo.
-  // La lógica de NextAuth en `authorize` espera que se lance un error en caso de fallo.
-  // El interceptor de axios ya imprime el error, así que aquí solo nos enfocamos en la data de éxito.
-
-  // Asumimos que una respuesta exitosa siempre contiene `data.data` o una estructura predecible.
-  // Si `data.data` no existe en una respuesta que no es de error, devolvemos `data`.
   if (data && data.data) {
     return data.data;
   }
 
-  // Si la respuesta es exitosa pero no tiene el wrapper 'data', se devuelve directamente.
-  // Esto cubre el caso de `data.data || data` pero de forma más explícita.
-  // El `authorize` de NextAuth buscará las propiedades que necesita (user, access_token).
   return data;
 }
-
-// Recuperación de contraseña gestionada en el front público.
-
-// Endpoint de reseteo de contraseña removido del admin.
-
 export async function sendEmailConfirmation(email: string): Promise<void> {
   await authClient.post("/auth/resend-confirmation", { email });
 }

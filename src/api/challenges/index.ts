@@ -40,7 +40,7 @@ export interface ChallengeWithDetails {
   isActive: boolean;
   parentID: string | null;
   brokerAccountID: string;
-  relation: ChallengeRelation;
+  relation?: ChallengeRelation;
   brokerAccount: BrokerAccount;
 }
 
@@ -173,7 +173,9 @@ export const challengesApi = {
     return data;
   },
   // New methods for fetching detailed challenge data
-  getChallengesWithDetails: async (userId?: string): Promise<{
+  getChallengesWithDetails: async (
+    userId?: string
+  ): Promise<{
     success: boolean;
     message: string;
     data: {
@@ -189,8 +191,10 @@ export const challengesApi = {
     return data;
   },
   // Admin: fetch a single challenge including relations and details
-  getWithDetails: async (challengeId: string): Promise<ChallengeWithDetailsAndRelations> => {
+  getWithDetails: async (
+    challengeId: string
+  ): Promise<ChallengeWithDetailsAndRelations> => {
     const { data } = await client.get(`/challenges/${challengeId}`);
-    return data as ChallengeWithDetailsAndRelations;
+    return data.data as ChallengeWithDetailsAndRelations;
   },
 };

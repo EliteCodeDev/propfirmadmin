@@ -1,7 +1,7 @@
 // Challenge Template specific interfaces
 
 // Challenge Table
-export interface ChallengeItem {
+export type ChallengeItem = {
   id: number;
   name: string;
   originalId?: string;
@@ -9,7 +9,7 @@ export interface ChallengeItem {
   description?: string;
 }
 
-export interface ChallengeTableProps {
+export type ChallengeTableProps = {
   title: string;
   data: ChallengeItem[];
   pageSize: number;
@@ -20,7 +20,7 @@ export interface ChallengeTableProps {
 }
 
 // User Edit Modal
-export interface BasicUser {
+export type BasicUser = {
   userID: string;
   firstName: string;
   lastName: string;
@@ -38,19 +38,19 @@ export interface BasicUser {
   };
 }
 
-export interface ChallengeCategory {
+export type ChallengeCategory = {
   categoryID: string;
   name: string;
 }
 
-export interface ChallengePlan {
+export type ChallengePlan = {
   planID: string;
   name: string;
   isActive: boolean;
   wooID?: number;
 }
 
-export interface ChallengeBalance {
+export type ChallengeBalance = {
   balanceID: string;
   name: string;
   isActive: boolean;
@@ -59,7 +59,7 @@ export interface ChallengeBalance {
   balance?: number;
   relationBalances?: RelationBalance[];
 }
-export interface RelationBalance {
+export type RelationBalance = {
   relationBalanceID: string;
   relationID: string;
   balanceID: string;
@@ -70,7 +70,7 @@ export interface RelationBalance {
   hasDiscount?: boolean;
 }
 
-export interface ChallengeRelation {
+export type ChallengeRelation = {
   relationID: string;
   categoryID: string;
   planID: string;
@@ -89,11 +89,11 @@ export interface ChallengeRelation {
   }>;
 }
 
-export interface ChallengeStage {
+export type ChallengeStage = {
   stageID: string;
   name: string;
 }
-export interface StageRule {
+export type StageRule = {
   ruleID: string;
   slugRule: string;
   ruleType: string;
@@ -101,7 +101,7 @@ export interface StageRule {
   descriptionRule?: string;
 }
 
-export interface WithdrawalRule {
+export type WithdrawalRule = {
   ruleID: string;
   nameRule: string;
   slugRule?: string;
@@ -109,7 +109,7 @@ export interface WithdrawalRule {
   ruleType: string;
 }
 
-export interface RelationStage {
+export type RelationStage = {
   relationStageID: string;
   stageID: string;
   relationID: string;
@@ -119,7 +119,7 @@ export interface RelationStage {
   parameters?: StageParameter[];
 }
 
-export interface StageParameter {
+export type StageParameter = {
   ruleID: string;
   relationStageID: string;
   ruleValue: string;
@@ -127,7 +127,7 @@ export interface StageParameter {
 }
 
 // Addons
-export interface Addon {
+export type Addon = {
   addonID: string;
   name: string;
   slugRule?: string;
@@ -137,7 +137,7 @@ export interface Addon {
   discount?: number;
 }
 
-export interface RelationAddon {
+export type RelationAddon = {
   addonID: string;
   relationID: string;
   value: number | boolean | null;
