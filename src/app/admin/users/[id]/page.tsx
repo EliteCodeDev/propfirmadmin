@@ -4,6 +4,7 @@ import MainLayout from "@/components/layouts/MainLayout";
 import LoadingSpinner from "@/components/common/LoadingSpinner";
 import PaginatedCardTable from "@/components/common/PaginatedCardTable";
 import type { ColumnConfig } from "@/types";
+import { ChallengeRelation } from "@/api/challenges";
 
 import { useParams, useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
@@ -18,12 +19,12 @@ import {
 } from "@heroicons/react/24/outline";
 import type { User, Challenge } from "@/types";
 import { challengesApi, type ChallengeWithDetails } from "@/api/challenges";
+import { challengeTemplatesApi } from "@/api/challenge-templates";
 import { verificationApi } from "@/api/verification";
 import type {
   VerificationItem,
   VerificationStatus,
   DocumentType,
-  MediaItem,
 } from "@/types/verification";
 import Image from "next/image";
 
@@ -151,6 +152,46 @@ export default function UserDetailInner() {
   );
   const hasUserData = !!(user?.userID || user?.id || user?.username);
 
+  /* ---- Cargar categorías y planes para nombres compuestos ---- */
+  const { data: categoriesData, isLoading: categoriesLoading } = useSWR(
+    "challenge-categories",
+    () => challengeTemplatesApi.listCategories(),
+    { revalidateOnFocus: false }
+  );
+
+  const { data: plansData, isLoading: plansLoading } = useSWR(
+    "challenge-plans",
+    () => challengeTemplatesApi.listPlans(),
+    { revalidateOnFocus: false }
+  );
+
+  const categories = Array.isArray(categoriesData) ? categoriesData : [];
+  const plans = Array.isArray(plansData) ? plansData : [];
+
+  // Helper functions para obtener nombres
+  const getCategoryName = (id: string) => {
+    const category = categories.find((c) => c?.categoryID === id);
+    return category?.name || "N/A";
+  };
+
+  const getPlanName = (id: string) => {
+    const plan = plans.find((p) => p?.planID === id);
+    return plan?.name || "N/A";
+  };
+
+  // Función para generar nombre compuesto como en RelationsManager
+  const getComposedRelationName = (relation?: ChallengeRelation) => {
+    if (!relation) return "Challenge";
+
+    const categoryName = getCategoryName(relation.categoryID || "");
+    const planName = getPlanName(relation.planID || "");
+
+    // Cambiar a "Plan - Categoría" y evitar guion si no hay categoría
+    return categoryName && categoryName !== "N/A"
+      ? `${planName}`
+      : planName;
+  };
+
   /* ---- Challenges del usuario ---- */
   const {
     data: challengesWithDetailsRaw,
@@ -163,6 +204,7 @@ export default function UserDetailInner() {
     async () => {
       try {
         const response = await challengesApi.getChallengesWithDetails(userId);
+        console.log("response", response);
         return response.data.data;
       } catch (error) {
         console.error("Error fetching challenges with details:", error);
@@ -198,6 +240,7 @@ export default function UserDetailInner() {
         },
         startDate: c.startDate ?? null,
         endDate: c.endDate ?? null,
+        relation: c.relation,
       })
     );
   }, [challengesWithDetails]);
@@ -325,7 +368,9 @@ export default function UserDetailInner() {
 
         return {
           accountNumber: login || `${c.challengeID.slice(0, 8)}...`,
-          accountType: c?.numPhase ? `${c.numPhase}-step` : "Challenge",
+          accountType: getComposedRelationName(
+            c.relation || ({} as ChallengeRelation)
+          ),
           accountSize:
             accountSize != null ? `$${accountSize.toLocaleString()}` : "-",
           equity: equityNum != null ? `$${equityNum.toLocaleString()}` : "-",
@@ -334,7 +379,7 @@ export default function UserDetailInner() {
           dateReceived: whenDate ? whenDate.toLocaleDateString() : "-",
         };
       }),
-    [challenges]
+    [challenges, categories, plans]
   );
 
   const totalItems = mapped.length;

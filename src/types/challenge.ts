@@ -1,20 +1,22 @@
 // Centralized challenge related types
 // Origin: src/app/challenges/page.tsx and users/[id]/page.tsx
 
+import { ChallengeRelation } from "@/api/challenges";
+
 export type ChallengeRelationPlan = {
   name?: string;
-}
+};
 
 export type ChallengeRelationCategory = {
   name?: string;
-}
+};
 
 export type ChallengeBrokerAccount = {
   login?: string | null;
   platform?: string | null;
   initialBalance?: number | null;
   innitialBalance?: number | null;
-}
+};
 
 export type ChallengeUserRef = {
   firstName?: string | null;
@@ -22,7 +24,7 @@ export type ChallengeUserRef = {
   email?: string | null;
   id?: string;
   userID?: string;
-}
+};
 
 export type Challenge = {
   challengeID: string;
@@ -38,9 +40,6 @@ export type Challenge = {
   brokerAccountID?: string | null;
   // relations
   user?: ChallengeUserRef | null;
-  relation?: {
-    plan?: ChallengeRelationPlan;
-    category?: ChallengeRelationCategory;
-  };
+  relation?: ChallengeRelation;
   brokerAccount?: ChallengeBrokerAccount | null;
-}
+};

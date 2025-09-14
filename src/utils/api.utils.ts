@@ -1,10 +1,9 @@
 import { NextRequest } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { auth } from "@/lib/auth";
 import { internalApiBaseUrl } from "@/config";
 
 export async function ensureSession() {
-  const session = await getServerSession(authOptions);
+  const session = await auth();
   if (!session?.accessToken) {
     return { error: true, status: 401, message: "Unauthorized" } as const;
   }

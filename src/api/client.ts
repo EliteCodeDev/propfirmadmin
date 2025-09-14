@@ -1,8 +1,7 @@
 // Cliente HTTP centralizado para llamadas al backend (capa API)
 import axios from "axios";
-import { getSession, signOut } from "next-auth/react";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { signOut } from "next-auth/react";
+import { auth } from "@/lib/auth";
 import { apiBaseUrl, internalApiBaseUrl } from "@/config";
 
 const isBrowser = typeof window !== "undefined";
@@ -17,7 +16,7 @@ client.interceptors.request.use(async (config) => {
   // Sólo añadimos Authorization en entorno servidor.
   if (!isBrowser) {
     try {
-      const session = await getServerSession(authOptions);
+      const session = await auth();
       if (session?.accessToken) {
         config.headers = config.headers || {};
         (config.headers as Record<string, string>)[

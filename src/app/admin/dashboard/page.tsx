@@ -1,7 +1,6 @@
 // src/app/admin/dashboard/page.tsx
 import { redirect } from "next/navigation";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { auth } from "@/lib/auth";
 import MainLayout from "@/components/layouts/MainLayout";
 import DashboardContent from "./_components/DashboardContent";
 import DashboardApi from "@/api/dashboard";
@@ -108,7 +107,7 @@ function DashboardHeader({
 }
 
 export default async function Dashboard() {
-  const session = await getServerSession(authOptions);
+  const session = await auth();
 
   if (!session) {
     redirect("/auth/login");
