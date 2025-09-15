@@ -319,7 +319,7 @@ function ChallengesInner() {
         const msg = await res.text();
         throw new Error(msg || `HTTP ${res.status}`);
       }
-      toast.success("Eliminado especial correctamente");
+    toast.success("Anticucho deleted successfully");
       mutate();
     } catch (e) {
       console.error(e);
