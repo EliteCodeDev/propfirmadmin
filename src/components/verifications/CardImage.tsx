@@ -106,13 +106,13 @@ export default function CardImage({ selectedImage, onClose}: CardImageProps) {
             <DialogContent className="max-w-5xl max-h-[92vh] p-2">
                 <div className="flex items-center justify-between gap-2 px-2 pb-2">
                     <div className="flex items-center gap-2">
-                        <Button variant="outline" size="sm" onClick={zoomOut} aria-label="Alejar">-</Button>
+                        <Button variant="outline" size="sm" onClick={zoomOut} aria-label="Zoom out">-</Button>
                         <div className="text-sm w-16 text-center select-none">{Math.round(zoom * 100)}%</div>
-                        <Button variant="outline" size="sm" onClick={zoomIn} aria-label="Acercar">+</Button>
-                        <Button variant="ghost" size="sm" onClick={resetZoom}>Restablecer</Button>
+                        <Button variant="outline" size="sm" onClick={zoomIn} aria-label="Zoom in">+</Button>
+                        <Button variant="ghost" size="sm" onClick={resetZoom}>Reset</Button>
                     </div>
                     <div>
-                        <Button variant="ghost" size="sm" onClick={onClose}>Cerrar</Button>
+                        <Button variant="ghost" size="sm" onClick={onClose}>Close</Button>
                     </div>
                 </div>
                 <div
@@ -136,7 +136,7 @@ export default function CardImage({ selectedImage, onClose}: CardImageProps) {
                             <div className="relative w-[80vw] max-w-[1200px] h-[60vh]">
                                 <Image
                                     src={selectedImage}
-                                    alt="Documento ampliado"
+                                    alt="Enlarged document"
                                     fill
                                     className="object-contain select-none"
                                     draggable={false}
