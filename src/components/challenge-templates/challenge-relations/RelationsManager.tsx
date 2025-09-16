@@ -57,10 +57,10 @@ import {
 const relationSchema = z.object({
   categoryID: z
     .string()
-    .uuid("Categoría inválida")
+    .uuid("Invalid category")
     .optional()
     .or(z.literal("")),
-  planID: z.string().min(1, "El plan es requerido"),
+  planID: z.string().min(1, "Plan is required"),
   groupName: z.string().optional(),
 });
 
@@ -170,8 +170,8 @@ export function RelationsManager({ pageSize = 10 }: RelationsManagerProps) {
         setSelectedWithdrawalRuleIds([]);
       }
     } catch (error) {
-      console.error("Error al cargar datos:", error);
-      toast.error("Error al cargar datos");
+  console.error("Error loading data:", error);
+  toast.error("Error loading data");
     } finally {
       setIsLoading(false);
     }
@@ -207,22 +207,22 @@ export function RelationsManager({ pageSize = 10 }: RelationsManagerProps) {
         ...(formValues.categoryID ? { categoryID: formValues.categoryID } : {}),
       };
       if (editItem) {
-        // Editar
+        // Edit
         await challengeTemplatesApi.updateRelation(
           editItem.relationID,
           payload
         );
-        toast.success("Relación editada exitosamente");
+      toast.success("Relation updated successfully");
       } else {
-        // Crear
+      // Create
         await challengeTemplatesApi.createRelation(payload);
-        toast.success("Relación creada exitosamente");
+      toast.success("Relation created successfully");
       }
       setOpenModal(false);
       await loadAllData(); // Refrescar datos
     } catch (error) {
-      console.error("Error al guardar:", error);
-      toast.error("Ocurrió un error al guardar");
+    console.error("Error saving:", error);
+    toast.error("An error occurred while saving");
     }
   }
 
@@ -293,10 +293,10 @@ export function RelationsManager({ pageSize = 10 }: RelationsManagerProps) {
     };
   });
 
-  // Columnas para la tabla (solo ID y Nombre)
+  // Columns for the table (ID and Name only)
   const columns: ColumnConfig[] = [
     { key: "id", label: "ID", type: "normal" },
-    { key: "name", label: "Nombre", type: "normal" },
+    { key: "name", label: "Name", type: "normal" },
   ];
 
   // Paginación
@@ -316,7 +316,7 @@ export function RelationsManager({ pageSize = 10 }: RelationsManagerProps) {
               originalId: String(row.originalId || ""),
             })
           }
-          title="Editar relación"
+          title="Edit relation"
         >
           <Edit className="h-4 w-4" />
         </button>
@@ -325,7 +325,7 @@ export function RelationsManager({ pageSize = 10 }: RelationsManagerProps) {
           onClick={async () => {
             const rid = String(row.originalId || "");
             try {
-              // Buscar la relación en los datos ya cargados con listRelationsComplete
+              // Find relation from already loaded listRelationsComplete data
               const rel = relations.find((r) => r.relationID === rid);
               if (rel) {
                 const existingBalanceIds =
@@ -335,17 +335,14 @@ export function RelationsManager({ pageSize = 10 }: RelationsManagerProps) {
                 setSelectedRelationIdForBalances(rid);
                 setOpenBalanceModal(true);
               } else {
-                toast.error("No se pudo encontrar la relación");
+                toast.error("Could not find the relation");
               }
             } catch (e) {
-              console.error(
-                "Error cargando relación antes de abrir modal de balances",
-                e
-              );
-              toast.error("No se pudo cargar la relación");
+              console.error("Error loading relation before opening balances modal", e);
+              toast.error("Could not load the relation");
             }
           }}
-          title="Agregar balance"
+          title="Add balance"
         >
           <Plus className="h-4 w-4" />
         </button>
@@ -374,17 +371,14 @@ export function RelationsManager({ pageSize = 10 }: RelationsManagerProps) {
                 setSelectedRelationIdForAddons(rid);
                 setOpenAddonsModal(true);
               } else {
-                toast.error("No se pudo encontrar la relación");
+                toast.error("Could not find the relation");
               }
             } catch (e) {
-              console.error(
-                "Error cargando relación antes de abrir modal de addons",
-                e
-              );
-              toast.error("No se pudo cargar la relación");
+              console.error("Error loading relation before opening addons modal", e);
+              toast.error("Could not load the relation");
             }
           }}
-          title="Agregar addon"
+          title="Add addon"
         >
           <Plus className="h-4 w-4" />
         </button>
@@ -420,17 +414,14 @@ export function RelationsManager({ pageSize = 10 }: RelationsManagerProps) {
                 setSelectedRelationIdForWithdrawalRules(rid);
                 setOpenWithdrawalRulesModal(true);
               } else {
-                toast.error("No se pudo encontrar la relación");
+                toast.error("Could not find the relation");
               }
             } catch (e) {
-              console.error(
-                "Error cargando relación antes de abrir modal de withdrawal rules",
-                e
-              );
-              toast.error("No se pudo cargar la relación");
+              console.error("Error loading relation before opening withdrawal rules modal", e);
+              toast.error("Could not load the relation");
             }
           }}
-          title="Agregar withdrawal rules"
+          title="Add withdrawal rules"
         >
           <Plus className="h-4 w-4" />
         </button>
@@ -442,7 +433,7 @@ export function RelationsManager({ pageSize = 10 }: RelationsManagerProps) {
             setSelectedRelationForStages({ id: rid, name: relationName });
             setOpenStagesModal(true);
           }}
-          title="Gestionar parámetros de stages"
+          title="Manage stage parameters"
         >
           <Settings className="h-4 w-4" />
         </button>
@@ -458,8 +449,8 @@ export function RelationsManager({ pageSize = 10 }: RelationsManagerProps) {
     <div className="bg-white dark:bg-gray-800 transition-colors duration-200">
       <ManagerHeader
         title="Challenges"
-        description="Gestiona las relaciones entre planes, categorias, balances y fases."
-        buttonText="Crear relación"
+        description="Manage relationships between plans, categories, balances and phases."
+        buttonText="Create relation"
         onCreateClick={handleOpenCreate}
         totalCount={relations.length}
         showTotalCount={false}
@@ -470,7 +461,7 @@ export function RelationsManager({ pageSize = 10 }: RelationsManagerProps) {
           columns={columns}
           rows={paginatedRows}
           isLoading={isLoading}
-          emptyText="No hay relaciones disponibles"
+          emptyText="There are no relations available"
           actionsHeader="Actions"
           renderActions={renderActions}
           pagination={{
@@ -528,9 +519,7 @@ export function RelationsManager({ pageSize = 10 }: RelationsManagerProps) {
           if (selectedRelationIdForBalances) {
             try {
               if (items.length === 0) {
-                toast.message(
-                  "No seleccionaste balances. No se hicieron cambios."
-                );
+                toast.message("No balances selected. No changes were made.");
               } else {
                 // Crear el payload correcto según el DTO del backend
                 const payload = items.map((item) => ({
@@ -546,7 +535,7 @@ export function RelationsManager({ pageSize = 10 }: RelationsManagerProps) {
                   selectedRelationIdForBalances,
                   payload
                 );
-                toast.success("Balances actualizados en la relación");
+                toast.success("Balances updated in the relation");
                 await loadAllData();
                 // Refrescar snapshot de la relación recién modificada
                 try {
@@ -561,8 +550,8 @@ export function RelationsManager({ pageSize = 10 }: RelationsManagerProps) {
                 } catch {}
               }
             } catch (e) {
-              console.error("Error al actualizar relation balances:", e);
-              toast.error("No se pudo actualizar la relación");
+              console.error("Error updating relation balances:", e);
+              toast.error("Could not update the relation");
             } finally {
               setSelectedRelationIdForBalances(null);
             }
@@ -727,12 +716,10 @@ export function RelationsManager({ pageSize = 10 }: RelationsManagerProps) {
                 const names = duplicateHandled
                   .map((id) => addons.find((a) => a.addonID === id)?.name || id)
                   .join(", ");
-                toast.message(
-                  `Algunos addons ya existían y fueron actualizados: ${names}`
-                );
+                toast.message(`Some addons already existed and were updated: ${names}`);
               }
 
-              toast.success("Addons actualizados en la relación");
+              toast.success("Addons updated in the relation");
               // Refrescar datos y snapshot
               const refreshedRelations =
                 await challengeTemplatesApi.listRelationsComplete();
@@ -742,10 +729,8 @@ export function RelationsManager({ pageSize = 10 }: RelationsManagerProps) {
               );
               setRelationAddonsSnapshot(refreshed?.addons || []);
             } catch (e: any) {
-              console.error("Error al actualizar relation addons:", e);
-              const msg =
-                e?.response?.data?.message ||
-                "No se pudo actualizar la relación";
+              console.error("Error updating relation addons:", e);
+              const msg = e?.response?.data?.message || "Could not update the relation";
               toast.error(msg);
             } finally {
               setSelectedRelationIdForAddons(null);
@@ -780,7 +765,7 @@ export function RelationsManager({ pageSize = 10 }: RelationsManagerProps) {
                 );
                 const planName = getPlanName(relation?.planID || "");
                 const rulesText = relation?.withdrawalRules?.length
-                  ? ` (${relation.withdrawalRules.length} reglas)`
+                  ? ` (${relation.withdrawalRules.length} rules)`
                   : "";
                 return categoryName && categoryName !== "N/A"
                   ? `${planName} - ${categoryName}${rulesText}`
@@ -857,7 +842,7 @@ export function RelationsManager({ pageSize = 10 }: RelationsManagerProps) {
                 }
               }
 
-              toast.success("Withdrawal rules actualizadas correctamente");
+              toast.success("Withdrawal rules updated successfully");
               setOpenWithdrawalRulesModal(false);
               // Recargar datos
               const refreshedRelations =
@@ -871,13 +856,8 @@ export function RelationsManager({ pageSize = 10 }: RelationsManagerProps) {
                 refreshed?.withdrawalRules || []
               );
             } catch (e: any) {
-              console.error(
-                "Error al actualizar relation withdrawal rules:",
-                e
-              );
-              const msg =
-                e?.response?.data?.message ||
-                "No se pudo actualizar la relación";
+              console.error("Error updating relation withdrawal rules:", e);
+              const msg = e?.response?.data?.message || "Could not update the relation";
               toast.error(msg);
             } finally {
               setSelectedRelationIdForWithdrawalRules(null);
@@ -907,7 +887,7 @@ export function RelationsManager({ pageSize = 10 }: RelationsManagerProps) {
                 );
               }
 
-              toast.success("Withdrawal rules actualizadas correctamente");
+              toast.success("Withdrawal rules updated successfully");
               setOpenWithdrawalRulesModal(false);
               // Recargar datos
               const refreshedRelations =
@@ -921,13 +901,8 @@ export function RelationsManager({ pageSize = 10 }: RelationsManagerProps) {
                 refreshed?.withdrawalRules || []
               );
             } catch (e: any) {
-              console.error(
-                "Error al actualizar relation withdrawal rules:",
-                e
-              );
-              const msg =
-                e?.response?.data?.message ||
-                "No se pudo actualizar la relación";
+              console.error("Error updating relation withdrawal rules:", e);
+              const msg = e?.response?.data?.message || "Could not update the relation";
               toast.error(msg);
             } finally {
               setSelectedRelationIdForWithdrawalRules(null);
@@ -940,12 +915,12 @@ export function RelationsManager({ pageSize = 10 }: RelationsManagerProps) {
         <DialogContent className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700 max-w-lg mx-auto shadow-lg rounded-xl">
           <DialogHeader>
             <DialogTitle className="text-gray-900 dark:text-white text-sm sm:text-base md:text-lg font-semibold">
-              {editItem ? "Editar" : "Crear"} relación
+              {editItem ? "Edit" : "Create"} relation
             </DialogTitle>
             <DialogDescription className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm md:text-base">
               {editItem
-                ? "Modifica los datos y confirma para guardar cambios."
-                : "Ingresa los datos para crear un nuevo registro."}
+                ? "Modify the data and confirm to save changes."
+                : "Enter the data to create a new record."}
             </DialogDescription>
           </DialogHeader>
 
@@ -969,7 +944,7 @@ export function RelationsManager({ pageSize = 10 }: RelationsManagerProps) {
                     >
                       <FormControl>
                         <SelectTrigger className="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                          <SelectValue placeholder="Selecciona un plan" />
+                          <SelectValue placeholder="Select a plan" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
@@ -980,7 +955,7 @@ export function RelationsManager({ pageSize = 10 }: RelationsManagerProps) {
                               value={plan.planID}
                               className="text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700"
                             >
-                              {plan?.name || "Sin nombre"}
+                              {plan?.name || "No name"}
                             </SelectItem>
                           ) : null
                         )}
@@ -997,12 +972,12 @@ export function RelationsManager({ pageSize = 10 }: RelationsManagerProps) {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-gray-700 dark:text-gray-300 text-sm font-medium">
-                      Nombre del grupo
+                      Group name
                     </FormLabel>
                     <FormControl>
                       <Input
                         {...field}
-                        placeholder="Ingresa el nombre del grupo (opcional)"
+                        placeholder="Enter the group name (optional)"
                         className="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white text-sm placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       />
                     </FormControl>
@@ -1011,14 +986,14 @@ export function RelationsManager({ pageSize = 10 }: RelationsManagerProps) {
                 )}
               />
 
-              {/* Categoría después y opcional */}
+              {/* Category next and optional */}
               <FormField
                 control={form.control}
                 name="categoryID"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-gray-700 dark:text-gray-300 text-sm font-medium">
-                      Categoría (opcional)
+                      Category (optional)
                     </FormLabel>
                     <Select
                       onValueChange={field.onChange}
@@ -1026,7 +1001,7 @@ export function RelationsManager({ pageSize = 10 }: RelationsManagerProps) {
                     >
                       <FormControl>
                         <SelectTrigger className="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                          <SelectValue placeholder="Selecciona una categoría" />
+                          <SelectValue placeholder="Select a category" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
@@ -1037,7 +1012,7 @@ export function RelationsManager({ pageSize = 10 }: RelationsManagerProps) {
                               value={category.categoryID}
                               className="text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700"
                             >
-                              {category?.name || "Sin nombre"}
+                              {category?.name || "No name"}
                             </SelectItem>
                           ) : null
                         )}
@@ -1055,13 +1030,13 @@ export function RelationsManager({ pageSize = 10 }: RelationsManagerProps) {
                   onClick={() => setOpenModal(false)}
                   className="px-3 py-2 text-sm border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600"
                 >
-                  Cancelar
+                  Cancel
                 </Button>
                 <Button
                   type="submit"
                   className="bg-emerald-600 dark:bg-emerald-600 text-white hover:bg-emerald-700 dark:hover:bg-emerald-700 px-3 py-2 text-sm shadow-sm"
                 >
-                  {editItem ? "Guardar" : "Crear"}
+                  {editItem ? "Save" : "Create"}
                 </Button>
               </DialogFooter>
             </form>

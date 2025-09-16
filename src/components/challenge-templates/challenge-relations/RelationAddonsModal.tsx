@@ -123,22 +123,18 @@ export default function RelationAddonsModal({
       <DialogContent className="w-[95vw] sm:w-[90vw] md:w-auto sm:!max-w-3xl md:!max-w-5xl lg:!max-w-6xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700 shadow-lg rounded-xl">
         <DialogHeader>
           <DialogTitle className="text-gray-900 dark:text-white text-base md:text-lg font-semibold">
-            {relationName
-              ? `Addons para: ${relationName}`
-              : "Seleccionar addons"}
+            {relationName ? `Addons for: ${relationName}` : "Select addons"}
           </DialogTitle>
           <DialogDescription className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm">
-            Elige addons disponibles y muévelos a la lista de agregados. Puedes
-            buscar por nombre o monto.
+            Choose available addons and move them to the added list. You can
+            search by name or amount.
           </DialogDescription>
         </DialogHeader>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mt-2">
           <div className="md:col-span-1 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden bg-white dark:bg-gray-800">
             <div className="px-2 py-1.5 bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
-              <span className="text-sm font-medium text-gray-900 dark:text-white">
-                Disponibles
-              </span>
+              <span className="text-sm font-medium text-gray-900 dark:text-white">Available</span>
               <span className="text-xs text-gray-500 dark:text-gray-400">
                 {available.length}
               </span>
@@ -147,14 +143,12 @@ export default function RelationAddonsModal({
               <Input
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                placeholder="Buscar addons..."
+                placeholder="Search addons..."
                 className="mb-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
               <div className="space-y-1 max-h-64 overflow-auto pr-1">
                 {filteredAvailable.length === 0 ? (
-                  <div className="text-xs text-gray-500 dark:text-gray-400">
-                    Sin resultados
-                  </div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400">No results</div>
                 ) : (
                   filteredAvailable.map((a) => (
                     <div
@@ -184,9 +178,7 @@ export default function RelationAddonsModal({
 
           <div className="md:col-span-2 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden bg-white dark:bg-gray-800">
             <div className="px-2 py-1.5 bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
-              <span className="text-sm font-medium text-gray-900 dark:text-white">
-                Agregados
-              </span>
+              <span className="text-sm font-medium text-gray-900 dark:text-white">Added</span>
               <span className="text-xs text-gray-500 dark:text-gray-400">
                 {selected.length}
               </span>
@@ -194,9 +186,7 @@ export default function RelationAddonsModal({
             <div className="p-2">
               <div className="space-y-1 max-h-72 overflow-auto pr-1">
                 {selected.length === 0 ? (
-                  <div className="text-xs text-gray-500 dark:text-gray-400">
-                    No has agregado addons
-                  </div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400">You have not added addons</div>
                 ) : (
                   Array.from(new Set(selected))
                     .map((id) => sourceAddons.find((a) => a.addonID === id))
@@ -224,7 +214,7 @@ export default function RelationAddonsModal({
                                   [a!.addonID]: !prev[a!.addonID],
                                 }))
                               }
-                              title="Detalles"
+                              title="Details"
                             >
                               {detailsOpen[a!.addonID] ? (
                                 <ChevronUp className="h-4 w-4" />
@@ -237,7 +227,7 @@ export default function RelationAddonsModal({
                               size="sm"
                               className="h-7 px-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600"
                               onClick={() => remove(a!.addonID)}
-                              title="Quitar"
+                              title="Remove"
                             >
                               <X className="h-4 w-4" />
                             </Button>
@@ -251,7 +241,7 @@ export default function RelationAddonsModal({
                                   htmlFor={`value-${a!.addonID}`}
                                   className="text-xs font-medium text-gray-700 dark:text-gray-300"
                                 >
-                                  Valor
+                                  Value
                                 </Label>
                                 <Input
                                   id={`value-${a!.addonID}`}
@@ -291,7 +281,7 @@ export default function RelationAddonsModal({
                                   htmlFor={`active-${a!.addonID}`}
                                   className="text-xs font-medium text-gray-700 dark:text-gray-300"
                                 >
-                                  Activo
+                                  Active
                                 </Label>
                               </div>
                               <div className="flex items-center gap-2">
@@ -313,7 +303,7 @@ export default function RelationAddonsModal({
                                   htmlFor={`disc-${a!.addonID}`}
                                   className="text-xs font-medium text-gray-700 dark:text-gray-300"
                                 >
-                                  Tiene descuento (%)
+                                  Has discount (%)
                                 </Label>
                               </div>
                               {configs[a!.addonID]?.hasDiscount && (
@@ -322,7 +312,7 @@ export default function RelationAddonsModal({
                                     htmlFor={`discount-${a!.addonID}`}
                                     className="text-xs font-medium text-gray-700 dark:text-gray-300"
                                   >
-                                    Descuento
+                                    Discount
                                   </Label>
                                   <Input
                                     id={`discount-${a!.addonID}`}
@@ -341,7 +331,7 @@ export default function RelationAddonsModal({
                                         },
                                       }))
                                     }
-                                    placeholder="Ej: 10"
+                                    placeholder="E.g.: 10"
                                     className="mt-0.5 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500"
                                   />
                                 </div>
@@ -351,7 +341,7 @@ export default function RelationAddonsModal({
                                   htmlFor={`wooID-${a!.addonID}`}
                                   className="text-xs font-medium text-gray-700 dark:text-gray-300"
                                 >
-                                  WooCommerce ID (opcional)
+                                  WooCommerce ID (optional)
                                 </Label>
                                 <Input
                                   id={`wooID-${a!.addonID}`}
@@ -370,7 +360,7 @@ export default function RelationAddonsModal({
                                       },
                                     }))
                                   }
-                                  placeholder="ID de WooCommerce"
+                                  placeholder="WooCommerce ID"
                                   className="mt-0.5 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500"
                                 />
                               </div>
@@ -393,7 +383,7 @@ export default function RelationAddonsModal({
             onClick={() => onOpenChange(false)}
             className="border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600"
           >
-            Cancelar
+            Cancel
           </Button>
           <Button
             onClick={async () => {
@@ -453,9 +443,13 @@ export default function RelationAddonsModal({
             disabled={isLoading}
             className="bg-emerald-600 text-center text-white hover:bg-emerald-700 dark:bg-emerald-600 dark:hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {isLoading ? (<>
-            <Check className="h-4 w-4 mr-1 animate-spin" />
-            </>) : "Guardar"}
+            {isLoading ? (
+              <>
+                <Check className="h-4 w-4 mr-1 animate-spin" />
+              </>
+            ) : (
+              "Save"
+            )}
           </Button>
         </DialogFooter>
       </DialogContent>

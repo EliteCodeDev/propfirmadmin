@@ -20,13 +20,13 @@ import type { WithdrawalRuleSelectorModalProps } from "@/types";
 function getRuleTypeLabel(ruleType: string) {
   switch (ruleType) {
     case "number":
-      return "Número";
+      return "Number";
     case "percentage":
-      return "Porcentaje";
+      return "Percentage";
     case "boolean":
-      return "Booleano";
+      return "Boolean";
     case "string":
-      return "Texto";
+      return "Text";
     default:
       return ruleType;
   }
@@ -207,13 +207,10 @@ export default function RelationWithdrawalRulesModal({
       <DialogContent className="w-[95vw] sm:w-[90vw] md:w-auto sm:!max-w-3xl md:!max-w-5xl lg:!max-w-6xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700 shadow-lg rounded-xl">
         <DialogHeader>
           <DialogTitle className="text-gray-900 dark:text-white text-base md:text-lg font-semibold">
-            {relationName
-              ? `Withdrawal Rules para: ${relationName}`
-              : "Seleccionar Withdrawal Rules"}
+            {relationName ? `Withdrawal Rules for: ${relationName}` : "Select Withdrawal Rules"}
           </DialogTitle>
           <DialogDescription className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm">
-            Elige withdrawal rules disponibles y muévelas a la lista de
-            agregadas. Puedes buscar por nombre o descripción.
+            Choose available withdrawal rules and move them to the added list. You can search by name or description.
           </DialogDescription>
         </DialogHeader>
 
@@ -221,9 +218,7 @@ export default function RelationWithdrawalRulesModal({
           {/* Columna izquierda: disponibles */}
           <div className="md:col-span-1 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden bg-white dark:bg-gray-800">
             <div className="px-2 py-1.5 bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
-              <span className="text-sm font-medium text-gray-900 dark:text-white">
-                Disponibles
-              </span>
+              <span className="text-sm font-medium text-gray-900 dark:text-white">Available</span>
               <span className="text-xs text-gray-500 dark:text-gray-400">
                 {available.length}
               </span>
@@ -232,14 +227,12 @@ export default function RelationWithdrawalRulesModal({
               <Input
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                placeholder="Buscar withdrawal rules..."
+                placeholder="Search withdrawal rules..."
                 className="mb-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
               <div className="space-y-1 max-h-64 overflow-auto pr-1">
                 {filteredAvailable.length === 0 ? (
-                  <div className="text-xs text-gray-500 dark:text-gray-400">
-                    Sin resultados
-                  </div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400">No results</div>
                 ) : (
                   filteredAvailable.map((wr) => (
                     <div
@@ -252,7 +245,7 @@ export default function RelationWithdrawalRulesModal({
                           size="sm"
                           className="h-7 px-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600"
                           onClick={() => add(wr.ruleID)}
-                          title="Agregar"
+                          title="Add"
                         >
                           <Plus className="h-4 w-4" />
                         </Button>
@@ -280,9 +273,7 @@ export default function RelationWithdrawalRulesModal({
           {/* Columna derecha: agregadas */}
           <div className="md:col-span-2 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden bg-white dark:bg-gray-800">
             <div className="px-2 py-1.5 bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
-              <span className="text-sm font-medium text-gray-900 dark:text-white">
-                Agregadas
-              </span>
+              <span className="text-sm font-medium text-gray-900 dark:text-white">Added</span>
               <span className="text-xs text-gray-500 dark:text-gray-400">
                 {selectedList.length}
               </span>
@@ -291,7 +282,7 @@ export default function RelationWithdrawalRulesModal({
               <div className="space-y-1 max-h-72 overflow-auto pr-1">
                 {selectedList.length === 0 ? (
                   <div className="text-xs text-gray-500 dark:text-gray-400">
-                    Sin withdrawal rules agregadas
+                    No withdrawal rules added
                   </div>
                 ) : (
                   selectedListSorted.map((wr) => (
@@ -324,7 +315,7 @@ export default function RelationWithdrawalRulesModal({
                                 [wr.ruleID]: !prev[wr.ruleID],
                               }))
                             }
-                            title="Detalles"
+                            title="Details"
                           >
                             {detailsOpen[wr.ruleID] ? (
                               <ChevronUp className="h-4 w-4" />
@@ -337,7 +328,7 @@ export default function RelationWithdrawalRulesModal({
                             size="sm"
                             className="h-7 px-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600"
                             onClick={() => remove(wr.ruleID)}
-                            title="Quitar"
+                            title="Remove"
                           >
                             <X className="h-4 w-4" />
                           </Button>
@@ -350,7 +341,7 @@ export default function RelationWithdrawalRulesModal({
                               htmlFor={`value-${wr.ruleID}`}
                               className="text-xs font-medium text-gray-700 dark:text-gray-300"
                             >
-                              Valor de la regla
+                              Rule value
                             </Label>
                             <div className="mt-0.5">
                               {renderRuleValue(wr, wr.ruleID)}
@@ -373,7 +364,7 @@ export default function RelationWithdrawalRulesModal({
             disabled={isLoading}
             className="border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600"
           >
-            Cancelar
+            Cancel
           </Button>
           <Button
             onClick={async () => {
@@ -457,7 +448,7 @@ export default function RelationWithdrawalRulesModal({
             disabled={isLoading}
             className="bg-blue-600 dark:bg-blue-700 text-white hover:bg-blue-700 dark:hover:bg-blue-800"
           >
-            {isLoading ? "Guardando..." : "Confirmar"}
+            {isLoading ? "Saving..." : "Confirm"}
           </Button>
         </DialogFooter>
       </DialogContent>

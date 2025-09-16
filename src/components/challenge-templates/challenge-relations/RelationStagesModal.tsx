@@ -124,8 +124,8 @@ export default function RelationStagesModal({
       // Cargar parámetros para todas las etapas de relación
       await loadParameters(relationStagesData);
     } catch (error) {
-      console.error("Error al cargar datos:", error);
-      toast.error("Error al cargar datos");
+  console.error("Error loading data:", error);
+  toast.error("Error loading data");
     } finally {
       setIsLoading(false);
     }
@@ -151,8 +151,8 @@ export default function RelationStagesModal({
 
       setParameters(allParameters);
     } catch (error) {
-      console.error("Error al cargar parámetros:", error);
-      toast.error("Error al cargar parámetros");
+  console.error("Error loading parameters:", error);
+  toast.error("Error loading parameters");
     }
   };
 
@@ -187,7 +187,7 @@ export default function RelationStagesModal({
     // - Las RelationStages se crean/eliminan individualmente
     // - Los parámetros se crean/editan/eliminan individualmente
     // - Todos los cambios se persisten inmediatamente
-    toast.success("Todos los cambios han sido guardados");
+  toast.success("All changes have been saved");
     onOpenChange(false);
   };
 
@@ -200,18 +200,18 @@ export default function RelationStagesModal({
         isActive: formValues.isActive ?? true,
       };
 
-      if (editParameter) {
+  if (editParameter) {
         // Editar
         await challengeTemplatesApi.updateParameter(
           editParameter.ruleID,
           editParameter.relationStageID,
           payload
         );
-        toast.success("Parámetro editado exitosamente");
+  toast.success("Parameter edited successfully");
       } else {
         // Crear
         await challengeTemplatesApi.createParameter(payload);
-        toast.success("Parámetro creado exitosamente");
+  toast.success("Parameter created successfully");
       }
 
       setOpenParameterModal(false);
@@ -227,17 +227,17 @@ export default function RelationStagesModal({
       // Recargar todos los datos
       await loadData();
     } catch (error) {
-      console.error("Error al guardar parámetro:", error);
-      toast.error("Error al guardar parámetro");
+  console.error("Error saving parameter:", error);
+  toast.error("Error saving parameter");
     }
   };
 
   // Configuración de la tabla para etapas de relación
   const stageColumns: ColumnConfig[] = [
     { key: "id", label: "ID", type: "normal" },
-    { key: "stageName", label: "Etapa", type: "normal" },
-    { key: "numPhase", label: "Fase", type: "normal" },
-    { key: "parametersCount", label: "Parámetros", type: "normal" },
+  { key: "stageName", label: "Stage", type: "normal" },
+  { key: "numPhase", label: "Phase", type: "normal" },
+  { key: "parametersCount", label: "Parameters", type: "normal" },
   ];
 
   // Procesar datos para la tabla de etapas
@@ -275,14 +275,14 @@ export default function RelationStagesModal({
         <button
           className="p-1.5 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
           onClick={() => handleManageStageParameters(relationStage)}
-          title="Gestionar parámetros de esta etapa"
+          title="Manage parameters for this stage"
         >
           <Edit className="h-4 w-4" />
         </button>
         <button
           className="p-1.5 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
           onClick={() => handleDeleteRelationStage(relationStage)}
-          title="Eliminar etapa de la relación"
+          title="Remove stage from relation"
         >
           <Trash2 className="h-4 w-4" />
         </button>
@@ -306,8 +306,8 @@ export default function RelationStagesModal({
       setStageParameters(params);
       setOpenStageParametersModal(true);
     } catch (error) {
-      console.error("Error al cargar parámetros de la etapa:", error);
-      toast.error("Error al cargar parámetros de la etapa");
+  console.error("Error loading stage parameters:", error);
+  toast.error("Error loading stage parameters");
     }
   };
 
@@ -340,7 +340,7 @@ export default function RelationStagesModal({
         parameter.ruleID,
         parameter.relationStageID
       );
-      toast.success("Parámetro eliminado exitosamente");
+  toast.success("Parameter deleted successfully");
       // Recargar parámetros de la etapa
       if (selectedRelationStage) {
         const params =
@@ -351,8 +351,8 @@ export default function RelationStagesModal({
       }
       await loadData();
     } catch (error) {
-      console.error("Error al eliminar parámetro:", error);
-      toast.error("Error al eliminar parámetro");
+  console.error("Error deleting parameter:", error);
+  toast.error("Error deleting parameter");
     }
   };
 
@@ -372,7 +372,7 @@ export default function RelationStagesModal({
 
   const handleCreateRelationStages = async () => {
     if (selectedStages.length === 0) {
-      toast.error("Selecciona al menos una etapa");
+  toast.error("Select at least one stage");
       return;
     }
 
@@ -389,12 +389,12 @@ export default function RelationStagesModal({
         });
       }
 
-      toast.success("Etapas añadidas exitosamente");
+  toast.success("Stages added successfully");
       setOpenAddStageModal(false);
       await loadData();
     } catch (error) {
-      console.error("Error al añadir etapas:", error);
-      toast.error("Error al añadir etapas");
+  console.error("Error adding stages:", error);
+  toast.error("Error adding stages");
     } finally {
       setIsAddingStages(false);
     }
@@ -411,27 +411,27 @@ export default function RelationStagesModal({
       await challengeTemplatesApi.deleteRelationStage(
         relationStage.relationStageID
       );
-      toast.success("Etapa eliminada de la relación exitosamente");
+  toast.success("Stage removed from relation successfully");
       await loadData();
     } catch (error) {
-      console.error("Error al eliminar etapa de la relación:", error);
-      toast.error("Error al eliminar etapa de la relación");
+  console.error("Error removing stage from relation:", error);
+  toast.error("Error removing stage from relation");
     }
   };
 
   // Configuración de tabla para parámetros de una etapa específica
   const parameterColumns: ColumnConfig[] = [
     { key: "id", label: "ID", type: "normal" },
-    { key: "rule", label: "Regla", type: "normal" },
-    { key: "value", label: "Valor", type: "normal" },
-    { key: "active", label: "Activo", type: "normal" },
+  { key: "rule", label: "Rule", type: "normal" },
+  { key: "value", label: "Value", type: "normal" },
+  { key: "active", label: "Active", type: "normal" },
   ];
 
   const stageParameterTableData = stageParameters.map((param, index) => ({
     id: index + 1,
     rule: getRuleName(param.ruleID),
     value: String(param.ruleValue),
-    active: param.isActive ? "Sí" : "No",
+  active: param.isActive ? "Yes" : "No",
     originalData: param,
   }));
 
@@ -463,12 +463,10 @@ export default function RelationStagesModal({
         <DialogContent className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700 max-w-4xl mx-auto shadow-lg rounded-xl">
           <DialogHeader>
             <DialogTitle className="text-gray-900 dark:text-white text-lg font-semibold">
-              {relationName
-                ? `${relationName}`
-                : "Gestiona las etapas y sus parámetros para esta relación"}
+              {relationName ? `${relationName}` : "Manage stages and parameters for this relation"}
             </DialogTitle>
             <DialogDescription className="text-gray-600 dark:text-gray-400 text-sm">
-              Gestiona las etapas y sus parámetros para este challenge
+              Manage the stages and their parameters for this challenge
             </DialogDescription>
           </DialogHeader>
 
@@ -476,7 +474,7 @@ export default function RelationStagesModal({
             {/* Información de etapas */}
             <div className="flex justify-between items-center">
               <h3 className="text-lg font-medium text-gray-900 dark:text-white">
-                Etapas del Challenge ({relationStages.length})
+                Challenge Stages ({relationStages.length})
               </h3>
               <Button
                 onClick={handleAddStages}
@@ -485,7 +483,7 @@ export default function RelationStagesModal({
                 disabled={getAvailableStages().length === 0}
               >
                 <Plus className="h-4 w-4 mr-2" />
-                Añadir Etapas
+                Add Stages
               </Button>
             </div>
 
@@ -495,7 +493,7 @@ export default function RelationStagesModal({
                 columns={stageColumns}
                 rows={paginatedStageRows}
                 isLoading={isLoading}
-                emptyText="No hay etapas disponibles para esta relación"
+                emptyText="There are no stages available for this relation"
                 actionsHeader="Actions"
                 renderActions={renderStageActions}
                 pagination={{
@@ -516,13 +514,13 @@ export default function RelationStagesModal({
               onClick={() => onOpenChange(false)}
               className="border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600"
             >
-              Cerrar
+              Close
             </Button>
             <Button
               onClick={handleSave}
               className="bg-emerald-600 hover:bg-emerald-700 text-white"
             >
-              Aceptar
+              Accept
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -536,14 +534,14 @@ export default function RelationStagesModal({
         <DialogContent className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700 max-w-4xl mx-auto shadow-lg rounded-xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-gray-900 dark:text-white text-lg font-semibold">
-              {displayRelationName || relationName || "Gestionar Parámetros de Etapa"}
+              {displayRelationName || relationName || "Manage Stage Parameters"}
             </DialogTitle>
             <DialogDescription className="text-gray-600 dark:text-gray-400 text-sm">
               {selectedRelationStage
-                ? `Etapa: ${getStageName(
+                ? `Stage: ${getStageName(
                     selectedRelationStage.relationStageID
-                  )} - Fase ${selectedRelationStage.numPhase}`
-                : "Gestiona los parámetros de esta etapa"}
+                  )} - Phase ${selectedRelationStage.numPhase}`
+                : "Manage the parameters for this stage"}
             </DialogDescription>
           </DialogHeader>
 
@@ -551,7 +549,7 @@ export default function RelationStagesModal({
             {/* Botón para crear nuevo parámetro */}
             <div className="flex justify-between items-center">
               <h3 className="text-lg font-medium text-gray-900 dark:text-white">
-                Parámetros ({stageParameters.length})
+                Parameters ({stageParameters.length})
               </h3>
               <Button
                 onClick={handleCreateParameterForStage}
@@ -559,7 +557,7 @@ export default function RelationStagesModal({
                 size="sm"
               >
                 <Plus className="h-4 w-4 mr-2" />
-                Nuevo Parámetro
+                New Parameter
               </Button>
             </div>
 
@@ -569,7 +567,7 @@ export default function RelationStagesModal({
                 columns={parameterColumns}
                 rows={stageParameterTableData}
                 isLoading={isLoading}
-                emptyText="No hay parámetros disponibles para esta etapa"
+                emptyText="There are no parameters available for this stage"
                 actionsHeader="Actions"
                 renderActions={renderParameterActions}
                 pagination={{
@@ -590,7 +588,7 @@ export default function RelationStagesModal({
               onClick={() => setOpenStageParametersModal(false)}
               className="border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600"
             >
-              Cerrar
+              Close
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -601,12 +599,10 @@ export default function RelationStagesModal({
         <DialogContent className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700 max-w-lg mx-auto shadow-lg rounded-xl">
           <DialogHeader>
             <DialogTitle className="text-gray-900 dark:text-white text-lg font-semibold">
-              {displayRelationName || relationName || (editParameter ? "Editar Parámetro" : "Crear Parámetro")}
+              {displayRelationName || relationName || (editParameter ? "Edit Parameter" : "Create Parameter")}
             </DialogTitle>
             <DialogDescription className="text-gray-600 dark:text-gray-400 text-sm">
-              {editParameter
-                ? "Modifica los datos del parámetro"
-                : "Ingresa los datos para crear un nuevo parámetro"}
+              {editParameter ? "Modify the parameter data" : "Enter the data to create a new parameter"}
             </DialogDescription>
           </DialogHeader>
 
@@ -621,11 +617,11 @@ export default function RelationStagesModal({
                 // Mostrar etapa seleccionada como solo lectura
                 <FormItem>
                   <FormLabel className="text-gray-700 dark:text-gray-300 text-sm font-medium">
-                    Etapa de Relación
+                    Relation Stage
                   </FormLabel>
                   <FormControl>
                     <Input
-                      value={`${getStageName(selectedRelationStage.relationStageID)} (Fase ${selectedRelationStage.numPhase || "N/A"})`}
+                      value={`${getStageName(selectedRelationStage.relationStageID)} (Phase ${selectedRelationStage.numPhase || "N/A"})`}
                       readOnly
                       className="bg-gray-100 dark:bg-gray-600 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 cursor-not-allowed"
                     />
@@ -639,7 +635,7 @@ export default function RelationStagesModal({
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="text-gray-700 dark:text-gray-300 text-sm font-medium">
-                        Etapa de Relación
+                        Relation Stage
                       </FormLabel>
                       <Select
                         onValueChange={field.onChange}
@@ -647,7 +643,7 @@ export default function RelationStagesModal({
                       >
                         <FormControl>
                           <SelectTrigger className="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white">
-                            <SelectValue placeholder="Selecciona una etapa" />
+                            <SelectValue placeholder="Select a stage" />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
@@ -662,7 +658,7 @@ export default function RelationStagesModal({
                                 value={relationStage.relationStageID}
                                 className="text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700"
                               >
-                                {stage?.name || "Sin nombre"} (Fase{" "}
+                                {stage?.name || "No name"} (Phase{" "}
                                 {relationStage.numPhase || "N/A"})
                               </SelectItem>
                             );
@@ -681,7 +677,7 @@ export default function RelationStagesModal({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-gray-700 dark:text-gray-300 text-sm font-medium">
-                      Regla
+                      Rule
                     </FormLabel>
                     <Select
                       onValueChange={field.onChange}
@@ -689,7 +685,7 @@ export default function RelationStagesModal({
                     >
                       <FormControl>
                         <SelectTrigger className="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white">
-                          <SelectValue placeholder="Selecciona una regla" />
+                          <SelectValue placeholder="Select a rule" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
@@ -700,7 +696,7 @@ export default function RelationStagesModal({
                               value={rule.ruleID}
                               className="text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700"
                             >
-                              {rule.ruleName || rule.slugRule || "Sin nombre"}
+                              {rule.ruleName || rule.slugRule || "No name"}
                             </SelectItem>
                           ) : null
                         )}
@@ -717,7 +713,7 @@ export default function RelationStagesModal({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-gray-700 dark:text-gray-300 text-sm font-medium">
-                      Valor
+                      Value
                     </FormLabel>
                     <FormControl>
                       <Input
@@ -734,7 +730,7 @@ export default function RelationStagesModal({
                           }
                         }}
                         className="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white"
-                        placeholder="Ingresa el valor de la regla"
+                        placeholder="Enter the rule value"
                       />
                     </FormControl>
                     <FormMessage className="text-red-600 dark:text-red-400" />
@@ -749,10 +745,10 @@ export default function RelationStagesModal({
                   <FormItem className="flex flex-row items-center justify-between rounded-lg border border-gray-200 dark:border-gray-600 p-3">
                     <div className="space-y-0.5">
                       <FormLabel className="text-gray-700 dark:text-gray-300 text-sm font-medium">
-                        Activo
+                        Active
                       </FormLabel>
                       <div className="text-xs text-gray-500 dark:text-gray-400">
-                        Determina si el parámetro está activo
+                        Determines whether the parameter is active
                       </div>
                     </div>
                     <FormControl>
@@ -772,13 +768,13 @@ export default function RelationStagesModal({
                   onClick={() => setOpenParameterModal(false)}
                   className="border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600"
                 >
-                  Cancelar
+                  Cancel
                 </Button>
                 <Button
                   type="submit"
                   className="bg-emerald-600 hover:bg-emerald-700 text-white"
                 >
-                  {editParameter ? "Guardar" : "Crear"}
+                  {editParameter ? "Save" : "Create"}
                 </Button>
               </DialogFooter>
             </form>
@@ -791,17 +787,17 @@ export default function RelationStagesModal({
         <DialogContent className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700 max-w-2xl mx-auto shadow-lg rounded-xl">
           <DialogHeader>
             <DialogTitle className="text-gray-900 dark:text-white text-lg font-semibold">
-              {displayRelationName || relationName || "Añadir Etapas"}
+              {displayRelationName || relationName || "Add Stages"}
             </DialogTitle>
             <DialogDescription className="text-gray-600 dark:text-gray-400 text-sm">
-              Selecciona las etapas que deseas añadir a esta relación
+              Select the stages you want to add to this relation
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4 max-h-96 overflow-y-auto">
             {getAvailableStages().length === 0 ? (
               <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-                No hay etapas disponibles para añadir
+                There are no stages available to add
               </div>
             ) : (
               <div className="space-y-2">
@@ -837,7 +833,7 @@ export default function RelationStagesModal({
               onClick={() => setOpenAddStageModal(false)}
               className="border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600"
             >
-              Cancelar
+              Cancel
             </Button>
             <Button
               onClick={handleCreateRelationStages}
@@ -845,8 +841,8 @@ export default function RelationStagesModal({
               className="bg-blue-600 hover:bg-blue-700 text-white"
             >
               {isAddingStages
-                ? "Añadiendo..."
-                : `Añadir ${selectedStages.length} Etapa${
+                ? "Adding..."
+                : `Add ${selectedStages.length} Stage${
                     selectedStages.length !== 1 ? "s" : ""
                   }`}
             </Button>
