@@ -114,7 +114,7 @@ export const ChallengeTable: React.FC<ChallengeTableProps> = ({
                   </TableHead>
                 )}
                 <TableHead className="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider text-zinc-600 dark:text-zinc-400">
-                  Acciones
+                  Actions
                 </TableHead>
               </TableRow>
             </TableHeader>

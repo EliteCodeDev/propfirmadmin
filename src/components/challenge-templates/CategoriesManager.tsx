@@ -195,7 +195,7 @@ export function CategoriesManager({ pageSize = 10 }: CategoriesManagerProps) {
           isLoading={isLoading}
           emptyText="No hay categorías disponibles"
           renderActions={renderActions}
-          actionsHeader="Acciones"
+          actionsHeader="Actions"
           pagination={{
             currentPage: page,
             totalPages: totalPages,

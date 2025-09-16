@@ -471,7 +471,7 @@ export function RelationsManager({ pageSize = 10 }: RelationsManagerProps) {
           rows={paginatedRows}
           isLoading={isLoading}
           emptyText="No hay relaciones disponibles"
-          actionsHeader="Acciones"
+          actionsHeader="Actions"
           renderActions={renderActions}
           pagination={{
             currentPage: page,

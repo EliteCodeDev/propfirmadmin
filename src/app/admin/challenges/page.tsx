@@ -462,7 +462,7 @@ function ChallengesInner() {
     { key: "endDate", label: "End", type: "normal" },
     {
       key: "actions",
-      label: "Acciones",
+      label: "Actions",
       type: "normal",
       render: (value, row) => value as React.ReactNode,
     },
@@ -519,7 +519,7 @@ function ChallengesInner() {
               d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zM12 13a1 1 0 110-2 1 1 0 010 2zM12 20a1 1 0 110-2 1 1 0 010 2z"
             />
           </svg>
-          Acciones
+          Actions
           <svg
             className={`w-4 h-4 transform transition-transform duration-200 ${
               dropdownOpen === c.challengeID ? "rotate-180" : ""

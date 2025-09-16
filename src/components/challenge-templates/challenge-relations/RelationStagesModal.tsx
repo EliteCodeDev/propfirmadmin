@@ -496,7 +496,7 @@ export default function RelationStagesModal({
                 rows={paginatedStageRows}
                 isLoading={isLoading}
                 emptyText="No hay etapas disponibles para esta relación"
-                actionsHeader="Acciones"
+                actionsHeader="Actions"
                 renderActions={renderStageActions}
                 pagination={{
                   currentPage: page,
@@ -570,7 +570,7 @@ export default function RelationStagesModal({
                 rows={stageParameterTableData}
                 isLoading={isLoading}
                 emptyText="No hay parámetros disponibles para esta etapa"
-                actionsHeader="Acciones"
+                actionsHeader="Actions"
                 renderActions={renderParameterActions}
                 pagination={{
                   currentPage: 1,

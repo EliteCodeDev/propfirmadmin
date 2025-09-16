@@ -261,7 +261,7 @@ export function RulesManager({ pageSize = 10 }: RulesManagerProps) {
           rows={paginatedRows}
           isLoading={isLoading}
           emptyText="No hay reglas disponibles"
-          actionsHeader="Acciones"
+          actionsHeader="Actions"
           renderActions={renderActions}
           pagination={{
             currentPage: page,

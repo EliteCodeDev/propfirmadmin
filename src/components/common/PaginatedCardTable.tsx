@@ -168,7 +168,7 @@ export default function PaginatedCardTable(props: PaginatedCardTableProps) {
                 ))}
                 {renderActions && (
                   <TableHead className="px-3 py-3 text-center text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-gray-700 dark:text-gray-300 whitespace-nowrap w-20">
-                    {actionsHeader || "Acciones"}
+                    {actionsHeader || "Actions"}
                   </TableHead>
                 )}
               </TableRow>

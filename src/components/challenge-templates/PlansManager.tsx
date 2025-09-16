@@ -273,7 +273,7 @@ export function PlansManager({ pageSize = 10 }: PlansManagerProps) {
               rows={paginatedData}
               isLoading={false}
               emptyText="No hay planes disponibles"
-              actionsHeader="Acciones"
+              actionsHeader="Actions"
               renderActions={(data) => renderActions(data.actions as ChallengePlan)}
               pagination={{
                 currentPage: page,

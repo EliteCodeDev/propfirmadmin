@@ -225,7 +225,7 @@ export function StagesManager({ pageSize = 10 }: StagesManagerProps) {
               rows={paginatedRows}
               isLoading={isLoading}
               emptyText="No hay etapas disponibles"
-              actionsHeader="Acciones"
+              actionsHeader="Actions"
               renderActions={renderActions}
               pagination={{
                 currentPage: page,

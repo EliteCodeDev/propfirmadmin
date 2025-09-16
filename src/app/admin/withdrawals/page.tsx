@@ -465,7 +465,7 @@ export default function WithdrawalsInner() {
               rows={rows}
               isLoading={isLoading}
               emptyText={error ? (error as Error).message : "No hay retiros."}
-              actionsHeader="Acciones"
+              actionsHeader="Actions"
               renderActions={(row) => {
                 const w = row.__raw as Withdrawal;
                 const canAct = String(w.status).toUpperCase() === "PENDING";

@@ -288,7 +288,7 @@ function VerificationsPageContent() {
                     <TableHead>Tipo</TableHead>
                     <TableHead>Estado</TableHead>
                     <TableHead>Fecha</TableHead>
-                    <TableHead>Acciones</TableHead>
+                    <TableHead>Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>

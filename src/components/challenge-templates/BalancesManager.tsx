@@ -213,7 +213,7 @@ export function BalancesManager({ pageSize = 10 }: BalancesManagerProps) {
           rows={paginatedRows}
           isLoading={isLoading}
           emptyText="No hay balances disponibles"
-          actionsHeader="Acciones"
+          actionsHeader="Actions"
           renderActions={renderActions}
           pagination={{
             currentPage: page,

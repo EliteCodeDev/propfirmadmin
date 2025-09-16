@@ -246,7 +246,7 @@ export function WithdrawalRulesManager({ pageSize = 10 }: WithdrawalRulesManager
           rows={paginatedRows}
           isLoading={isLoading}
           emptyText="No hay reglas de retiro disponibles"
-          actionsHeader="Acciones"
+          actionsHeader="Actions"
           renderActions={renderActions}
           pagination={{
             currentPage: page,

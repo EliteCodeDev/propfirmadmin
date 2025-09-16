@@ -130,10 +130,10 @@ export function VerificationDetails({
         </div>
       </section>
 
-      {/* Acciones */}
+      {/* Actions */}
       {verification.status === 'pending' && (
         <section className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-zinc-900 p-4 md:p-5">
-          <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-4">Acciones</h3>
+          <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-4">Actions</h3>
           <div className="flex flex-col gap-4">
             <div className="flex flex-wrap gap-2">
               <Button

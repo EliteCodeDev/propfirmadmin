@@ -187,7 +187,7 @@ export function AddonsManager({ pageSize = 10 }: AddonsManagerProps) {
         columns={columns}
         rows={pageRows}
         isLoading={loading}
-        actionsHeader="Acciones"
+        actionsHeader="Actions"
         renderActions={(row) => {
           const originalId = String(
             (row as Record<string, unknown>).originalId || ""
