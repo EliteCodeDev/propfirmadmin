@@ -43,12 +43,12 @@ import { ManagerHeader } from "./ManagerHeader";
 
 // Validación
 const addonSchema = z.object({
-  name: z.string().min(1, "El nombre es requerido"),
+  name: z.string().min(1, "Name is required"),
   slugRule: z.string().optional(),
   valueType: z.enum(['number', 'boolean', 'percentage']).optional(),
   isActive: z.boolean().optional(),
   hasDiscount: z.boolean().optional(),
-  discount: z.number().min(0, "Debe ser >= 0").optional(),
+  discount: z.number().min(0, "Must be >= 0").optional(),
 });
 
 type AddonFormData = z.infer<typeof addonSchema>;
@@ -58,7 +58,7 @@ import type { AddonsManagerProps } from "@/types";
 function formatAmount(n?: number) {
   if (n == null) return "-";
   try {
-    return n.toLocaleString("es-ES", {
+    return n.toLocaleString("en-US", {
       style: "currency",
       currency: "USD",
       minimumFractionDigits: 0,
@@ -107,7 +107,7 @@ export function AddonsManager({ pageSize = 10 }: AddonsManagerProps) {
       setAddons(Array.isArray(data) ? data : []);
     } catch (e) {
       console.error(e);
-      toast.error("No se pudieron cargar los addons");
+      toast.error("Failed to load addons");
     } finally {
       setLoading(false);
     }
@@ -121,9 +121,9 @@ export function AddonsManager({ pageSize = 10 }: AddonsManagerProps) {
   const columns: ColumnConfig[] = useMemo(
     () => [
       { key: "id", label: "ID" },
-      { key: "name", label: "Nombre" },
-      { key: "isActive", label: "Activo" },
-      { key: "discount", label: "Descuento" },
+      { key: "name", label: "Name" },
+      { key: "isActive", label: "Active" },
+      { key: "discount", label: "Discount" },
     ],
     []
   );
@@ -141,17 +141,17 @@ export function AddonsManager({ pageSize = 10 }: AddonsManagerProps) {
 
       if (editing) {
         await challengeTemplatesApi.updateAddon(editing.addonID, payload);
-        toast.success("Addon actualizado");
+        toast.success("Addon updated");
       } else {
         await challengeTemplatesApi.createAddon(payload);
-        toast.success("Addon creado");
+        toast.success("Addon created");
       }
       setOpenModal(false);
       resetForm();
       fetchAddons();
     } catch (e) {
       console.error(e);
-      toast.error("No se pudo guardar el addon");
+      toast.error("Failed to save addon");
     }
   }
 
@@ -160,8 +160,8 @@ export function AddonsManager({ pageSize = 10 }: AddonsManagerProps) {
       addons.map((a, idx) => ({
         id: idx + 1,
         name: a.name,
-        isActive: a.isActive ? "Sí" : "No",
-        discount: a.hasDiscount ? `Sí (${a.discount ?? 0}%)` : "No",
+        isActive: a.isActive ? "Yes" : "No",
+        discount: a.hasDiscount ? `Yes (${a.discount ?? 0}%)` : "No",
         originalId: a.addonID,
       })),
     [addons]
@@ -175,8 +175,8 @@ export function AddonsManager({ pageSize = 10 }: AddonsManagerProps) {
     <div className="space-y-4">
       <ManagerHeader
         title="Addons"
-        description="Gestiona tus addons disponibles"
-        buttonText="Nuevo Addon"
+        description="Manage your available addons"
+        buttonText="New Addon"
         onCreateClick={() => {
           resetForm();
           setOpenModal(true);
@@ -220,11 +220,11 @@ export function AddonsManager({ pageSize = 10 }: AddonsManagerProps) {
                 onClick={async () => {
                   try {
                     await challengeTemplatesApi.deleteAddon(addon.addonID);
-                    toast.success("Addon eliminado");
+                    toast.success("Addon deleted");
                     fetchAddons();
                   } catch (e) {
                     console.error(e);
-                    toast.error("No se pudo eliminar el addon");
+                    toast.error("Failed to delete addon");
                   }
                 }}
               >
@@ -246,7 +246,7 @@ export function AddonsManager({ pageSize = 10 }: AddonsManagerProps) {
         }}
       />
 
-      {/* Modal de creación/edición */}
+      {/* Create/Edit Modal */}
       <Dialog
         open={openModal}
         onOpenChange={setOpenModal}
@@ -254,10 +254,10 @@ export function AddonsManager({ pageSize = 10 }: AddonsManagerProps) {
         <DialogContent className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700">
           <DialogHeader>
             <DialogTitle>
-              {editing ? "Editar Addon" : "Nuevo Addon"}
+              {editing ? "Edit Addon" : "New Addon"}
             </DialogTitle>
             <DialogDescription>
-              Completa la información del addon.
+              Complete the addon information.
             </DialogDescription>
           </DialogHeader>
 
@@ -271,10 +271,10 @@ export function AddonsManager({ pageSize = 10 }: AddonsManagerProps) {
                 name="name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Nombre</FormLabel>
+                    <FormLabel>Name</FormLabel>
                     <FormControl>
                       <Input
-                        placeholder="Nombre del addon"
+                        placeholder="Addon name"
                         {...field}
                       />
                     </FormControl>
@@ -288,10 +288,10 @@ export function AddonsManager({ pageSize = 10 }: AddonsManagerProps) {
                 name="slugRule"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Slug Rule (Opcional)</FormLabel>
+                    <FormLabel>Slug Rule (Optional)</FormLabel>
                     <FormControl>
                       <Input
-                        placeholder="Regla slug del addon"
+                        placeholder="Addon rule slug"
                         {...field}
                       />
                     </FormControl>
@@ -305,17 +305,17 @@ export function AddonsManager({ pageSize = 10 }: AddonsManagerProps) {
                 name="valueType"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Tipo de Valor</FormLabel>
+                    <FormLabel>Value Type</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Selecciona el tipo de valor" />
+                          <SelectValue placeholder="Select value type" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="number">Número</SelectItem>
-                        <SelectItem value="boolean">Booleano</SelectItem>
-                        <SelectItem value="percentage">Porcentaje</SelectItem>
+                        <SelectItem value="number">Number</SelectItem>
+                        <SelectItem value="boolean">Boolean</SelectItem>
+                        <SelectItem value="percentage">Percentage</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -329,14 +329,14 @@ export function AddonsManager({ pageSize = 10 }: AddonsManagerProps) {
                   name="isActive"
                   render={({ field }) => (
                     <FormItem className="flex flex-col">
-                      <FormLabel>Activo</FormLabel>
+                      <FormLabel>Active</FormLabel>
                       <FormControl>
                         <div className="flex items-center gap-2">
                           <Switch
                             checked={!!field.value}
                             onCheckedChange={field.onChange}
                           />
-                          <Label>{field.value ? "Sí" : "No"}</Label>
+                          <Label>{field.value ? "Yes" : "No"}</Label>
                         </div>
                       </FormControl>
                     </FormItem>
@@ -348,14 +348,14 @@ export function AddonsManager({ pageSize = 10 }: AddonsManagerProps) {
                   name="hasDiscount"
                   render={({ field }) => (
                     <FormItem className="flex flex-col">
-                      <FormLabel>¿Tiene descuento?</FormLabel>
+                      <FormLabel>Has discount?</FormLabel>
                       <FormControl>
                         <div className="flex items-center gap-2">
                           <Switch
                             checked={!!field.value}
                             onCheckedChange={field.onChange}
                           />
-                          <Label>{field.value ? "Sí" : "No"}</Label>
+                          <Label>{field.value ? "Yes" : "No"}</Label>
                         </div>
                       </FormControl>
                     </FormItem>
@@ -368,7 +368,7 @@ export function AddonsManager({ pageSize = 10 }: AddonsManagerProps) {
                 name="discount"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Descuento (%)</FormLabel>
+                    <FormLabel>Discount (%)</FormLabel>
                     <FormControl>
                       <Input
                         type="number"
@@ -390,9 +390,9 @@ export function AddonsManager({ pageSize = 10 }: AddonsManagerProps) {
                   variant="outline"
                   onClick={() => setOpenModal(false)}
                 >
-                  Cancelar
+                  Cancel
                 </Button>
-                <Button type="submit">{editing ? "Guardar" : "Crear"}</Button>
+                <Button type="submit">{editing ? "Save" : "Create"}</Button>
               </DialogFooter>
             </form>
           </Form>

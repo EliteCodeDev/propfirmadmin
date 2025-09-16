@@ -59,7 +59,7 @@ const BASIC_SLUG_SUGGESTIONS = [
 // Validación
 const ruleSchema = z.object({
   ruleType: z.enum(["number", "percentage", "boolean", "string"], {
-    error: "El tipo de regla es requerido",
+    error: "Rule type is required",
   }),
   ruleName: z.string().optional(),
   descriptionRule: z.string().optional(),
@@ -104,8 +104,8 @@ export function RulesManager({ pageSize = 10 }: RulesManagerProps) {
       const rulesData = await challengeTemplatesApi.listRules();
       setRules(rulesData);
     } catch (error) {
-      console.error("Error al cargar reglas:", error);
-      toast.error("Error al cargar reglas");
+      console.error("Failed to load rules:", error);
+      toast.error("Failed to load rules");
     } finally {
       setIsLoading(false);
     }
@@ -154,7 +154,7 @@ export function RulesManager({ pageSize = 10 }: RulesManagerProps) {
       const finalSlug = selectedSlug || computedFromName;
 
       if (!finalSlug) {
-        toast.error("Selecciona o ingresa un slug para la regla");
+        toast.error("Select or enter a slug for the rule");
         return;
       }
 
@@ -168,17 +168,17 @@ export function RulesManager({ pageSize = 10 }: RulesManagerProps) {
       if (editItem) {
         // Editar
         await challengeTemplatesApi.updateRule(editItem.ruleID, payload);
-        toast.success("Regla editada exitosamente");
+        toast.success("Rule updated successfully");
       } else {
         // Crear
         await challengeTemplatesApi.createRule(payload);
-        toast.success("Regla creada exitosamente");
+        toast.success("Rule created successfully");
       }
       setOpenModal(false);
       await loadRules(); // Refrescar datos
     } catch (error) {
-      console.error("Error al guardar:", error);
-      toast.error("Ocurrió un error al guardar");
+      console.error("Failed to save:", error);
+      toast.error("An error occurred while saving");
     }
   }
 
@@ -189,10 +189,10 @@ export function RulesManager({ pageSize = 10 }: RulesManagerProps) {
 
   const getRuleTypeLabel = (type: string) => {
     const typeLabels = {
-      number: "Número",
-      percentage: "Porcentaje",
-      boolean: "Booleano",
-      string: "Texto",
+      number: "Number",
+      percentage: "Percentage",
+      boolean: "Boolean",
+      string: "Text",
     };
     return typeLabels[type as keyof typeof typeLabels] || type;
   };
@@ -202,7 +202,7 @@ export function RulesManager({ pageSize = 10 }: RulesManagerProps) {
   // --------------------------------------------------
   const tableData = rulesValidation.safeMap((item, index) => {
     const typeLabelText = getRuleTypeLabel(item?.ruleType || "");
-    const nameText = item?.ruleName || "Sin nombre";
+  const nameText = item?.ruleName || "Untitled";
     const displayName = `${nameText} (${typeLabelText})`;
 
     return {
@@ -215,7 +215,7 @@ export function RulesManager({ pageSize = 10 }: RulesManagerProps) {
   // Columnas para la tabla
   const columns: ColumnConfig[] = [
     { key: "id", label: "ID", type: "normal" },
-    { key: "name", label: "Nombre", type: "normal" },
+    { key: "name", label: "Name", type: "normal" },
   ];
 
   // Paginación
@@ -234,7 +234,7 @@ export function RulesManager({ pageSize = 10 }: RulesManagerProps) {
             originalId: String(row.originalId || ""),
           })
         }
-        title="Editar regla"
+        title="Edit rule"
       >
         <Edit className="h-4 w-4" />
       </button>
@@ -247,9 +247,9 @@ export function RulesManager({ pageSize = 10 }: RulesManagerProps) {
   return (
     <div className="bg-white dark:bg-gray-800 transition-colors duration-200">
       <ManagerHeader
-        title="Reglas de Stage"
-        description="Gestiona las reglas que se pueden aplicar a los stages de los challenges."
-        buttonText="Crear regla"
+    title="Stage Rules"
+    description="Manage the rules that can be applied to challenge stages."
+    buttonText="Create Rule"
         onCreateClick={handleOpenCreate}
         totalCount={rules.length}
         showTotalCount={false}
@@ -260,7 +260,7 @@ export function RulesManager({ pageSize = 10 }: RulesManagerProps) {
           columns={columns}
           rows={paginatedRows}
           isLoading={isLoading}
-          emptyText="No hay reglas disponibles"
+          emptyText="No rules available"
           actionsHeader="Actions"
           renderActions={renderActions}
           pagination={{
@@ -281,12 +281,12 @@ export function RulesManager({ pageSize = 10 }: RulesManagerProps) {
         <DialogContent className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700 max-w-lg mx-auto shadow-lg rounded-xl">
           <DialogHeader>
             <DialogTitle className="text-gray-900 dark:text-white text-sm sm:text-base md:text-lg font-semibold">
-              {editItem ? "Editar" : "Crear"} regla
+              {editItem ? "Edit" : "Create"} rule
             </DialogTitle>
             <DialogDescription className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm md:text-base">
               {editItem
-                ? "Modifica los datos y confirma para guardar cambios."
-                : "Ingresa los datos para crear una nueva regla."}
+                ? "Modify the data and confirm to save changes."
+                : "Enter the data to create a new rule."}
             </DialogDescription>
           </DialogHeader>
 
@@ -301,7 +301,7 @@ export function RulesManager({ pageSize = 10 }: RulesManagerProps) {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-gray-700 dark:text-gray-300 text-sm font-medium">
-                      Tipo de regla
+                      Rule type
                     </FormLabel>
                     <Select
                       onValueChange={field.onChange}
@@ -309,7 +309,7 @@ export function RulesManager({ pageSize = 10 }: RulesManagerProps) {
                     >
                       <FormControl>
                         <SelectTrigger className="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                          <SelectValue placeholder="Selecciona un tipo" />
+                          <SelectValue placeholder="Select a type" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
@@ -317,25 +317,25 @@ export function RulesManager({ pageSize = 10 }: RulesManagerProps) {
                           value="number"
                           className="text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700"
                         >
-                          Número
+                          Number
                         </SelectItem>
                         <SelectItem
                           value="percentage"
                           className="text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700"
                         >
-                          Porcentaje
+                          Percentage
                         </SelectItem>
                         <SelectItem
                           value="boolean"
                           className="text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700"
                         >
-                          Booleano
+                          Boolean
                         </SelectItem>
                         <SelectItem
                           value="string"
                           className="text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700"
                         >
-                          Texto
+                          Text
                         </SelectItem>
                       </SelectContent>
                     </Select>
@@ -348,10 +348,10 @@ export function RulesManager({ pageSize = 10 }: RulesManagerProps) {
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <FormLabel className="text-gray-700 dark:text-gray-300 text-sm font-medium">
-                    Slug de la regla
+                    Rule slug
                   </FormLabel>
                   <span className="text-xs text-gray-500 dark:text-gray-400">
-                    Selecciona uno de los básicos o ingresa uno personalizado
+                    Select one of the basics or enter a custom one
                   </span>
                 </div>
 
@@ -380,14 +380,14 @@ export function RulesManager({ pageSize = 10 }: RulesManagerProps) {
                   <Input
                     value={selectedSlug}
                     onChange={(e) => setSelectedSlug(slugify(e.target.value))}
-                    placeholder="Ej: profit-target"
+                    placeholder="E.g., profit-target"
                     className="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white text-sm"
                   />
                   <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                    Solo minúsculas, números y guiones medios.
+                    Lowercase letters, numbers and hyphens only.
                   </p>
                   <div className="mt-1 text-xs">
-                    <span className="text-gray-500 dark:text-gray-400">Slug seleccionado: </span>
+                    <span className="text-gray-500 dark:text-gray-400">Selected slug: </span>
                     <code className="px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100">
                       {selectedSlug || "—"}
                     </code>
@@ -401,12 +401,12 @@ export function RulesManager({ pageSize = 10 }: RulesManagerProps) {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-gray-700 dark:text-gray-300 text-sm font-medium">
-                      Nombre de la regla (opcional)
+                      Rule name (optional)
                     </FormLabel>
                     <FormControl>
                       <Input
                         {...field}
-                        placeholder="Ej: Daily Drawdown Rule"
+                        placeholder="E.g., Daily Drawdown Rule"
                         className="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       />
                     </FormControl>
@@ -421,12 +421,12 @@ export function RulesManager({ pageSize = 10 }: RulesManagerProps) {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-gray-700 dark:text-gray-300 text-sm font-medium">
-                      Descripción (opcional)
+                      Description (optional)
                     </FormLabel>
                     <FormControl>
                       <Textarea
                         {...field}
-                        placeholder="Ej: Máxima pérdida diaria permitida"
+                        placeholder="E.g., Maximum daily loss allowed"
                         className="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent min-h-[80px]"
                       />
                     </FormControl>
@@ -442,13 +442,13 @@ export function RulesManager({ pageSize = 10 }: RulesManagerProps) {
                   onClick={() => setOpenModal(false)}
                   className="px-3 py-2 text-sm border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600"
                 >
-                  Cancelar
+                  Cancel
                 </Button>
                 <Button
                   type="submit"
                   className="bg-emerald-600 dark:bg-emerald-600 text-white hover:bg-emerald-700 dark:hover:bg-emerald-700 px-3 py-2 text-sm shadow-sm"
                 >
-                  {editItem ? "Guardar" : "Crear"}
+                  {editItem ? "Save" : "Create"}
                 </Button>
               </DialogFooter>
             </form>

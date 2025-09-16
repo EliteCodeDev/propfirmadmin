@@ -442,14 +442,14 @@ export default function RelationStagesModal({
         <button
           className="p-1.5 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
           onClick={() => handleEditParameterForStage(parameter)}
-          title="Editar parámetro"
+          title="Edit parameter"
         >
           <Edit className="h-4 w-4" />
         </button>
         <button
           className="p-1.5 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
           onClick={() => handleDeleteParameterForStage(parameter)}
-          title="Eliminar parámetro"
+          title="Delete parameter"
         >
           <Trash2 className="h-4 w-4" />
         </button>

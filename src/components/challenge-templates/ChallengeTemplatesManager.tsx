@@ -44,11 +44,11 @@ type TabType =
        label: "Challenges",
        icon: <Link className="w-4 h-4" />,
      },
-     {
-       id: "visualizer" as TabType,
-       label: "Visualizador",
-       icon: <Eye className="w-4 h-4" />,
-     },
+    {
+      id: "visualizer" as TabType,
+      label: "Visualizer",
+      icon: <Eye className="w-4 h-4" />,
+    },
      {
        id: "plans" as TabType,
        label: "Planes",
@@ -56,7 +56,7 @@ type TabType =
      },
     {
       id: "products" as TabType,
-      label: "Productos",
+      label: "Products",
       icon: <PackageIcon className="w-4 h-4" />,
     },
      {
@@ -96,8 +96,7 @@ type TabType =
                  Challenge Templates Manager
                </h1>
                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                 Gestiona plantillas, categorías, planes y configuraciones de
-                 challenges
+                 Manage templates, categories, plans, and challenge configurations
                </p>
              </div>
              <div className="flex items-center gap-3">
@@ -105,7 +104,7 @@ type TabType =
                {activeTab !== "visualizer" && (
                  <div className="flex items-center gap-3 bg-gray-50 dark:bg-gray-700/30 px-4 py-2 rounded-lg shadow-sm border border-gray-200 dark:border-gray-600">
                    <span className="text-gray-700 dark:text-gray-300 font-medium text-sm whitespace-nowrap">
-                     Filas por página:
+                     Rows per page:
                    </span>
                    <select
                      value={pageSize}

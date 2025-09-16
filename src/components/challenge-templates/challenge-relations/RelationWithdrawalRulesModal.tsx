@@ -170,7 +170,7 @@ export default function RelationWithdrawalRulesModal({
               }
             />
             <Label className="text-xs font-medium text-gray-700 dark:text-gray-300">
-              {config.value === "true" ? "Sí" : "No"}
+              {config.value === "true" ? "Yes" : "No"}
             </Label>
           </div>
         );
@@ -180,7 +180,7 @@ export default function RelationWithdrawalRulesModal({
           <Input
             type="number"
             placeholder={
-              rule.ruleType === "percentage" ? "0-100" : "Valor numérico"
+              rule.ruleType === "percentage" ? "0-100" : "Numeric value"
             }
             value={config.value || ""}
             onChange={(e) => {
@@ -193,7 +193,7 @@ export default function RelationWithdrawalRulesModal({
         return (
           <Input
             type="text"
-            placeholder="Valor de texto"
+            placeholder="Text value"
             value={config.value || ""}
             onChange={(e) => updateConfig(id, "value", e.target.value)}
             className="mt-0.5 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500"

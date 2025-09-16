@@ -44,10 +44,10 @@ import {
 // Validación
 const withdrawalRuleSchema = z.object({
   ruleType: z.enum(["number", "percentage", "boolean", "string"], {
-    error: "El tipo de regla es requerido",
+    error: "Rule type is required",
   }),
-  nameRule: z.string().min(1, "El nombre es requerido"),
-  // slugRule se genera automáticamente a partir del nombre
+  nameRule: z.string().min(1, "Name is required"),
+  // slugRule is generated automatically from the name
   descriptionRule: z.string().optional(),
 });
 
@@ -89,8 +89,8 @@ export function WithdrawalRulesManager({ pageSize = 10 }: WithdrawalRulesManager
       const rulesData = await challengeTemplatesApi.listWithdrawalRules();
       setRules(rulesData);
     } catch (error) {
-      console.error("Error al cargar reglas de retiro:", error);
-      toast.error("Error al cargar reglas de retiro");
+      console.error("Failed to load withdrawal rules:", error);
+      toast.error("Failed to load withdrawal rules");
     } finally {
       setIsLoading(false);
     }
@@ -143,17 +143,17 @@ export function WithdrawalRulesManager({ pageSize = 10 }: WithdrawalRulesManager
       if (editItem) {
         // Editar
         await challengeTemplatesApi.updateWithdrawalRule(editItem.ruleID, payload);
-        toast.success("Regla de retiro editada exitosamente");
+        toast.success("Withdrawal rule updated successfully");
       } else {
         // Crear
         await challengeTemplatesApi.createWithdrawalRule(payload);
-        toast.success("Regla de retiro creada exitosamente");
+        toast.success("Withdrawal rule created successfully");
       }
       setOpenModal(false);
       await loadRules(); // Refrescar datos
     } catch (error) {
-      console.error("Error al guardar:", error);
-      toast.error("Ocurrió un error al guardar");
+      console.error("Failed to save:", error);
+      toast.error("An error occurred while saving");
     }
   }
 
@@ -177,10 +177,10 @@ export function WithdrawalRulesManager({ pageSize = 10 }: WithdrawalRulesManager
 
   const getslugRuleLabel = (type: string) => {
     const typeLabels = {
-      number: "Número",
-      percentage: "Porcentaje",
-      boolean: "Booleano",
-      string: "Texto",
+      number: "Number",
+      percentage: "Percentage",
+      boolean: "Boolean",
+      string: "Text",
     };
     return typeLabels[type as keyof typeof typeLabels] || type;
   };
@@ -190,17 +190,17 @@ export function WithdrawalRulesManager({ pageSize = 10 }: WithdrawalRulesManager
   // --------------------------------------------------
   const tableData = rulesValidation.safeMap((item, index) => ({
     id: index + 1,
-    name: item?.nameRule || "Sin nombre",
+    name: item?.nameRule || "Untitled",
     type: getslugRuleLabel(item?.ruleType || ""),
-    description: item?.descriptionRule || "Sin descripción",
+    description: item?.descriptionRule || "No description",
     originalId: item?.ruleID || "",
   }));
 
   const columns: ColumnConfig[] = [
     { key: "id", label: "ID", type: "normal" },
-    { key: "name", label: "Nombre", type: "normal" },
-    { key: "type", label: "Tipo", type: "normal" },
-    { key: "description", label: "Descripción", type: "normal" },
+    { key: "name", label: "Name", type: "normal" },
+    { key: "type", label: "Type", type: "normal" },
+    { key: "description", label: "Description", type: "normal" },
   ];
 
   // Paginación
@@ -219,7 +219,7 @@ export function WithdrawalRulesManager({ pageSize = 10 }: WithdrawalRulesManager
             originalId: String(row.originalId || ""),
           })
         }
-        title="Editar regla de retiro"
+        title="Edit withdrawal rule"
       >
         <Edit className="h-4 w-4" />
       </button>
@@ -232,9 +232,9 @@ export function WithdrawalRulesManager({ pageSize = 10 }: WithdrawalRulesManager
   return (
     <>
       <ManagerHeader
-        title="Reglas de Retiro"
-        description="Gestiona las reglas de retiro disponibles para los challenges"
-        buttonText="Crear regla de retiro"
+        title="Withdrawal Rules"
+        description="Manage available withdrawal rules for challenges"
+        buttonText="Create Withdrawal Rule"
         onCreateClick={handleOpenCreate}
         totalCount={rules.length}
         showTotalCount={false}
@@ -245,7 +245,7 @@ export function WithdrawalRulesManager({ pageSize = 10 }: WithdrawalRulesManager
           columns={columns}
           rows={paginatedRows}
           isLoading={isLoading}
-          emptyText="No hay reglas de retiro disponibles"
+          emptyText="No withdrawal rules available"
           actionsHeader="Actions"
           renderActions={renderActions}
           pagination={{
@@ -266,12 +266,12 @@ export function WithdrawalRulesManager({ pageSize = 10 }: WithdrawalRulesManager
         <DialogContent className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700 max-w-md mx-auto shadow-lg rounded-xl">
           <DialogHeader>
             <DialogTitle className="text-gray-900 dark:text-white text-sm sm:text-base md:text-lg font-semibold">
-              {editItem ? "Editar" : "Crear"} regla de retiro
+              {editItem ? "Edit" : "Create"} withdrawal rule
             </DialogTitle>
             <DialogDescription className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm md:text-base">
               {editItem
-                ? "Modifica los datos y confirma para guardar cambios."
-                : "Ingresa los datos para crear una nueva regla de retiro."}
+                ? "Modify the data and confirm to save changes."
+                : "Enter the data to create a new withdrawal rule."}
             </DialogDescription>
           </DialogHeader>
 
@@ -286,16 +286,16 @@ export function WithdrawalRulesManager({ pageSize = 10 }: WithdrawalRulesManager
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-gray-700 dark:text-gray-300 text-sm font-medium">
-                      Nombre
+                      Name
                     </FormLabel>
                     <FormControl>
                       <Input
                         {...field}
-                        placeholder="Nombre de la regla"
+                        placeholder="Rule name"
                         className="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white text-sm placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       />
                     </FormControl>
-                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">El slug se genera automáticamente.</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Slug is generated automatically.</p>
                     <FormMessage className="text-red-600 dark:text-red-400" />
                   </FormItem>
                 )}
@@ -319,19 +319,19 @@ export function WithdrawalRulesManager({ pageSize = 10 }: WithdrawalRulesManager
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-gray-700 dark:text-gray-300 text-sm font-medium">
-                      Tipo de regla
+                      Rule type
                     </FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
                         <SelectTrigger className="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white">
-                          <SelectValue placeholder="Selecciona el tipo" />
+                          <SelectValue placeholder="Select a type" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="number">Número</SelectItem>
-                        <SelectItem value="percentage">Porcentaje</SelectItem>
-                        <SelectItem value="boolean">Booleano</SelectItem>
-                        <SelectItem value="string">Texto</SelectItem>
+                        <SelectItem value="number">Number</SelectItem>
+                        <SelectItem value="percentage">Percentage</SelectItem>
+                        <SelectItem value="boolean">Boolean</SelectItem>
+                        <SelectItem value="string">Text</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage className="text-red-600 dark:text-red-400" />
@@ -345,12 +345,12 @@ export function WithdrawalRulesManager({ pageSize = 10 }: WithdrawalRulesManager
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-gray-700 dark:text-gray-300 text-sm font-medium">
-                      Descripción (opcional)
+                      Description (optional)
                     </FormLabel>
                     <FormControl>
                       <Textarea
                         {...field}
-                        placeholder="Descripción de la regla"
+                        placeholder="Rule description"
                         className="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white text-sm placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         rows={3}
                       />
@@ -367,13 +367,13 @@ export function WithdrawalRulesManager({ pageSize = 10 }: WithdrawalRulesManager
                   onClick={() => setOpenModal(false)}
                   className="px-3 py-2 text-sm border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600"
                 >
-                  Cancelar
+                  Cancel
                 </Button>
                 <Button
                   type="submit"
                   className="bg-emerald-600 dark:bg-emerald-600 text-white hover:bg-emerald-700 dark:hover:bg-emerald-700 px-3 py-2 text-sm shadow-sm"
                 >
-                  {editItem ? "Guardar" : "Crear"}
+                  {editItem ? "Save" : "Create"}
                 </Button>
               </DialogFooter>
             </form>

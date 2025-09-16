@@ -37,7 +37,7 @@ import { WithdrawalRulesManager } from "./WithdrawalRulesManager";
 
 // Validación
 const stageSchema = z.object({
-  name: z.string().min(1, "El nombre es requerido"),
+  name: z.string().min(1, "Name is required"),
 });
 
 type StageFormData = z.infer<typeof stageSchema>;
@@ -75,8 +75,8 @@ export function StagesManager({ pageSize = 10 }: StagesManagerProps) {
       const data = await challengeTemplatesApi.listStages();
       setStages(data);
     } catch (error) {
-      console.error("Error al cargar etapas:", error);
-      toast.error("Error al cargar etapas");
+      console.error("Failed to load stages:", error);
+      toast.error("Failed to load stages");
     } finally {
       setIsLoading(false);
     }
@@ -113,17 +113,17 @@ export function StagesManager({ pageSize = 10 }: StagesManagerProps) {
       if (editItem) {
         // Editar
         await challengeTemplatesApi.updateStage(editItem.stageID, formValues);
-        toast.success("Etapa editada exitosamente");
+        toast.success("Stage updated successfully");
       } else {
         // Crear
         await challengeTemplatesApi.createStage(formValues);
-        toast.success("Etapa creada exitosamente");
+        toast.success("Stage created successfully");
       }
       setOpenModal(false);
       await loadStages(); // Refrescar datos
     } catch (error) {
-      console.error("Error al guardar:", error);
-      toast.error("Ocurrió un error al guardar");
+      console.error("Failed to save:", error);
+      toast.error("An error occurred while saving");
     }
   }
 
@@ -133,15 +133,15 @@ export function StagesManager({ pageSize = 10 }: StagesManagerProps) {
   const stagesValidation = useArrayValidation(stages);
 
   const tableData = stagesValidation.safeMap((item, index) => ({
-    id: index + 1, // Número secuencial para la tabla
-    name: item?.name || "Sin nombre",
-    originalId: item?.stageID || "", // Guardamos el ID real para operaciones
+    id: index + 1, // Sequential number for the table
+    name: item?.name || "Untitled",
+    originalId: item?.stageID || "", // Keep real ID for operations
   }));
 
   // Columnas para la tabla (solo ID y Nombre)
   const columns: ColumnConfig[] = [
     { key: "id", label: "ID", type: "normal" },
-    { key: "name", label: "Nombre", type: "normal" },
+    { key: "name", label: "Name", type: "normal" },
   ];
 
   // Paginación
@@ -160,7 +160,7 @@ export function StagesManager({ pageSize = 10 }: StagesManagerProps) {
             originalId: String(row.originalId || ""),
           })
         }
-        title="Editar etapa"
+        title="Edit stage"
       >
         <Edit className="h-4 w-4" />
       </button>
@@ -172,7 +172,7 @@ export function StagesManager({ pageSize = 10 }: StagesManagerProps) {
   // --------------------------------------------------
   return (
     <div className="bg-white dark:bg-gray-800 transition-colors duration-200">
-      {/* Sub-tabs minimalistas: Etapas / Rules */}
+  {/* Sub-tabs: Stages / Rules */}
       <div className="px-6 pt-4">
         <div className="inline-flex items-center rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50/80 dark:bg-gray-800/60 shadow-sm p-1">
           <button
@@ -183,7 +183,7 @@ export function StagesManager({ pageSize = 10 }: StagesManagerProps) {
                 : "text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
             }`}
           >
-            Etapas
+            Stages
           </button>
           <button
             onClick={() => setActiveSubTab("rules")}
@@ -211,9 +211,9 @@ export function StagesManager({ pageSize = 10 }: StagesManagerProps) {
       {activeSubTab === "stages" ? (
         <>
           <ManagerHeader
-            title="Etapas"
-            description="Gestiona las etapas disponibles para los challenges"
-            buttonText="Crear etapa"
+            title="Stages"
+            description="Manage the stages available for challenges"
+            buttonText="Create Stage"
             onCreateClick={handleOpenCreate}
             totalCount={stages.length}
             showTotalCount={false}
@@ -224,7 +224,7 @@ export function StagesManager({ pageSize = 10 }: StagesManagerProps) {
               columns={columns}
               rows={paginatedRows}
               isLoading={isLoading}
-              emptyText="No hay etapas disponibles"
+              emptyText="No stages available"
               actionsHeader="Actions"
               renderActions={renderActions}
               pagination={{
@@ -245,12 +245,12 @@ export function StagesManager({ pageSize = 10 }: StagesManagerProps) {
             <DialogContent className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700 max-w-md mx-auto shadow-lg rounded-xl">
               <DialogHeader>
                 <DialogTitle className="text-gray-900 dark:text-white text-sm sm:text-base md:text-lg font-semibold">
-                  {editItem ? "Editar" : "Crear"} etapa
+                  {editItem ? "Edit" : "Create"} stage
                 </DialogTitle>
                 <DialogDescription className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm md:text-base">
                   {editItem
-                    ? "Modifica los datos y confirma para guardar cambios."
-                    : "Ingresa los datos para crear un nuevo registro."}
+                    ? "Modify the data and confirm to save changes."
+                    : "Enter the data to create a new record."}
                 </DialogDescription>
               </DialogHeader>
 
@@ -265,12 +265,12 @@ export function StagesManager({ pageSize = 10 }: StagesManagerProps) {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel className="text-gray-700 dark:text-gray-300 text-sm font-medium">
-                          Nombre
+                          Name
                         </FormLabel>
                         <FormControl>
                           <Input
                             {...field}
-                            placeholder="Nombre de la etapa"
+                            placeholder="Stage name"
                             className="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white text-sm placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                           />
                         </FormControl>
@@ -286,13 +286,13 @@ export function StagesManager({ pageSize = 10 }: StagesManagerProps) {
                       onClick={() => setOpenModal(false)}
                       className="px-3 py-2 text-sm border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600"
                     >
-                      Cancelar
+                      Cancel
                     </Button>
                     <Button
                       type="submit"
                       className="bg-emerald-600 dark:bg-emerald-600 text-white hover:bg-emerald-700 dark:hover:bg-emerald-700 px-3 py-2 text-sm shadow-sm"
                     >
-                      {editItem ? "Guardar" : "Crear"}
+                      {editItem ? "Save" : "Create"}
                     </Button>
                   </DialogFooter>
                 </form>

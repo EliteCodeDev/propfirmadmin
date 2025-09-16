@@ -27,9 +27,9 @@ import { toast } from "sonner";
 import { Edit, Trash2, Plus } from "lucide-react";
 import { ManagerHeader } from "./ManagerHeader";
 
-// Validación
+// Validation
 const planSchema = z.object({
-  name: z.string().min(1, "El nombre es requerido"),
+  name: z.string().min(1, "Name is required"),
   isActive: z.boolean().optional(),
   wooID: z.number().optional(),
 });
@@ -59,7 +59,7 @@ export function PlansManager({ pageSize = 10 }: PlansManagerProps) {
   // Columnas para la tabla - Solo ID, Nombre
   const columns: ColumnConfig[] = [
     { key: "id", label: "ID", type: "normal" },
-    { key: "name", label: "Nombre", type: "normal" },
+    { key: "name", label: "Name", type: "normal" },
   ];
 
   // --------------------------------------------------
@@ -75,8 +75,8 @@ export function PlansManager({ pageSize = 10 }: PlansManagerProps) {
       const data = await challengeTemplatesApi.listPlans();
       setPlans(data);
     } catch (error) {
-      console.error("Error al cargar planes:", error);
-      toast.error("Error al cargar planes");
+  console.error("Error loading plans:", error);
+  toast.error("Error loading plans");
     } finally {
       setIsLoading(false);
     }
@@ -96,7 +96,7 @@ export function PlansManager({ pageSize = 10 }: PlansManagerProps) {
   };
 
   const handleDelete = async (planId: string) => {
-    if (confirm("¿Estás seguro de que quieres eliminar este plan?")) {
+    if (confirm("Are you sure you want to delete this plan?")) {
       try {
         const response = await fetch(
           `/api/server/challenge-templates/plans/${planId}`,
@@ -106,12 +106,12 @@ export function PlansManager({ pageSize = 10 }: PlansManagerProps) {
         );
         if (response.ok) {
           setPlans(plans.filter((plan) => plan.planID !== planId));
-          toast.success("Plan eliminado correctamente");
+          toast.success("Plan deleted successfully");
         } else {
-          toast.error("Error al eliminar el plan");
+          toast.error("Error deleting the plan");
         }
       } catch (error) {
-        toast.error("Error al eliminar el plan: " + error);
+        toast.error("Error deleting the plan: " + error);
       }
     }
   };
@@ -119,19 +119,19 @@ export function PlansManager({ pageSize = 10 }: PlansManagerProps) {
   async function onSubmit(formValues: PlanFormData) {
     try {
       if (editItem) {
-        // Editar
+        // Edit
         await challengeTemplatesApi.updatePlan(editItem.planID, formValues);
-        toast.success("Plan editado exitosamente");
+        toast.success("Plan updated successfully");
       } else {
-        // Crear
+        // Create
         await challengeTemplatesApi.createPlan(formValues);
-        toast.success("Plan creado exitosamente");
+        toast.success("Plan created successfully");
       }
       setOpenModal(false);
       await loadPlans(); // Refrescar datos
     } catch (error) {
-      console.error("Error al guardar:", error);
-      toast.error("Ocurrió un error al guardar");
+      console.error("Error saving:", error);
+      toast.error("An error occurred while saving");
     }
   }
 
@@ -143,14 +143,14 @@ export function PlansManager({ pageSize = 10 }: PlansManagerProps) {
       <button
         onClick={() => handleEdit(plan)}
         className="p-1.5 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
-        title="Editar"
+        title="Edit"
       >
         <Edit className="w-4 h-4" />
       </button>
       <button
         onClick={() => handleDelete(plan.planID)}
         className="p-1.5 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
-        title="Eliminar"
+        title="Delete"
       >
         <Trash2 className="w-4 h-4" />
       </button>
@@ -188,7 +188,7 @@ export function PlansManager({ pageSize = 10 }: PlansManagerProps) {
                   : "text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
               }`}
             >
-              Planes
+              Plans
             </button>
             <button
               onClick={() => setActiveSubTab("categories")}
@@ -198,26 +198,26 @@ export function PlansManager({ pageSize = 10 }: PlansManagerProps) {
                   : "text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
               }`}
             >
-              Categorías
+              Categories
             </button>
           </div>
         </div>
         <div className="flex justify-between items-center">
           <div>
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-              Gestión de Planes
+              Plan Management
             </h2>
             <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-              Cargando planes...
+              Loading plans...
             </p>
           </div>
           <Button disabled className="bg-gray-400 text-white">
             <Plus className="mr-2 h-4 w-4" />
-            Crear Plan
+            Create Plan
           </Button>
         </div>
         <div className="flex justify-center py-8">
-          <div className="text-gray-500 dark:text-gray-400">Cargando planes...</div>
+          <div className="text-gray-500 dark:text-gray-400">Loading plans...</div>
         </div>
       </div>
     );
@@ -236,7 +236,7 @@ export function PlansManager({ pageSize = 10 }: PlansManagerProps) {
                 : "text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
             }`}
           >
-            Planes
+            Plans
           </button>
           <button
             onClick={() => setActiveSubTab("categories")}
@@ -246,7 +246,7 @@ export function PlansManager({ pageSize = 10 }: PlansManagerProps) {
                 : "text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
             }`}
           >
-            Categorías
+            Categories
           </button>
         </div>
       </div>
@@ -256,9 +256,9 @@ export function PlansManager({ pageSize = 10 }: PlansManagerProps) {
           <div className="space-y-6 p-6">
             {/* Header */}
             <ManagerHeader
-              title="Gestión de Planes"
-              description="Administra los planes disponibles para los challenges"
-              buttonText="Crear Plan"
+              title="Plan Management"
+              description="Manage the plans available for challenges"
+              buttonText="Create Plan"
               onCreateClick={() => {
                 setEditItem(null);
                 form.reset({ name: "", isActive: true });
@@ -272,7 +272,7 @@ export function PlansManager({ pageSize = 10 }: PlansManagerProps) {
               columns={columns}
               rows={paginatedData}
               isLoading={false}
-              emptyText="No hay planes disponibles"
+              emptyText="There are no plans available"
               actionsHeader="Actions"
               renderActions={(data) => renderActions(data.actions as ChallengePlan)}
               pagination={{
@@ -293,12 +293,12 @@ export function PlansManager({ pageSize = 10 }: PlansManagerProps) {
             <DialogContent className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700 sm:max-w-[425px] shadow-lg rounded-xl">
               <DialogHeader>
                 <DialogTitle className="text-gray-900 dark:text-white text-lg font-semibold">
-                  {editItem ? "Editar Plan" : "Crear Plan"}
+                  {editItem ? "Edit Plan" : "Create Plan"}
                 </DialogTitle>
                 <DialogDescription className="text-gray-600 dark:text-gray-400 text-sm">
                   {editItem
-                    ? "Modifica los datos del plan y confirma para guardar cambios."
-                    : "Ingresa los datos para crear un nuevo plan."}
+                    ? "Modify the plan details and confirm to save changes."
+                    : "Enter the details to create a new plan."}
                 </DialogDescription>
               </DialogHeader>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -307,12 +307,12 @@ export function PlansManager({ pageSize = 10 }: PlansManagerProps) {
                     htmlFor="name"
                     className="text-gray-700 dark:text-gray-300 font-medium"
                   >
-                    Nombre del Plan
+                    Plan Name
                   </Label>
                   <Input
                     id="name"
                     {...form.register("name")}
-                    placeholder="Ingrese el nombre del plan"
+                    placeholder="Enter the plan name"
                     className="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
                   {form.formState.errors.name && (
@@ -327,7 +327,7 @@ export function PlansManager({ pageSize = 10 }: PlansManagerProps) {
                     htmlFor="wooID"
                     className="text-gray-700 dark:text-gray-300 font-medium"
                   >
-                    ID WooCommerce (opcional)
+                    WooCommerce ID (optional)
                   </Label>
                   <Input
                     id="wooID"
@@ -336,7 +336,7 @@ export function PlansManager({ pageSize = 10 }: PlansManagerProps) {
                       setValueAs: (value) =>
                         value === "" ? undefined : Number(value),
                     })}
-                    placeholder="ID del producto en WooCommerce"
+                    placeholder="Product ID in WooCommerce"
                     className="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
                   {form.formState.errors.wooID && (
@@ -362,7 +362,7 @@ export function PlansManager({ pageSize = 10 }: PlansManagerProps) {
                     htmlFor="isActive"
                     className="text-gray-700 dark:text-gray-300"
                   >
-                    Plan Activo
+                    Active Plan
                   </Label>
                 </div>
 
@@ -373,13 +373,13 @@ export function PlansManager({ pageSize = 10 }: PlansManagerProps) {
                     onClick={() => setOpenModal(false)}
                     className="border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600"
                   >
-                    Cancelar
+                    Cancel
                   </Button>
                   <Button
                     type="submit"
                     className="bg-emerald-600 dark:bg-emerald-600 text-white hover:bg-emerald-700 dark:hover:bg-emerald-700 shadow-sm"
                   >
-                    {editItem ? "Actualizar" : "Crear"} Plan
+                    {editItem ? "Update" : "Create"} Plan
                   </Button>
                 </DialogFooter>
               </form>

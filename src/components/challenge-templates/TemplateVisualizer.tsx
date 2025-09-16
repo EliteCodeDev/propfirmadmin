@@ -80,9 +80,9 @@ export function TemplateVisualizer({}: TemplateVisualizerProps) {
       setRelationStages(relationStagesData);
       setAddons(addonsData);
     } catch (error: unknown) {
-      console.error("Error al cargar datos:", error);
-      setError(error instanceof Error ? error.message : "Error desconocido");
-      toast.error("Error al cargar datos del visualizador");
+      console.error("Failed to load data:", error);
+      setError(error instanceof Error ? error.message : "Unknown error");
+      toast.error("Failed to load visualizer data");
     } finally {
       setIsLoading(false);
     }
@@ -179,10 +179,10 @@ export function TemplateVisualizer({}: TemplateVisualizerProps) {
         );
         if (!cancelled) setRelationAddons(ras);
       } catch (e) {
-        console.error("Error al cargar addons de la relación", e);
+        console.error("Failed to load relation addons", e);
         if (!cancelled) {
           setRelationAddons([]);
-          toast.error("No se pudieron cargar los addons de la relación");
+          toast.error("Failed to load addons for the relation");
         }
       }
     })();
@@ -199,7 +199,7 @@ export function TemplateVisualizer({}: TemplateVisualizerProps) {
       <div className="flex items-center justify-center h-64">
         <div className="flex flex-col items-center">
           <Loader2 className="animate-spin h-10 w-10 text-blue-600 mb-3" />
-          <p className="text-gray-600 dark:text-gray-400">Cargando datos...</p>
+          <p className="text-gray-600 dark:text-gray-400">Loading data...</p>
         </div>
       </div>
     );
@@ -209,16 +209,14 @@ export function TemplateVisualizer({}: TemplateVisualizerProps) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="flex flex-col items-center">
-          <div className="text-red-500 text-lg mb-3">
-            Error al cargar los datos
-          </div>
+          <div className="text-red-500 text-lg mb-3">Failed to load data</div>
           <p className="text-gray-600 dark:text-gray-400 mb-4">{error}</p>
           <Button
             onClick={loadAllData}
             className="bg-blue-600 hover:bg-blue-700"
           >
             <RefreshCw className="w-4 h-4 mr-2" />
-            Reintentar
+            Retry
           </Button>
         </div>
       </div>
@@ -256,7 +254,7 @@ export function TemplateVisualizer({}: TemplateVisualizerProps) {
                         : "bg-transparent text-white border-white/30 hover:border-white/60 hover:bg-white/10"
                     )}
                   >
-                    {plan?.name || "Sin nombre"}
+                    {plan?.name || "Untitled"}
                   </button>
                 ))}
               </div>
@@ -281,7 +279,7 @@ export function TemplateVisualizer({}: TemplateVisualizerProps) {
                         : "bg-transparent text-white border-white/30 hover:border-white/60 hover:bg-white/10"
                     )}
                   >
-                    {category?.name || "Sin nombre"}
+                    {category?.name || "Untitled"}
                   </button>
                 ))}
               </div>
@@ -302,7 +300,7 @@ export function TemplateVisualizer({}: TemplateVisualizerProps) {
                     balanceDetail.balance?.name ||
                     (typeof balanceDetail.balance?.balance === "number"
                       ? balanceDetail.balance.balance.toLocaleString()
-                      : "Sin balance");
+                      : "No balance");
 
                   return (
                     <button
@@ -344,7 +342,7 @@ export function TemplateVisualizer({}: TemplateVisualizerProps) {
                     className="text-center"
                   >
                     <h3 className="text-white text-2xl font-bold mb-2">
-                      {stageData.stage?.name || "Sin nombre"}
+                      {stageData.stage?.name || "Untitled"}
                     </h3>
                     <p className="text-blue-200 text-sm">
                       (
@@ -481,14 +479,14 @@ export function TemplateVisualizer({}: TemplateVisualizerProps) {
                 <Gift className="w-5 h-5 text-purple-600 dark:text-purple-400" />
               </div>
               <CardTitle className="text-xl font-semibold text-gray-900 dark:text-gray-100">
-                Addons del Challenge
+                Challenge Addons
               </CardTitle>
             </div>
           </CardHeader>
           <CardContent className="pt-6">
             {availableAddons.length === 0 ? (
               <div className="text-sm text-muted-foreground">
-                No hay addons asociados a esta relación.
+                There are no addons associated with this relation.
               </div>
             ) : (
               <div className="flex flex-wrap gap-2">
@@ -523,11 +521,11 @@ export function TemplateVisualizer({}: TemplateVisualizerProps) {
                       {/* Eliminado: Precio base, no existe en Addon */}
                       {/* Eliminado: Balance asociado, no existe en Addon */}
                       <div>
-                        <span className="font-medium">Activo:</span>{" "}
-                        {selectedAddon.isActive ? "Sí" : "No"}
+                        <span className="font-medium">Active:</span>{" "}
+                        {selectedAddon.isActive ? "Yes" : "No"}
                       </div>
                       <div>
-                        <span className="font-medium">Descuento:</span>{" "}
+                        <span className="font-medium">Discount:</span>{" "}
                         {selectedAddon.hasDiscount
                           ? `${selectedAddon.discount ?? 0}%`
                           : "No"}
@@ -548,20 +546,20 @@ export function TemplateVisualizer({}: TemplateVisualizerProps) {
                   return (
                     <Card>
                       <CardHeader>
-                        <CardTitle>Configuración en esta relación</CardTitle>
+                        <CardTitle>Configuration for this relation</CardTitle>
                       </CardHeader>
                       <CardContent>
                         <div className="space-y-2 text-sm">
                           <div>
-                            <span className="font-medium">Valor:</span>{" "}
+                            <span className="font-medium">Value:</span>{" "}
                             {cfg.value != null ? cfg.value : "—"}
                           </div>
                           <div>
-                            <span className="font-medium">Activo:</span>{" "}
-                            {cfg.isActive ? "Sí" : "No"}
+                            <span className="font-medium">Active:</span>{" "}
+                            {cfg.isActive ? "Yes" : "No"}
                           </div>
                           <div>
-                            <span className="font-medium">Descuento:</span>{" "}
+                            <span className="font-medium">Discount:</span>{" "}
                             {cfg.hasDiscount ? `${cfg.discount ?? 0}%` : "No"}
                           </div>
                           <div>

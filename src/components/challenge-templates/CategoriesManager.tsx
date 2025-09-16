@@ -36,7 +36,7 @@ import { ManagerHeader } from "./ManagerHeader";
 
 // Validación
 const categorySchema = z.object({
-  name: z.string().min(1, "El nombre es requerido"),
+  name: z.string().min(1, "Name is required"),
 });
 
 type CategoryFormData = z.infer<typeof categorySchema>;
@@ -61,7 +61,7 @@ export function CategoriesManager({ pageSize = 10 }: CategoriesManagerProps) {
   // Columnas para la tabla
   const columns: ColumnConfig[] = [
     { key: "id", label: "ID", type: "normal" },
-    { key: "name", label: "Nombre", type: "normal" },
+    { key: "name", label: "Name", type: "normal" },
   ];
 
   // --------------------------------------------------
@@ -77,8 +77,8 @@ export function CategoriesManager({ pageSize = 10 }: CategoriesManagerProps) {
       const data = await challengeTemplatesApi.listCategories();
       setCategories(data);
     } catch (error) {
-      console.error("Error al cargar categorías:", error);
-      toast.error("Error al cargar categorías");
+      console.error("Failed to load categories:", error);
+      toast.error("Failed to load categories");
     } finally {
       setIsLoading(false);
     }
@@ -107,14 +107,14 @@ export function CategoriesManager({ pageSize = 10 }: CategoriesManagerProps) {
   }
 
   async function handleDelete(row: Record<string, unknown>) {
-    if (confirm("¿Estás seguro de que quieres eliminar esta categoría?")) {
+    if (confirm("Are you sure you want to delete this category?")) {
       try {
         await challengeTemplatesApi.deleteCategory(String(row.categoryID));
-        toast.success("Categoría eliminada exitosamente");
+        toast.success("Category deleted successfully");
         await loadCategories();
       } catch (error) {
-        console.error("Error al eliminar:", error);
-        toast.error("Error al eliminar la categoría");
+        console.error("Failed to delete:", error);
+        toast.error("Error deleting the category");
       }
     }
   }
@@ -127,17 +127,17 @@ export function CategoriesManager({ pageSize = 10 }: CategoriesManagerProps) {
           editItem.categoryID,
           formValues
         );
-        toast.success("Categoría editada exitosamente");
+        toast.success("Category updated successfully");
       } else {
         // Crear
         await challengeTemplatesApi.createCategory(formValues);
-        toast.success("Categoría creada exitosamente");
+        toast.success("Category created successfully");
       }
       setOpenModal(false);
       await loadCategories(); // Refrescar datos
     } catch (error) {
-      console.error("Error al guardar:", error);
-      toast.error("Ocurrió un error al guardar");
+      console.error("Failed to save:", error);
+      toast.error("An error occurred while saving");
     }
   }
 
@@ -148,7 +148,7 @@ export function CategoriesManager({ pageSize = 10 }: CategoriesManagerProps) {
 
   const tableData = categoriesValidation.safeMap((item, index) => ({
     id: index + 1,
-    name: item?.name || "Sin nombre",
+    name: item?.name || "Untitled",
     categoryID: item?.categoryID || "", // Mantener para operaciones internas
   }));
 
@@ -181,9 +181,9 @@ export function CategoriesManager({ pageSize = 10 }: CategoriesManagerProps) {
   return (
     <div className="space-y-4 bg-white dark:bg-gray-800 transition-colors duration-200">
       <ManagerHeader
-        title="Categorías"
-        description="Gestiona las categorías disponibles para los challenges"
-        buttonText="Crear Categoría"
+        title="Categories"
+        description="Manage the categories available for challenges"
+        buttonText="Create Category"
         onCreateClick={handleOpenCreate}
         totalCount={totalItems}
         showTotalCount={false}
@@ -193,7 +193,7 @@ export function CategoriesManager({ pageSize = 10 }: CategoriesManagerProps) {
           columns={columns}
           rows={tableData}
           isLoading={isLoading}
-          emptyText="No hay categorías disponibles"
+          emptyText="No categories available"
           renderActions={renderActions}
           actionsHeader="Actions"
           pagination={{
@@ -214,12 +214,12 @@ export function CategoriesManager({ pageSize = 10 }: CategoriesManagerProps) {
         <DialogContent className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700 max-w-md mx-auto shadow-lg rounded-xl">
           <DialogHeader>
             <DialogTitle className="text-gray-900 dark:text-white text-sm sm:text-base md:text-lg font-semibold">
-              {editItem ? "Editar" : "Crear"} categoría
+              {editItem ? "Edit" : "Create"} category
             </DialogTitle>
             <DialogDescription className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm md:text-base">
               {editItem
-                ? "Modifica los datos y confirma para guardar cambios."
-                : "Ingresa los datos para crear un nuevo registro."}
+                ? "Modify the data and confirm to save changes."
+                : "Enter the data to create a new record."}
             </DialogDescription>
           </DialogHeader>
 
@@ -234,12 +234,12 @@ export function CategoriesManager({ pageSize = 10 }: CategoriesManagerProps) {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-gray-700 dark:text-gray-300 text-sm font-medium">
-                      Nombre
+                      Name
                     </FormLabel>
                     <FormControl>
                       <Input
                         {...field}
-                        placeholder="Nombre de la categoría"
+                        placeholder="Category name"
                         className="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white text-sm placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       />
                     </FormControl>
@@ -255,13 +255,13 @@ export function CategoriesManager({ pageSize = 10 }: CategoriesManagerProps) {
                   onClick={() => setOpenModal(false)}
                   className="px-3 py-2 text-sm border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600"
                 >
-                  Cancelar
+                  Cancel
                 </Button>
                 <Button
                   type="submit"
                   className="bg-emerald-600 dark:bg-emerald-600 text-white hover:bg-emerald-700 dark:hover:bg-emerald-700 px-3 py-2 text-sm shadow-sm"
                 >
-                  {editItem ? "Guardar" : "Crear"}
+                  {editItem ? "Save" : "Create"}
                 </Button>
               </DialogFooter>
             </form>
