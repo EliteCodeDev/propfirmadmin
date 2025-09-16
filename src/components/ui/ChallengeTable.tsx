@@ -67,12 +67,12 @@ export const ChallengeTable: React.FC<ChallengeTableProps> = ({
       <div className="bg-gradient-to-r from-zinc-100 to-zinc-50 dark:from-zinc-800 dark:to-zinc-900 px-6 py-4 border-b border-zinc-200 dark:border-zinc-700">
         <div className="flex justify-between items-center">
           <h3 className="text-lg font-semibold text-zinc-800 dark:text-zinc-200">
-            Lista de {title.toLowerCase()}
+            {title}
           </h3>
           <div className="flex items-center gap-3">
             <div className="text-sm text-zinc-500 dark:text-zinc-400 mr-4">
               {dataValidation.data.length > 0 &&
-                `${dataValidation.data.length} registros`}
+                `${dataValidation.data.length} records`}
             </div>
 
             <Button
@@ -81,7 +81,7 @@ export const ChallengeTable: React.FC<ChallengeTableProps> = ({
               onClick={onCreate}
             >
               <PlusCircle className="h-4 w-4 group-hover:rotate-90 transition-transform duration-500" />
-              Crear
+              Create
             </Button>
           </div>
         </div>
@@ -94,7 +94,7 @@ export const ChallengeTable: React.FC<ChallengeTableProps> = ({
             <div className="flex flex-col items-center justify-center my-auto">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[var(--app-secondary)] mb-4"></div>
               <p className="text-zinc-800 dark:text-zinc-200 font-medium">
-                Cargando datos...
+                Loading data...
               </p>
             </div>
           </div>
@@ -106,11 +106,11 @@ export const ChallengeTable: React.FC<ChallengeTableProps> = ({
                   ID
                 </TableHead>
                 <TableHead className="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider text-zinc-600 dark:text-zinc-400">
-                  Nombre
+                  Name
                 </TableHead>
                 {showPrice && (
                   <TableHead className="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider text-zinc-600 dark:text-zinc-400">
-                    Precio
+                    Price
                   </TableHead>
                 )}
                 <TableHead className="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider text-zinc-600 dark:text-zinc-400">
@@ -130,7 +130,7 @@ export const ChallengeTable: React.FC<ChallengeTableProps> = ({
                         {item?.id || "N/A"}
                       </TableCell>
                       <TableCell className="px-6 py-3 whitespace-nowrap text-sm text-zinc-600 dark:text-zinc-400 font-medium">
-                        {item?.name || "Sin nombre"}
+                        {item?.name || "Untitled"}
                       </TableCell>
                       {showPrice && (
                         <TableCell className="px-6 py-3 whitespace-nowrap text-sm text-zinc-600 dark:text-zinc-400">
@@ -143,7 +143,7 @@ export const ChallengeTable: React.FC<ChallengeTableProps> = ({
                           className="px-3 py-1.5 text-xs bg-white dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-700 rounded-md shadow-sm flex items-center gap-1"
                           onClick={() => onEdit(item)}
                         >
-                          <Pencil className="h-4 w-4" /> Editar
+                          <Pencil className="h-4 w-4" /> Edit
                         </Button>
                       </TableCell>
                     </TableRow>
@@ -158,10 +158,10 @@ export const ChallengeTable: React.FC<ChallengeTableProps> = ({
                     <div className="flex flex-col items-center justify-center">
                       <InboxIcon className="w-12 h-12 text-zinc-300 dark:text-zinc-600 mb-3" />
                       <span className="text-zinc-500 dark:text-zinc-400 text-base font-medium">
-                        Sin resultados
+                        No results
                       </span>
                       <span className="text-zinc-400 dark:text-zinc-500 text-sm mt-1">
-                        Los datos aparecerán aquí cuando estén disponibles
+                        Data will appear here when available
                       </span>
                     </div>
                   </TableCell>
@@ -176,8 +176,7 @@ export const ChallengeTable: React.FC<ChallengeTableProps> = ({
       <div className="bg-zinc-50 dark:bg-zinc-800/50 px-6 py-3 border-t border-zinc-200 dark:border-zinc-700">
         <div className="flex items-center justify-between">
           <div className="text-sm text-zinc-600 dark:text-zinc-400">
-            Mostrando {displayedData.length} de {dataValidation.data.length}{" "}
-            resultados
+            Showing {displayedData.length} of {dataValidation.data.length} results
           </div>
           <div className="flex items-center gap-1">
             <button
@@ -193,7 +192,7 @@ export const ChallengeTable: React.FC<ChallengeTableProps> = ({
                 {currentPage}
               </span>
               <span className="text-sm text-zinc-500 dark:text-zinc-400">
-                de {totalPages}
+                of {totalPages}
               </span>
             </div>
 

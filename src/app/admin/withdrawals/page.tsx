@@ -147,8 +147,8 @@ function ConfirmModal({
   open,
   title,
   description,
-  confirmText = "Confirmar",
-  cancelText = "Cancelar",
+  confirmText = "Confirm",
+  cancelText = "Cancel",
   pending,
   onClose,
   onConfirm,
@@ -357,12 +357,12 @@ export default function WithdrawalsInner() {
   return (
     <MainLayout>
       <div className="p-6 space-y-6 pt-4">
-        <ManagerHeader title="Retiros" description="Gestión de solicitudes de retiro" />
+        <ManagerHeader title="Withdrawals" description="Manage withdrawal requests" />
 
-        {/* Filtros */}
+        {/* Filters */}
         <div className="flex flex-col sm:flex-row items-center gap-3">
           <div className="flex items-center gap-2">
-            <label className="text-xs text-gray-600 dark:text-gray-400">Estado</label>
+            <label className="text-xs text-gray-600 dark:text-gray-400">Status</label>
             <select
               value={status}
               onChange={(e) => {
@@ -371,16 +371,16 @@ export default function WithdrawalsInner() {
               }}
               className="px-3 py-1 text-xs border border-gray-300 dark:border-gray-600/50 rounded-md bg-white dark:bg-gray-700/50 text-gray-900 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500/50 backdrop-blur-sm"
             >
-              <option value="">Todos</option>
-              <option value="pending">Pendiente</option>
-              <option value="approved">Aprobado</option>
-              <option value="paid">Pagado</option>
-              <option value="rejected">Rechazado</option>
+              <option value="">All</option>
+              <option value="pending">Pending</option>
+              <option value="approved">Approved</option>
+              <option value="paid">Paid</option>
+              <option value="rejected">Rejected</option>
             </select>
           </div>
 
           <div className="flex items-center gap-2">
-            <label className="text-xs text-gray-600 dark:text-gray-400">Email usuario</label>
+            <label className="text-xs text-gray-600 dark:text-gray-400">User email</label>
             <input
               type="text"
               value={email}
@@ -388,21 +388,21 @@ export default function WithdrawalsInner() {
                 setEmail(e.target.value);
                 setPage(1);
               }}
-              placeholder="usuario@correo.com"
+              placeholder="user@example.com"
               className="px-3 py-1 text-xs border border-gray-300 dark:border-gray-600/50 rounded-md bg-white dark:bg-gray-700/50 text-gray-900 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500/50 backdrop-blur-sm"
             />
           </div>
 
           <div className="text-sm text-gray-600 ml-auto">
-            {`Mostrando ${withdrawals.length} registros`}
+            {`Showing ${withdrawals.length} records`}
           </div>
         </div>
 
-        {/* Mensajes de error */}
+        {/* Error messages */}
         {isServerErr && (
           <div className="p-3 rounded-md bg-red-50 text-red-700 text-sm border border-red-200">
-            El servidor devolvió 500. Revisa que el <b>status</b> se envíe en
-            minúsculas (<code>pending|approved|paid|rejected</code>).
+            The server returned 500. Ensure the <b>status</b> is sent in
+            lowercase (<code>pending|approved|paid|rejected</code>).
           </div>
         )}
 
@@ -434,14 +434,14 @@ export default function WithdrawalsInner() {
               //width: "140px", // Ancho fijo reducido
               render: (value) => <WalletCell wallet={String(value)} />,
             },
-            { key: "amount", label: "Monto", type: "normal" },
+            { key: "amount", label: "Amount", type: "normal" },
             {
               key: "status",
-              label: "Estado",
+              label: "Status",
               type: "normal",
               render: (v) => <Badge status={String(v)} />,
             },
-            { key: "observation", label: "Observación", type: "normal" },
+            { key: "observation", label: "Observation", type: "normal" },
           ];
 
           const rows = withdrawals.map((w) => ({
@@ -464,7 +464,7 @@ export default function WithdrawalsInner() {
               columns={columns}
               rows={rows}
               isLoading={isLoading}
-              emptyText={error ? (error as Error).message : "No hay retiros."}
+              emptyText={error ? (error as Error).message : "No withdrawals."}
               actionsHeader="Actions"
               renderActions={(row) => {
                 const w = row.__raw as Withdrawal;
@@ -476,14 +476,14 @@ export default function WithdrawalsInner() {
                       disabled={!canAct}
                       onClick={() => approve(w)}
                     >
-                      Aprobar
+                      Approve
                     </button>
                     <button
                       className="px-2 py-1 text-[11px] rounded bg-red-600 hover:bg-red-700 text-white disabled:opacity-50"
                       disabled={!canAct}
                       onClick={() => reject(w)}
                     >
-                      Rechazar
+                      Reject
                     </button>
                   </div>
                 );
@@ -503,42 +503,42 @@ export default function WithdrawalsInner() {
           );
         })()}
 
-        {/* Modal de Confirmación */}
+        {/* Confirm Modal */}
         <ConfirmModal
           open={confirmOpen}
-          title="Completar retiro"
+          title="Complete withdrawal"
           description={
             selected
-              ? `Marcar como pagado el retiro de ${money.format(Number(selected.amount))}?`
+              ? `Mark withdrawal of ${money.format(Number(selected.amount))} as paid?`
               : undefined
           }
           pending={processing}
           onClose={() => !processing && setConfirmOpen(false)}
           onConfirm={handleApproveConfirm}
-          confirmText="Completar"
+          confirmText="Complete"
         />
 
-        {/* Modal de Rechazo */}
+        {/* Reject Modal */}
         <ConfirmModal
           open={rejectOpen}
-          title="Rechazar retiro"
+          title="Reject withdrawal"
           description={
             selected
-              ? `Rechazar retiro de ${money.format(Number(selected.amount))}?`
+              ? `Reject withdrawal of ${money.format(Number(selected.amount))}?`
               : undefined
           }
           pending={processing}
           onClose={() => !processing && setRejectOpen(false)}
           onConfirm={handleRejectConfirm}
-          confirmText="Rechazar"
+          confirmText="Reject"
         >
           <div className="space-y-2">
             <label className="text-xs text-gray-600 dark:text-gray-300">
-              Motivo (opcional)
+              Reason (optional)
             </label>
             <textarea
               className="w-full p-2 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-              placeholder="Detalle del motivo de rechazo"
+              placeholder="Detail the reason for rejection"
               value={rejectionDetail}
               onChange={(e) => setRejectionDetail(e.target.value)}
               rows={3}

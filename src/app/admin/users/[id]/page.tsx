@@ -666,7 +666,7 @@ export default function UserDetailInner() {
 
               {verifications.length > 0 && (
                 <div className="mt-4 text-xs text-gray-500 dark:text-gray-400">
-                  Mostrando {verifications.length} verificaciones. Usa la sección Verifications para gestión completa.
+                  Showing {verifications.length} verifications. Use the Verifications section for full management.
                 </div>
               )}
             </div>

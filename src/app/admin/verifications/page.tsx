@@ -193,17 +193,17 @@ function VerificationsPageContent() {
           <CardHeader>
             <div className="flex items-center justify-between gap-2">
               <CardTitle className="text-2xl font-bold">
-                Gestión de Verificaciones
+                Verification Management
               </CardTitle>
               <span className="text-sm text-gray-500">
-                {isLoading ? "Cargando..." : `Total: ${pagination.total}`}
+                {isLoading ? "Loading..." : `Total: ${pagination.total}`}
               </span>
             </div>
           </CardHeader>
           <CardContent>
             {error && (
               <div className="mb-4 rounded-md border border-red-300 bg-red-50 p-3 text-sm text-red-800">
-                Error al cargar verificaciones
+                Error loading verifications
               </div>
             )}
             {/* Filtros */}
@@ -211,7 +211,7 @@ function VerificationsPageContent() {
               <div className="flex-1 min-w-[200px]">
                 <div className="flex gap-2">
                   <Input
-                    placeholder="Buscar por usuario, email o documento..."
+                    placeholder="Search by user, email, or document..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     onKeyDown={(e) => {
@@ -225,7 +225,7 @@ function VerificationsPageContent() {
                     size="icon"
                     onClick={handleSearch}
                     variant="outline"
-                    title="Buscar"
+                    title="Search"
                   >
                     <Search className="h-4 w-4" />
                   </Button>
@@ -238,7 +238,7 @@ function VerificationsPageContent() {
                       setDocumentTypeFilter("all");
                       setCurrentPage(1);
                     }}
-                    title="Restablecer filtros"
+                    title="Reset filters"
                   >
                     Reset
                   </Button>
@@ -254,10 +254,10 @@ function VerificationsPageContent() {
                   <SelectValue placeholder="Estado" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Todos</SelectItem>
-                  <SelectItem value="pending">Pendiente</SelectItem>
-                  <SelectItem value="approved">Aprobado</SelectItem>
-                  <SelectItem value="rejected">Rechazado</SelectItem>
+                  <SelectItem value="all">All</SelectItem>
+                  <SelectItem value="pending">Pending</SelectItem>
+                  <SelectItem value="approved">Approved</SelectItem>
+                  <SelectItem value="rejected">Rejected</SelectItem>
                 </SelectContent>
               </Select>
               <Select
@@ -267,13 +267,13 @@ function VerificationsPageContent() {
                 }
               >
                 <SelectTrigger className="w-[150px]">
-                  <SelectValue placeholder="Documento" />
+                  <SelectValue placeholder="Document" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Todos</SelectItem>
+                  <SelectItem value="all">All</SelectItem>
                   <SelectItem value="dni">DNI</SelectItem>
-                  <SelectItem value="passport">Pasaporte</SelectItem>
-                  <SelectItem value="driver_license">Licencia</SelectItem>
+                  <SelectItem value="passport">Passport</SelectItem>
+                  <SelectItem value="driver_license">Driver License</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -283,11 +283,11 @@ function VerificationsPageContent() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Usuario</TableHead>
-                    <TableHead>Documento</TableHead>
-                    <TableHead>Tipo</TableHead>
-                    <TableHead>Estado</TableHead>
-                    <TableHead>Fecha</TableHead>
+                    <TableHead>User</TableHead>
+                    <TableHead>Document</TableHead>
+                    <TableHead>Type</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Date</TableHead>
                     <TableHead>Actions</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -295,13 +295,13 @@ function VerificationsPageContent() {
                   {isLoading ? (
                     <TableRow>
                       <TableCell colSpan={6} className="text-center py-8">
-                        Cargando verificaciones...
+                        Loading verifications...
                       </TableCell>
                     </TableRow>
                   ) : verifications.length === 0 ? (
                     <TableRow>
                       <TableCell colSpan={6} className="text-center py-8">
-                        No se encontraron verificaciones
+                        No verifications found
                       </TableCell>
                     </TableRow>
                   ) : (
@@ -328,9 +328,9 @@ function VerificationsPageContent() {
                               statusColors[verification.status]
                             }`}
                           >
-                            {verification.status === "pending" && "pendiente"}
-                            {verification.status === "approved" && "aceptado"}
-                            {verification.status === "rejected" && "rechazado"}
+                            {verification.status === "pending" && "pending"}
+                            {verification.status === "approved" && "approved"}
+                            {verification.status === "rejected" && "rejected"}
                           </span>
                         </TableCell>
                         <TableCell>
@@ -347,7 +347,7 @@ function VerificationsPageContent() {
                                 }
                               >
                                 <Eye className="h-4 w-4 mr-1" />
-                                Ver
+                                View
                               </Button>
                             </DialogTrigger>
                             <DialogContent
@@ -357,7 +357,7 @@ function VerificationsPageContent() {
                             >
                               <DialogHeader>
                                 <DialogTitle>
-                                  Detalles de Verificación
+                                  Verification Details
                                 </DialogTitle>
                               </DialogHeader>
                               {selectedVerification && (
@@ -386,12 +386,12 @@ function VerificationsPageContent() {
             {data && data.totalPages > 1 && (
               <div className="flex items-center justify-between mt-4">
                 <div className="text-sm text-gray-500">
-                  Mostrando {(pagination.page - 1) * pagination.limit + 1} a{" "}
+                  Showing {(pagination.page - 1) * pagination.limit + 1} to{" "}
                   {Math.min(
                     pagination.page * pagination.limit,
                     pagination.total
                   )}{" "}
-                  de {pagination.total} verificaciones
+                  of {pagination.total} verifications
                 </div>
                 <div className="flex gap-2">
                   <Button
@@ -400,7 +400,7 @@ function VerificationsPageContent() {
                     disabled={pagination.page <= 1}
                     onClick={() => setCurrentPage((prev) => prev - 1)}
                   >
-                    Anterior
+                    Previous
                   </Button>
                   <Button
                     variant="outline"
@@ -408,7 +408,7 @@ function VerificationsPageContent() {
                     disabled={pagination.page >= pagination.totalPages}
                     onClick={() => setCurrentPage((prev) => prev + 1)}
                   >
-                    Siguiente
+                    Next
                   </Button>
                 </div>
               </div>

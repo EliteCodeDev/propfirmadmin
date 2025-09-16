@@ -89,7 +89,7 @@ export default function PaginatedCardTable(props: PaginatedCardTableProps) {
     rows,
     isLoading,
     emptyIcon,
-    emptyText = "Sin datos",
+    emptyText = "No data",
     emptyHint,
     actionsHeader,
     renderActions,
@@ -183,7 +183,7 @@ export default function PaginatedCardTable(props: PaginatedCardTableProps) {
                     <div className="flex flex-col items-center justify-center">
                       <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mb-3"></div>
                       <p className="text-gray-600 dark:text-gray-300 font-medium text-sm">
-                        Cargando datos...
+                        Loading data...
                       </p>
                     </div>
                   </TableCell>
@@ -245,7 +245,7 @@ export default function PaginatedCardTable(props: PaginatedCardTableProps) {
             <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
               <div className="flex items-center gap-2">
                 <span className="text-xs text-gray-600 dark:text-gray-400">
-                  Mostrando
+                  Showing
                 </span>
                 <select
                   value={selectedPageSize}
@@ -265,7 +265,7 @@ export default function PaginatedCardTable(props: PaginatedCardTableProps) {
                     ))}
                 </select>
                 <span className="text-xs text-gray-600 dark:text-gray-400">
-                  registros
+                  records
                 </span>
               </div>
 
@@ -410,7 +410,7 @@ export default function PaginatedCardTable(props: PaginatedCardTableProps) {
               </div>
 
               <div className="sm:hidden text-xs text-gray-600 dark:text-gray-400 text-center">
-                Página {currentPage} de {totalPages}
+                Page {currentPage} of {totalPages}
               </div>
             </div>
           </div>
