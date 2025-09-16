@@ -17,10 +17,10 @@ import { apiBaseUrl } from "@/config";
 import { useSession } from "next-auth/react";
 
 const schema = z.object({
-  to: z.string().email("Email inválido"),
+  to: z.string().email("Invalid email"),
   title: z.string().optional(),
-  subject: z.string().min(1, "Asunto requerido"),
-  body: z.string().min(1, "Mensaje requerido").max(1000, "Máximo 1000 caracteres"),
+  subject: z.string().min(1, "Subject is required"),
+  body: z.string().min(1, "Message is required").max(1000, "Maximum 1000 characters"),
 });
 
 type FormValues = z.infer<typeof schema>;
@@ -118,12 +118,12 @@ export default function CorreoPage() {
         title: values.title,
         body: values.body 
       });
-      toast.success("Correo enviado con estilos de la empresa");
+      toast.success("Email sent with company styling");
       reset();
       setQuery("");
       setResults([]);
     } catch (e: any) {
-      toast.error(e?.message || "No se pudo enviar el correo");
+      toast.error(e?.message || "Could not send the email");
     } finally {
       setLoading(false);
     }
@@ -134,18 +134,18 @@ export default function CorreoPage() {
   return (
     <MainLayout>
       <div className="p-6 space-y-6 pt-4">
-        <ManagerHeader title="Correo" description="Envío de correos manual para soporte o comunicaciones" />
+  <ManagerHeader title="Email" description="Manual email sending for support or communications" />
 
         <div className="w-full max-w-7xl mx-auto">
           <Card className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
             <CardContent className="pt-6 space-y-5">
-              {/* Buscar usuario */}
+              {/* Search user */}
               <div className="space-y-2" ref={searchContainerRef}>
-                <Label htmlFor="searchUser">Buscar Usuario por Nombre o Correo</Label>
+                <Label htmlFor="searchUser">Search user by name or email</Label>
                 <div className="relative">
                   <Input
                     id="searchUser"
-                    placeholder="Escribe el nombre, email o username del usuario..."
+                    placeholder="Type the user's name, email, or username..."
                     value={query}
                     onChange={(e) => {
                       setQuery(e.target.value);
@@ -172,39 +172,39 @@ export default function CorreoPage() {
                 </div>
               </div>
 
-              {/* Email destinatario */}
+              {/* Recipient email */}
               <div className="space-y-2">
-                <Label htmlFor="to">Correo Electrónico del Destinatario</Label>
-                <Input id="to" placeholder="ejemplo@correo.com" {...register("to")} />
+                <Label htmlFor="to">Recipient Email Address</Label>
+                <Input id="to" placeholder="user@example.com" {...register("to")} />
                 {errors.to && <p className="text-sm text-destructive">{errors.to.message}</p>}
               </div>
 
-              {/* Título */}
+              {/* Title */}
               <div className="space-y-2">
-                <Label htmlFor="title">Título</Label>
-                <Input id="title" placeholder="Escribe el título del correo..." {...register("title")} />
+                <Label htmlFor="title">Title</Label>
+                <Input id="title" placeholder="Enter the email title..." {...register("title")} />
               </div>
 
-              {/* Asunto */}
+              {/* Subject */}
               <div className="space-y-2">
-                <Label htmlFor="subject">Asunto</Label>
-                <Input id="subject" placeholder="Escribe el asunto del correo..." {...register("subject")} />
+                <Label htmlFor="subject">Subject</Label>
+                <Input id="subject" placeholder="Enter the email subject..." {...register("subject")} />
                 {errors.subject && <p className="text-sm text-destructive">{errors.subject.message}</p>}
               </div>
 
-              {/* Mensaje */}
+              {/* Message */}
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <Label htmlFor="body">Mensaje</Label>
-                  <span className="text-xs text-muted-foreground">{message.length}/1000 caracteres</span>
+                  <Label htmlFor="body">Message</Label>
+                  <span className="text-xs text-muted-foreground">{message.length}/1000 characters</span>
                 </div>
-                <Textarea id="body" rows={10} maxLength={1000} placeholder="Escribe tu mensaje aquí..." {...register("body")} />
+                <Textarea id="body" rows={10} maxLength={1000} placeholder="Type your message here..." {...register("body")} />
                 {errors.body && <p className="text-sm text-destructive">{errors.body.message}</p>}
               </div>
             </CardContent>
             <CardFooter className="flex gap-3 justify-end">
               <Button type="submit" onClick={handleSubmit(onSubmit)} disabled={loading}>
-                {loading ? "Enviando..." : "Enviar Correo"}
+                {loading ? "Sending..." : "Send Email"}
               </Button>
               <Button
                 type="button"
@@ -217,7 +217,7 @@ export default function CorreoPage() {
                 }}
                 disabled={loading}
               >
-                Limpiar
+                Clear
               </Button>
             </CardFooter>
           </Card>
