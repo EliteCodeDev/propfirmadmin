@@ -29,11 +29,11 @@ function DashboardHeader({
   const currentHour = new Date().getHours();
   const greeting =
     currentHour < 12
-      ? "Buenos días"
+      ? "Good morning"
       : currentHour < 18
-      ? "Buenas tardes"
-      : "Buenas noches";
-  const currentDate = new Date().toLocaleDateString("es-ES", {
+      ? "Good afternoon"
+      : "Good evening";
+  const currentDate = new Date().toLocaleDateString("en-US", {
     weekday: "long",
     year: "numeric",
     month: "long",
@@ -43,7 +43,7 @@ function DashboardHeader({
   return (
     <div className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 transition-colors duration-200">
       <div className="px-6 py-8">
-        {/* Saludo y navegación */}
+                {/* Greeting and navigation */}
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
           <div className="flex-1">
             <div className="flex items-center gap-3 mb-2">
@@ -60,7 +60,7 @@ function DashboardHeader({
               </div>
             </div>
 
-            {/* Resumen rápido */}
+            {/* Quick summary */}
             <div className="mt-4">
               {dashboardData && (
                 <div className="flex flex-wrap items-center gap-6 text-sm">
@@ -70,7 +70,7 @@ function DashboardHeader({
                       <strong className="text-gray-900 dark:text-white">
                         {dashboardData.totalUsers?.toLocaleString() || "0"}
                       </strong>{" "}
-                      usuarios registrados
+                      registered users
                     </span>
                   </div>
 
@@ -80,7 +80,7 @@ function DashboardHeader({
                       <strong className="text-gray-900 dark:text-white">
                         {dashboardData.totalOrders?.toLocaleString() || "0"}
                       </strong>{" "}
-                      pedidos procesados
+                      orders processed
                     </span>
                   </div>
 
@@ -89,11 +89,11 @@ function DashboardHeader({
                     <span className="text-gray-600 dark:text-gray-300 transition-colors duration-200">
                       <strong className="text-emerald-600 dark:text-emerald-400">
                         $
-                        {dashboardData.totalSales?.toLocaleString("es-ES", {
+                        {dashboardData.totalSales?.toLocaleString("en-US", {
                           minimumFractionDigits: 2,
                         }) || "0.00"}
                       </strong>{" "}
-                      en ventas totales
+                      in total sales
                     </span>
                   </div>
                 </div>
@@ -118,10 +118,10 @@ export default async function Dashboard() {
 
   return (
     <MainLayout>
-      {/* Header del Dashboard */}
+      {/* Dashboard Header */}
       <DashboardHeader session={session} dashboardData={dashboardData} />
 
-      {/* Contenido Principal */}
+      {/* Main Content */}
       <div className="p-6 bg-gray-50 dark:bg-gray-800 min-h-screen transition-colors duration-200">
         <DashboardContent initialData={dashboardData} />
       </div>

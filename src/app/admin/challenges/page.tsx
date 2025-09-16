@@ -12,6 +12,7 @@ import type { Challenge, PageResponse } from "@/types";
 import { apiBaseUrl } from "@/config";
 import { toast } from "react-hot-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { TrashIcon } from "@heroicons/react/24/outline";
 
 type LimitParam = number;
 
@@ -698,20 +699,8 @@ function ChallengesInner() {
                   className="flex items-center gap-3 w-full px-4 py-3 text-sm text-gray-700 dark:text-gray-200 hover:bg-orange-50 dark:hover:bg-orange-900/20 hover:text-orange-600 dark:hover:text-orange-300 transition-colors duration-150"
                   type="button"
                 >
-                  <svg
-                    className="w-4 h-4 flex-shrink-0"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M6 18L18 6M6 6l12 12"
-                    />
-                  </svg>
-                  <span className="truncate">Eliminado anticucho</span>
+                  <TrashIcon className="w-4 h-4 flex-shrink-0" />
+                  <span className="truncate">Delete Anticucho</span>
                 </button>
               </div>
             </div>
@@ -884,7 +873,7 @@ function ChallengesInner() {
           </div>
         )}
 
-        {/* Modal Eliminado Anticucho */}
+        {/* Modal Delete Anticucho */}
         {showAntiChuchoModal && selectedChallenge && (
           <Dialog open={showAntiChuchoModal} onOpenChange={setShowAntiChuchoModal}>
             <DialogContent className="sm:max-w-[425px]">
