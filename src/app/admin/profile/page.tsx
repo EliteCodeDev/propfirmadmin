@@ -25,10 +25,10 @@ function ProfileInner() {
     [user?.firstName, user?.lastName].filter(Boolean).join(" ") ||
     user?.username ||
     user?.email ||
-    "Usuario";
+    "User";
   const roleLabel = (() => {
     const candidate = user?.roles?.[0];
-    if (!candidate) return "Usuario";
+    if (!candidate) return "User";
     return candidate
       .replace(/[-_]/g, " ")
       .replace(/\b\w/g, (c) => c.toUpperCase());
@@ -38,7 +38,7 @@ function ProfileInner() {
     <MainLayout>
       <div className="space-y-6 p-6">
         <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-semibold">Perfil</h1>
+          <h1 className="text-2xl font-semibold">Profile</h1>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -54,7 +54,7 @@ function ProfileInner() {
                   {user?.isVerified && (
                     <CheckBadgeIcon
                       className="h-5 w-5 text-emerald-500"
-                      title="Verificado"
+                      title="Verified"
                     />
                   )}
                 </div>
@@ -87,14 +87,12 @@ function ProfileInner() {
           <div className="lg:col-span-2 rounded-3xl border border-gray-200 dark:border-gray-800 bg-white/80 dark:bg-white/5 backdrop-blur p-6">
             <div className="flex items-center gap-3 mb-6">
               <UserIcon className="h-6 w-6 text-indigo-600" />
-              <h3 className="text-lg font-semibold">
-                Información de la cuenta
-              </h3>
+              <h3 className="text-lg font-semibold">Account Information</h3>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <label className="flex flex-col gap-2 text-sm">
-                <span className="text-gray-600 dark:text-gray-300">Nombre</span>
+                <span className="text-gray-600 dark:text-gray-300">First Name</span>
                 <input
                   disabled
                   value={user?.firstName ?? ""}
@@ -102,9 +100,7 @@ function ProfileInner() {
                 />
               </label>
               <label className="flex flex-col gap-2 text-sm">
-                <span className="text-gray-600 dark:text-gray-300">
-                  Apellido
-                </span>
+                <span className="text-gray-600 dark:text-gray-300">Last Name</span>
                 <input
                   disabled
                   value={user?.lastName ?? ""}
@@ -120,9 +116,7 @@ function ProfileInner() {
                 />
               </label>
               <label className="flex flex-col gap-2 text-sm">
-                <span className="text-gray-600 dark:text-gray-300">
-                  Usuario
-                </span>
+                <span className="text-gray-600 dark:text-gray-300">Username</span>
                 <input
                   disabled
                   value={user?.username ?? ""}

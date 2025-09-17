@@ -135,7 +135,7 @@ export default function UserDetailInner() {
     if (isUnauthenticated) router.replace("/auth/login");
   }, [isUnauthenticated, router]);
 
-  /* ---- Usuario ---- */
+  /* ---- User ---- */
   const {
     data: userRaw,
     isLoading: userLoading,
@@ -192,7 +192,7 @@ export default function UserDetailInner() {
       : planName;
   };
 
-  /* ---- Challenges del usuario ---- */
+  /* ---- Challenges del User ---- */
   const {
     data: challengesWithDetailsRaw,
     isLoading: chLoading,
@@ -245,7 +245,7 @@ export default function UserDetailInner() {
     );
   }, [challengesWithDetails]);
 
-  /* ---- Verificaciones del usuario ---- */
+  /* ---- Verificaciones del User ---- */
   const {
     data: verificationsResp,
     isLoading: verifLoading,
@@ -400,11 +400,11 @@ export default function UserDetailInner() {
       <LoadingSpinner
         size="md"
         text="Verificando Sesión"
-        subtitle="Validando credenciales de usuario..."
+        subtitle="Validando credenciales de User..."
         showProgress
         steps={[
           "Verificando token de sesión...",
-          "Validando permisos de usuario...",
+          "Validando permisos de User...",
           "Cargando configuración...",
           "Preparando dashboard...",
         ]}
@@ -418,11 +418,11 @@ export default function UserDetailInner() {
         <LoadingSpinner
           size="md"
           text="Cargando Challenges"
-          subtitle="Obteniendo información del usuario y challenges..."
+          subtitle="Obteniendo información del User y challenges..."
           showProgress
           steps={[
-            "Consultando datos del usuario...",
-            "Cargando challenges del usuario...",
+            "Consultando datos del User...",
+            "Cargando challenges del User...",
             "Obteniendo balances y detalles...",
             "Preparando vista de detalles...",
           ]}
@@ -552,13 +552,13 @@ export default function UserDetailInner() {
               </div>
             </div>
           </div>
-          {/* Verificaciones KYC del usuario */}
+          {/* Verificaciones KYC del User */}
           {/* <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
             <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
               <div>
                 <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100">User Verifications (KYC)</h2>
                 <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
-                  Últimas verificaciones enviadas por este usuario
+                  Últimas verificaciones enviadas por este User
                 </p>
               </div>
               {verifLoading && (
@@ -572,13 +572,13 @@ export default function UserDetailInner() {
             <div className="p-4">
               {verifErr && (
                 <div className="text-sm text-red-600 dark:text-red-400">
-                  No fue posible cargar las verificaciones de este usuario.
+                  No fue posible cargar las verificaciones de este User.
                 </div>
               )}
 
               {!verifLoading && !verifErr && verifications.length === 0 && (
                 <div className="text-sm text-gray-500 dark:text-gray-400">
-                  Este usuario no tiene verificaciones.
+                  Este User no tiene verificaciones.
                 </div>
               )}
 

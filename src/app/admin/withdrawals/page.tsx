@@ -410,7 +410,7 @@ export default function WithdrawalsInner() {
           const columns: ColumnConfig[] = [
             {
               key: "userName",
-              label: "Usuario",
+              label: "User",
               type: "link",
               linkUrl: (_value, row) => `/admin/users/${(row as any)?.__raw?.userID ?? (row as any)?.userID}`,
             },

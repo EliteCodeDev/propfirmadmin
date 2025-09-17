@@ -66,7 +66,7 @@ export default function AssignmentPage() {
   }, []);
 
   useEffect(() => {
-    const obtenerUsuarios = async () => {
+    const obtenerUsers = async () => {
       try {
         const response = await axios.get(
           `${apiBaseUrl}/users?page=1&limit=999999999`
@@ -90,7 +90,7 @@ export default function AssignmentPage() {
       }
     };
 
-    obtenerUsuarios();
+    obtenerUsers();
   }, []);
 
 
@@ -729,7 +729,7 @@ export default function AssignmentPage() {
                 <section className="bg-white rounded-2xl p-5 shadow-sm border border-zinc-200 dark:bg-gray-800 dark:border-zinc-800">
                   <div className="flex items-center mb-3">
                     <h3 className="text-zinc-900 dark:text-zinc-100 font-semibold">
-                      Email del comprador
+                      Buyer Email
                     </h3>
                   </div>
                   <div className="relative mb-4">
@@ -833,7 +833,7 @@ export default function AssignmentPage() {
                                       <div className="flex items-center gap-2 mt-1">
                                         <UserIcon className="h-3 w-3 text-zinc-400 flex-shrink-0" />
                                         <span className="text-sm text-zinc-500 dark:text-zinc-400 truncate">
-                                          {user.firstName || "Sin nombre"}{" "}
+                                          {user.firstName || "Untitled"}{" "}
                                           {user.lastName || ""}
                                         </span>
                                       </div>

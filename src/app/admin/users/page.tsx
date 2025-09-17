@@ -354,7 +354,7 @@ function UsersInner() {
       ),
     },
 
-    // NUEVA COLUMNA: navegar al detalle del usuario
+    // NUEVA COLUMNA: navegar al detalle del User
     {
       key: "view",
       label: "VIEW",

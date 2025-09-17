@@ -39,7 +39,7 @@ Alcance: esta guía aplica a nuevos módulos y features del panel de administrac
 
 7) Seguridad
 - No expongas secretos en cliente. Usa el axios client configurado (headers, baseURL e interceptores). No hardcodees URLs absolutas.
-- Respeta permisos: oculta/deshabilita acciones no permitidas si el usuario no es admin o no tiene rol adecuado.
+- Respeta permisos: oculta/deshabilita acciones no permitidas si el User no es admin o no tiene rol adecuado.
 
 8) Accesibilidad e i18n
 - Usa etiquetas aria y relaciones entre label/inputs. Asegura contraste y estados focus visibles.

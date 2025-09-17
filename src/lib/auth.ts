@@ -74,7 +74,7 @@ const nextAuth = NextAuth({
 
           if (!user || !access_token) return null;
 
-          // Bloquear usuarios sin rol o con rol 'user'
+          // Bloquear Users sin rol o con rol 'user'
           const roleName: string | undefined = user?.role?.name;
           if (!roleName || roleName === "user") {
             throw new Error("No tienes permisos para acceder al panel");
