@@ -13,14 +13,18 @@ import { ObjectivesProps, ObjectiveStatus } from "@/types/metrix";
 // Safe number formatting function
 const safeToFixed = (value: any, decimals: number = 1): string => {
   if (value === null || value === undefined || isNaN(Number(value))) {
-    return '0.' + '0'.repeat(decimals);
+    return "0." + "0".repeat(decimals);
   }
   return Number(value).toFixed(decimals);
 };
 
 const Icon = {
   Check: () => (
-    <svg viewBox="0 0 20 20" fill="currentColor" className="h-3.5 w-3.5 text-green-500">
+    <svg
+      viewBox="0 0 20 20"
+      fill="currentColor"
+      className="h-3.5 w-3.5 text-green-500"
+    >
       <path
         fillRule="evenodd"
         d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z"
@@ -29,7 +33,11 @@ const Icon = {
     </svg>
   ),
   X: () => (
-    <svg viewBox="0 0 20 20" fill="currentColor" className="h-3.5 w-3.5 text-red-500">
+    <svg
+      viewBox="0 0 20 20"
+      fill="currentColor"
+      className="h-3.5 w-3.5 text-red-500"
+    >
       <path
         fillRule="evenodd"
         d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z"
@@ -38,7 +46,11 @@ const Icon = {
     </svg>
   ),
   Info: () => (
-    <svg viewBox="0 0 20 20" fill="currentColor" className="h-3.5 w-3.5 text-gray-400">
+    <svg
+      viewBox="0 0 20 20"
+      fill="currentColor"
+      className="h-3.5 w-3.5 text-gray-400"
+    >
       <path
         fillRule="evenodd"
         d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2h-1V9z"
@@ -62,7 +74,11 @@ const ProgressBar = ({ percentage }: { percentage: number }) => {
 };
 
 // Text color
-const getResultTextColor = (percentage: number, type: string, estado: boolean) => {
+const getResultTextColor = (
+  percentage: number,
+  type: string,
+  estado: boolean
+) => {
   if (!estado) return "text-red-400";
   const pct = Math.min(100, Math.max(0, percentage));
   if (type === "days" || type === "profit") {
@@ -80,14 +96,20 @@ export default function Objectives({
   tradingData,
   rulesParams,
   className = "",
-}: Pick<ObjectivesProps, "tradingData" | "rulesParams" | "className">) {
+  metaStats,
+}: Pick<
+  ObjectivesProps,
+  "tradingData" | "rulesParams" | "className" | "metaStats"
+>) {
+  console.log("tradingData", tradingData);
   const [expanded, setExpanded] = useState<number | null>(null);
 
   const objectives = useMemo((): ObjectiveStatus[] => {
     if (!tradingData || !rulesParams) return [];
 
     const initialBalance = tradingData.balance?.initialBalance || 0;
-    const dailyBalance = tradingData.balance?.dailyBalance || tradingData.equity || 0;
+    const dailyBalance =
+      tradingData.balance?.dailyBalance || tradingData.equity || 0;
     const equity = tradingData.equity || tradingData.currentBalance || 0;
     const currentProfit = equity - initialBalance;
 
@@ -96,14 +118,23 @@ export default function Objectives({
     // === PROFIT TARGET ===
     if (rulesParams.profitTarget > 0) {
       const targetAmount = (initialBalance * rulesParams.profitTarget) / 100;
-      const progress = targetAmount > 0 ? Math.min((currentProfit / targetAmount) * 100, 100) : 0;
+      const progress =
+        targetAmount > 0
+          ? Math.min((currentProfit / targetAmount) * 100, 100)
+          : 0;
       const status =
-        currentProfit >= targetAmount ? "completed" : currentProfit > 0 ? "in_progress" : "pending";
+        currentProfit >= targetAmount
+          ? "completed"
+          : currentProfit > 0
+          ? "in_progress"
+          : "pending";
 
       objs.push({
         id: "profit_target",
         title: "Profit Target",
-        description: `Target $${targetAmount.toLocaleString()} (${rulesParams.profitTarget}%). Current: $${currentProfit.toLocaleString()}`,
+        description: `Target $${targetAmount.toLocaleString()} (${
+          rulesParams.profitTarget
+        }%). Current: $${currentProfit.toLocaleString()}`,
         current: currentProfit,
         target: targetAmount,
         unit: "$",
@@ -117,15 +148,26 @@ export default function Objectives({
 
     // === MAX DRAWDOWN ===
     if (rulesParams.maxDrawdown > 0) {
-      const maxDrawdownAmount = (initialBalance * rulesParams.maxDrawdown) / 100;
+      const maxDrawdownAmount =
+        (initialBalance * rulesParams.maxDrawdown) / 100;
       const currentDrawdown = Math.max(0, initialBalance - equity);
-      const progress = maxDrawdownAmount > 0 ? Math.min((currentDrawdown / maxDrawdownAmount) * 100, 100) : 0;
-      const status = currentDrawdown >= maxDrawdownAmount ? "failed" : progress > 0 ? "in_progress" : "pending";
+      const progress =
+        maxDrawdownAmount > 0
+          ? Math.min((currentDrawdown / maxDrawdownAmount) * 100, 100)
+          : 0;
+      const status =
+        currentDrawdown >= maxDrawdownAmount
+          ? "failed"
+          : progress > 0
+          ? "in_progress"
+          : "pending";
 
       objs.push({
         id: "max_drawdown",
         title: "Max Total Loss",
-        description: `Max loss $${maxDrawdownAmount.toLocaleString()} (${rulesParams.maxDrawdown}%). Current: $${currentDrawdown.toLocaleString()}`,
+        description: `Max loss $${maxDrawdownAmount.toLocaleString()} (${
+          rulesParams.maxDrawdown
+        }%). Current: $${currentDrawdown.toLocaleString()}`,
         current: currentDrawdown,
         target: maxDrawdownAmount,
         unit: "$",
@@ -141,13 +183,23 @@ export default function Objectives({
     if (rulesParams.dailyDrawdown > 0) {
       const maxDailyLoss = (dailyBalance * rulesParams.dailyDrawdown) / 100;
       const currentDailyLoss = Math.max(0, dailyBalance - equity);
-      const progress = maxDailyLoss > 0 ? Math.min((currentDailyLoss / maxDailyLoss) * 100, 100) : 0;
-      const status = currentDailyLoss >= maxDailyLoss ? "failed" : progress > 0 ? "in_progress" : "pending";
+      const progress =
+        maxDailyLoss > 0
+          ? Math.min((currentDailyLoss / maxDailyLoss) * 100, 100)
+          : 0;
+      const status =
+        currentDailyLoss >= maxDailyLoss
+          ? "failed"
+          : progress > 0
+          ? "in_progress"
+          : "pending";
 
       objs.push({
         id: "daily_loss",
         title: "Max Daily Loss",
-        description: `Max daily loss $${maxDailyLoss.toLocaleString()} (${rulesParams.dailyDrawdown}%). Current: $${currentDailyLoss.toLocaleString()}`,
+        description: `Max daily loss $${maxDailyLoss.toLocaleString()} (${
+          rulesParams.dailyDrawdown
+        }%). Current: $${currentDailyLoss.toLocaleString()}`,
         current: currentDailyLoss,
         target: maxDailyLoss,
         unit: "$",
@@ -162,9 +214,15 @@ export default function Objectives({
     // === TRADING DAYS ===
     if (rulesParams.tradingDays > 0) {
       const targetDays = rulesParams.tradingDays;
-      const currentDays = 0; // si no tienes contador, queda en 0
-      const progress = targetDays > 0 ? Math.min((currentDays / targetDays) * 100, 100) : 100;
-      const status = currentDays >= targetDays ? "completed" : currentDays > 0 ? "in_progress" : "pending";
+      const currentDays = metaStats?.tradingDays || 0; // si no tienes contador, queda en 0
+      const progress =
+        targetDays > 0 ? Math.min((currentDays / targetDays) * 100, 100) : 100;
+      const status =
+        currentDays >= targetDays
+          ? "completed"
+          : currentDays > 0
+          ? "in_progress"
+          : "pending";
 
       objs.push({
         id: "min_trading_days",
@@ -189,7 +247,9 @@ export default function Objectives({
       <div className={className}>
         <div className="bg-white dark:bg-zinc-800 rounded-lg shadow-md p-6 text-center">
           <TrophyIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-          <p className="text-gray-500 dark:text-gray-400 text-xs">No objectives defined</p>
+          <p className="text-gray-500 dark:text-gray-400 text-xs">
+            No objectives defined
+          </p>
         </div>
       </div>
     );
@@ -200,21 +260,33 @@ export default function Objectives({
       <div className="font-semibold text-base dark:text-white mb-4">Goals</div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {objectives.map((obj, idx) => (
-          <div key={obj.id} className="bg-white dark:bg-zinc-800 rounded-lg shadow-md dark:text-white">
+          <div
+            key={obj.id}
+            className="bg-white dark:bg-zinc-800 rounded-lg shadow-md dark:text-white"
+          >
             <div className="p-3">
               <div className="flex justify-between items-start">
                 <div className="flex-1 min-w-0 pr-2">
-                  <span className="text-blue-400 font-medium text-sm block truncate">{obj.title}</span>
+                  <span className="text-blue-400 font-medium text-sm block truncate">
+                    {obj.title}
+                  </span>
                   <span className="text-gray-400 text-xs block mt-1">
-                    Required: {obj.unit === "$" ? `$${obj.target.toLocaleString()}` : `${obj.target}${obj.unit}`}
+                    Required:{" "}
+                    {obj.unit === "$"
+                      ? `$${obj.target.toLocaleString()}`
+                      : `${obj.target}${obj.unit}`}
                   </span>
                 </div>
               </div>
               <div className="flex justify-between items-center mt-2">
                 <span className="font-medium text-sm">
-                  {obj.unit === "$" ? `$${obj.current.toLocaleString()}` : `${obj.current}${obj.unit}`}
+                  {obj.unit === "$"
+                    ? `$${obj.current.toLocaleString()}`
+                    : `${obj.current}${obj.unit}`}
                 </span>
-                <span className="text-xs">{safeToFixed(Math.min(100, obj.progress), 1)}%</span>
+                <span className="text-xs">
+                  {safeToFixed(Math.min(100, obj.progress), 1)}%
+                </span>
               </div>
               <ProgressBar percentage={obj.progress} />
             </div>

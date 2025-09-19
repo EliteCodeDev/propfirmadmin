@@ -75,6 +75,7 @@ export interface ChallengeDetailsRelation {
       profitLossRatio?: number;
     } | null;
     numTrades?: number | null;
+    tradingDays?: number | null;
     todayPnl?: number | null;
     lots?: number | null;
   } | null;

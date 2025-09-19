@@ -1,30 +1,30 @@
 // Metrix component interfaces
 export type PositionLike = {
-	OrderId?: string | number;
-	ticket?: number;
-	Symbol?: string;
-	symbol?: string;
-	Type?: string | number;
-	type?: number;
-	Volume?: number;
-	volume?: number;
-	OpenPrice?: number;
-	openPrice?: number;
-	ClosePrice?: number;
-	closePrice?: number;
-	TimeOpen?: string;
-	openTime?: string;
-	TimeClose?: string;
-	closeTime?: string;
-	Profit?: number;
-	profit?: number;
-	Commission?: number;
-	commission?: number;
-	Swap?: number;
-	swap?: number;
-	Commentary?: string;
-	comment?: string;
-}
+  OrderId?: string | number;
+  ticket?: number;
+  Symbol?: string;
+  symbol?: string;
+  Type?: string | number;
+  type?: number;
+  Volume?: number;
+  volume?: number;
+  OpenPrice?: number;
+  openPrice?: number;
+  ClosePrice?: number;
+  closePrice?: number;
+  TimeOpen?: string;
+  openTime?: string;
+  TimeClose?: string;
+  closeTime?: string;
+  Profit?: number;
+  profit?: number;
+  Commission?: number;
+  commission?: number;
+  Swap?: number;
+  swap?: number;
+  Commentary?: string;
+  comment?: string;
+};
 
 export interface MetricsData {
   total?: TotalData;
@@ -32,24 +32,23 @@ export interface MetricsData {
   general?: GeneralData;
 }
 
-
 export type ChartPoint = {
-	date: string;
-	balance: number;
-}
+  date: string;
+  balance: number;
+};
 
 export type ChartReferences = {
-	profitTargetPercent?: number;
-	maxDrawdownPercent?: number;
-}
+  profitTargetPercent?: number;
+  maxDrawdownPercent?: number;
+};
 
 export type AdminMetrixData = {
-	initialBalance: number;
-	currentBalance: number;
-	equity: number;
-	trades: Position[];
-	refs: ChartReferences;
-}
+  initialBalance: number;
+  currentBalance: number;
+  equity: number;
+  trades: Position[];
+  refs: ChartReferences;
+};
 // TradingChart interfaces
 export interface Position {
   OrderId: string;
@@ -91,10 +90,19 @@ export interface ValidationRule {
   id: string;
   name: string;
   description: string;
-  type: 'profit_target' | 'max_drawdown' | 'daily_loss' | 'min_trading_days' | 'max_trading_days' | 'consistency' | 'news_trading' | 'weekend_holding' | 'lot_size';
+  type:
+    | "profit_target"
+    | "max_drawdown"
+    | "daily_loss"
+    | "min_trading_days"
+    | "max_trading_days"
+    | "consistency"
+    | "news_trading"
+    | "weekend_holding"
+    | "lot_size";
   value: number | string;
   unit: string;
-  status: 'passed' | 'failed' | 'pending' | 'warning';
+  status: "passed" | "failed" | "pending" | "warning";
   currentValue?: number | string;
   progress?: number;
   isActive: boolean;
@@ -144,20 +152,20 @@ export interface RuleViolation {
   id: string;
   ruleId: string;
   ruleName: string;
-  violationType: 'breach' | 'warning' | 'info';
+  violationType: "breach" | "warning" | "info";
   timestamp: string;
   description: string;
   value: number;
   threshold: number;
   unit: string;
-  severity: 'low' | 'medium' | 'high' | 'critical';
+  severity: "low" | "medium" | "high" | "critical";
   isResolved: boolean;
 }
 
 export interface RuleStatus {
   ruleId: string;
   ruleName: string;
-  status: 'passed' | 'failed' | 'warning' | 'pending';
+  status: "passed" | "failed" | "warning" | "pending";
   currentValue: number;
   threshold: number;
   unit: string;
@@ -319,7 +327,6 @@ export interface WinLossStats {
   expectancy: number;
 }
 
-
 export interface SymbolStats {
   symbol: string;
   trades: number;
@@ -384,12 +391,10 @@ export interface RulesParams {
   profitTarget: number;
   dailyDrawdown: number;
   maxDrawdown: number;
-  lossPerTrade: number;  
+  lossPerTrade: number;
   tradingDays: number;
   inactiveDays: number;
 }
-
-
 
 export interface RulesValidation {
   status: boolean;
@@ -419,9 +424,6 @@ export interface RulesValidation {
   };
 }
 
-
-
-
 export interface ObjectivesProps {
   challenge: ObjectivesChallenge;
   tradingData: TradingData | null;
@@ -429,6 +431,7 @@ export interface ObjectivesProps {
   rulesParams?: RulesParams | null;
   rulesValidation?: RulesValidation | null;
   className?: string;
+  metaStats?: any;
 }
 
 export interface ObjectiveStatus {
@@ -480,7 +483,16 @@ export interface ValidationParameter {
   status: "active" | "inactive" | "warning";
   icon?: React.ReactNode;
   color?: string;
-  type: "limit" | "target" | "rule" | "currency" | "percentage" | "number" | "days" | "time" | "boolean";
+  type:
+    | "limit"
+    | "target"
+    | "rule"
+    | "currency"
+    | "percentage"
+    | "number"
+    | "days"
+    | "time"
+    | "boolean";
   category: "trading" | "risk" | "time" | "consistency" | "restrictions";
   isEditable?: boolean;
   isActive?: boolean;
@@ -489,7 +501,10 @@ export interface ValidationParameter {
 
 export interface ValidationParametersProps {
   parameters: ValidationParameter[];
-  onParameterChange?: (parameterId: string, newValue: number | string | boolean) => void;
+  onParameterChange?: (
+    parameterId: string,
+    newValue: number | string | boolean
+  ) => void;
   className?: string;
 }
 
@@ -535,7 +550,12 @@ export interface AccountCardPropsWithChallenge {
 // Additional RuleStatusViewer interfaces
 export interface RuleViolationExtended {
   id: string;
-  type: "daily_loss" | "max_loss" | "profit_target" | "trading_days" | "consistency";
+  type:
+    | "daily_loss"
+    | "max_loss"
+    | "profit_target"
+    | "trading_days"
+    | "consistency";
   title: string;
   description: string;
   severity: "low" | "medium" | "high" | "critical";

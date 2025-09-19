@@ -51,6 +51,7 @@ export default function AdminChallengeMetrixPage() {
     challengeId ? ["admin-challenge-with-details", challengeId] : null,
     async () => {
       const challenge = await challengesApi.getWithDetails(challengeId);
+
       const details = challenge.details || {};
 
       // Balance y equity
@@ -203,6 +204,7 @@ export default function AdminChallengeMetrixPage() {
               lossPerTrade: rp?.lossPerTrade ?? 0,
               inactiveDays: rp?.inactiveDays ?? 0,
             }}
+            metaStats={details.metaStats}
             className="bg-white dark:bg-zinc-800 rounded-lg shadow-sm border border-gray-200 dark:border-zinc-700 p-6"
           />
 
