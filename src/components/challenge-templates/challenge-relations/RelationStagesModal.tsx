@@ -379,13 +379,20 @@ export default function RelationStagesModal({
     try {
       setIsAddingStages(true);
 
-      // Crear RelationStages individuales
+      // Determinar el numPhase inicial tomando el máximo existente
+      const existingMax = relationStages.reduce((max, rs) => {
+        if (typeof rs.numPhase === 'number' && rs.numPhase > max) return rs.numPhase;
+        return max;
+      }, 0);
+
+      // Crear RelationStages individuales respetando continuidad de fases
       for (let i = 0; i < selectedStages.length; i++) {
         const stageID = selectedStages[i];
+        const nextPhase = existingMax + i + 1;
         await challengeTemplatesApi.createRelationStage({
           stageID,
           relationID,
-          numPhase: i + 1, // Asignar fase secuencial
+          numPhase: nextPhase,
         });
       }
 
