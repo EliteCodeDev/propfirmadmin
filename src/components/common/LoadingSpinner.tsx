@@ -4,16 +4,11 @@ import { LoadingSpinnerProps } from "@/types";
 
 export default function LoadingSpinner({
   size = "md",
-  text = "Cargando Dashboard",
-  subtitle = "Obteniendo información de la cuenta...",
+  text = "",
+  subtitle = "",
   className = "",
   showProgress = true,
-  steps = [
-    "Verificando credenciales...",
-    "Cargando información de la cuenta...",
-    "Procesando balances...",
-    "Finalizando carga...",
-  ],
+  steps = [],
 }: LoadingSpinnerProps) {
   const [currentStep, setCurrentStep] = useState(0);
   const [progress, setProgress] = useState(0);

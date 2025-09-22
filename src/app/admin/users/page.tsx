@@ -298,8 +298,8 @@ function UsersInner() {
     return (
       <LoadingSpinner
         size="md"
-        text="Verifying Session"
-        subtitle="Validating user credentials..."
+        // text="Verifying Session"
+        // subtitle="Validating user credentials..."
         showProgress
       />
     );
@@ -308,8 +308,8 @@ function UsersInner() {
     return (
       <LoadingSpinner
         size="md"
-        text="Redirecting"
-        subtitle="Redirecting to login system..."
+        // text="Redirecting"
+        // subtitle="Redirecting to login system..."
         showProgress
       />
     );

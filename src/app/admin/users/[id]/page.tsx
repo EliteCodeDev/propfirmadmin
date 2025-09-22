@@ -187,9 +187,7 @@ export default function UserDetailInner() {
     const planName = getPlanName(relation.planID || "");
 
     // Cambiar a "Plan - Categoría" y evitar guion si no hay categoría
-    return categoryName && categoryName !== "N/A"
-      ? `${planName}`
-      : planName;
+    return categoryName && categoryName !== "N/A" ? `${planName}` : planName;
   };
 
   /* ---- Challenges del User ---- */
@@ -399,15 +397,15 @@ export default function UserDetailInner() {
     return (
       <LoadingSpinner
         size="md"
-        text="Verificando Sesión"
-        subtitle="Validando credenciales de User..."
+        // text="Verificando Sesión"
+        // subtitle="Validando credenciales de User..."
         showProgress
-        steps={[
-          "Verificando token de sesión...",
-          "Validando permisos de User...",
-          "Cargando configuración...",
-          "Preparando dashboard...",
-        ]}
+        // steps={[
+        //   "Verificando token de sesión...",
+        //   "Validando permisos de User...",
+        //   "Cargando configuración...",
+        //   "Preparando dashboard...",
+        // ]}
       />
     );
   }
@@ -417,15 +415,8 @@ export default function UserDetailInner() {
       <MainLayout>
         <LoadingSpinner
           size="md"
-          text="Cargando Challenges"
-          subtitle="Obteniendo información del User y challenges..."
+          // subtitle="Obteniendo información del User y challenges..."
           showProgress
-          steps={[
-            "Consultando datos del User...",
-            "Cargando challenges del User...",
-            "Obteniendo balances y detalles...",
-            "Preparando vista de detalles...",
-          ]}
         />
       </MainLayout>
     );
