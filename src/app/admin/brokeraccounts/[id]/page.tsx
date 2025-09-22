@@ -59,34 +59,34 @@ function BrokerAccountInner() {
               Broker Account
             </h1>
             <p className="text-sm text-gray-600 dark:text-gray-400">
-              Detalle de la cuenta del broker (solo lectura)
+              Broker account details (read-only)
             </p>
           </div>
           <button
             onClick={() => router.back()}
             className="px-3 py-1.5 text-sm rounded-md border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700/40"
           >
-            Volver
+            Back
           </button>
         </div>
 
         {isLoading ? (
           <div className="p-6 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
-            Cargando…
+            Loading…
           </div>
         ) : error ? (
           <div className="p-6 rounded-lg border border-red-200 bg-red-50 text-red-700">
-            {(error as Error).message || "Error al cargar la cuenta"}
+            {(error as Error).message || "Error loading account"}
           </div>
         ) : !account ? (
           <div className="p-6 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
-            No se encontró la cuenta
+            Account not found
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4">
               <h2 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-                Información básica
+                Basic Information
               </h2>
               <div className="space-y-2 text-sm">
                 <Field
@@ -103,7 +103,7 @@ function BrokerAccountInner() {
 
             <div className="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4">
               <h2 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-                Detalles
+                Details
               </h2>
               <div className="space-y-2 text-sm">
                 <Field
