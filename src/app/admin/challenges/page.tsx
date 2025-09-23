@@ -443,14 +443,10 @@ function ChallengesInner() {
       key: "login",
       label: "Login",
       type: "link",
-      linkUrl: (value, row) => {
+      linkUrl: (_value, row) => {
         const r: any = row as any;
-        const brokerAccountID =
-          r?.__raw?.brokerAccount?.brokerAccountID ?? r?.brokerAccountID;
-        const loginVal = typeof value === "string" ? value : r?.login;
-        if (brokerAccountID) return `/admin/brokeraccounts/${brokerAccountID}`;
-        if (loginVal && loginVal !== "-")
-          return `/admin/brokeraccounts?login=${encodeURIComponent(loginVal)}`;
+        const challengeID = r?.__raw?.challengeID ?? r?.challengeID;
+        if (challengeID) return `/admin/challenges/${challengeID}`;
         return "#";
       },
     },
